@@ -41,6 +41,7 @@ entity riscv_control_unit is
     (
        DIVIDER_EN: boolean;
        MUL_ARCH: string
+      
     );
     Port ( op1_i : in  STD_LOGIC_VECTOR (31 downto 0);
            wdata_o : out  STD_LOGIC_VECTOR (31 downto 0);
@@ -56,12 +57,17 @@ entity riscv_control_unit is
 
            mtvec_o : out std_logic_vector(31 downto 2);
            mepc_o  : out std_logic_vector(31 downto 2);
+          
            -- trap info import
            mcause_i : in STD_LOGIC_VECTOR (3 downto 0);
            mepc_i : in std_logic_vector(31 downto 2);
            adr_i  : in std_logic_vector(31 downto 0);
            mtrap_strobe_i : in STD_LOGIC; -- indicates that mcause_i, mepc_i and adr_i  should be registered
            cmd_tret_i : in STD_LOGIC; -- return command
+           
+           -- IRQ Handling 
+           ext_irq_in : in std_logic_vector(7 downto 0);
+           interrupt_exec_o : std_logic;
 
            clk_i : in  STD_LOGIC;
            rst_i : in  STD_LOGIC);
@@ -99,6 +105,7 @@ busy_o<=we or exception;
 csr_exception <= exception;
 mtvec_o <= mtvec;
 mepc_o <= mepc;
+
 
 csr_offset <= csr_adr(7 downto 0);
 

@@ -18,7 +18,10 @@ use ieee.numeric_std.all;
 
 entity lxp32_dbus is
    generic(
-      RMW: boolean
+      RMW: boolean;
+      ENABLE_LOCALMAP : boolean := false;
+      LOCAL_PREFIX : unsigned(31 downto 16) :=X"FFFF"
+      
    );
    port(
       clk_i: in std_logic;
@@ -46,7 +49,12 @@ entity lxp32_dbus is
       dbus_ack_i: in std_logic;
       dbus_adr_o: out std_logic_vector(31 downto 2);
       dbus_dat_o: out std_logic_vector(31 downto 0);
-      dbus_dat_i: in std_logic_vector(31 downto 0)
+      dbus_dat_i: in std_logic_vector(31 downto 0);
+      
+      -- Processor Local Wishbone bus
+      local_cyc_o : out std_logic;
+      local_dat_i : in std_logic_vector(31 downto 0)
+      
    );
 end entity;
 
@@ -67,6 +75,8 @@ signal dbus_rdata: txword;
 signal selected_byte: std_logic_vector(7 downto 0);
 
 signal misalign : std_logic;
+
+signal local_adr_en : std_logic; -- 1: processor local address 
 
 
 -- Shifts the value to write on the data bus based on the lower bits
@@ -92,10 +102,9 @@ begin
   return db_o;
 end;
 
+
 begin
-
-
-
+  
 process (clk_i) is
 variable misalign_t : std_logic;
 begin
@@ -123,6 +132,13 @@ begin
                dbus_adr_o<=addr_i(31 downto 2);
                adr_reg<=addr_i(1 downto 0);
                dbus_dat_o <= dbus_align(addr_i(1 downto 0),wdata_i);
+               
+               -- New TH: Support for processor local wishbone bus
+               if ENABLE_LOCALMAP and unsigned(addr_i(LOCAL_PREFIX'high downto LOCAL_PREFIX'low))=LOCAL_PREFIX then
+                 local_adr_en<='1';
+               else
+                 local_adr_en<='0';
+               end if;   
 
                if cmd_dbus_byte_i='1' then
                  byte_mode<='1';
@@ -209,7 +225,41 @@ begin
    end if;
 end process;
 
-dbus_cyc_o<=strobe;
+no_local_dbus: if not ENABLE_LOCALMAP generate
+  dbus_cyc_o<=strobe;
+  local_cyc_o<='0';
+  
+  process (clk_i) is
+  begin
+     if rising_edge(clk_i) then
+       dbus_rdata<=dbus_dat_i;
+     end if;
+  end process;
+  
+end generate;
+
+
+local_dbus: if  ENABLE_LOCALMAP generate
+
+ 
+  dbus_cyc_o  <= strobe when local_adr_en='0' else '0' ;
+  local_cyc_o <= strobe when local_adr_en='1' else '0' ;
+  
+  process (clk_i) is
+  begin
+     if rising_edge(clk_i) then
+       if local_adr_en='1' then 
+         dbus_rdata<=local_dat_i;
+       else
+         dbus_rdata<=dbus_dat_i;
+       end if;         
+     end if;
+  end process;
+  
+end generate;
+
+
+
 dbus_stb_o<=strobe;
 dbus_we_o<=we;
 
@@ -221,12 +271,7 @@ sel_rmw_gen: if RMW generate
    dbus_sel_o<=(others=>'1');
 end generate;
 
-process (clk_i) is
-begin
-   if rising_edge(clk_i) then
-      dbus_rdata<=dbus_dat_i;
-   end if;
-end process;
+
 
 -- TH: New mux coding...
 rdata_mux: process(dbus_rdata,sel,byte_mode,hword_mode,sig,adr_reg)

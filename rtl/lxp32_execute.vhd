@@ -17,7 +17,9 @@ entity lxp32_execute is
       DBUS_RMW: boolean;
       DIVIDER_EN: boolean;
       MUL_ARCH: string;
-      USE_RISCV : boolean := false
+      USE_RISCV : boolean := false;
+      ENABLE_TIMER : boolean := true;
+      TIMER_XLEN : natural := 32
    );
    port(
       clk_i: in std_logic;
@@ -54,10 +56,17 @@ entity lxp32_execute is
       interrupt_i : in STD_LOGIC; -- Trap is interrupt
       epc_i : in  std_logic_vector(31 downto 2);
 
-      -- epc and tvec output to decode stage
+
+      -- IRQ handling For RISC-V
+      ext_irq_in : in std_logic_vector(7 downto 0);
+      riscv_interrupt_exec_o : std_logic;
+
+      -- RISC-V Control Unit output to decode stage
 
       epc_o : out std_logic_vector(31 downto 2);
       tvec_o : out std_logic_vector(31 downto 2);
+      interrupt_o : out std_logic; -- Execute Interrupt (For RISC-V the Control Unit will handle all interrupt processing
+      
 
       jump_type_i: in std_logic_vector(3 downto 0);
 
@@ -134,11 +143,14 @@ signal csr_exception  : std_logic :='0';
 signal csr_busy : std_logic := '0';
 signal csr_result :  std_logic_vector(31 downto 0);
 
-signal mepc,mtvec :  std_logic_vector(31 downto 2);
+
 signal mtrap_strobe : std_logic;
 signal trap_cause :  STD_LOGIC_VECTOR(3 downto 0);
-
 signal csr_tret_exec : std_logic;
+
+--Constrol Unit Export signal
+signal mepc,mtvec :  std_logic_vector(31 downto 2);
+signal mie : std_logic;
 
 -- Registers for storing data address and direction, needed for recording misalignment traps 
 signal adr_reg : std_logic_vector(31 downto 0);
@@ -162,6 +174,19 @@ signal dbus_busy: std_logic;
 signal dbus_we: std_logic;
 signal dbus_misalign : std_logic;
 
+signal s_dbus_cyc_o,
+       s_local_cyc_o :  std_logic;
+signal s_dbus_stb_o  :  std_logic;
+signal s_dbus_we_o   :  std_logic;
+signal s_dbus_sel_o  :  std_logic_vector(3 downto 0);
+signal s_dbus_ack_i  :  std_logic;
+signal s_local_ack   :  std_logic;
+signal s_dbus_adr_o  :  std_logic_vector(31 downto 2);
+signal s_dbus_dat_o,
+       s_local_dat_i :  std_logic_vector(31 downto 0);       
+--signal s_dbus_dat_i: std_logic_vector(31 downto 0);
+
+signal timer_irq : std_logic;
 
 -- Result mux signals
 
@@ -179,8 +204,11 @@ begin
 
 ex_exception <= dbus_misalign or csr_exception;
 
+
+--CSR export to decode stage
 tvec_o <= mtvec;
 epc_o  <= mepc;
+
 
 -- Pipeline control
 
@@ -346,8 +374,21 @@ interrupt_return_o<=interrupt_return;
 
 -- DBUS access
 
+s_dbus_ack_i <= dbus_ack_i when s_dbus_cyc_o='1' else
+                s_local_ack when s_local_cyc_o='1' else
+                'X';
+                
+
+dbus_adr_o <= s_dbus_adr_o;
+dbus_cyc_o <= s_dbus_cyc_o;
+dbus_stb_o <= s_dbus_stb_o and s_dbus_cyc_o; -- Mask stb output with cyc output
+dbus_we_o  <= s_dbus_we_o;	
+dbus_dat_o <= s_dbus_dat_o;
+dbus_sel_o <= s_dbus_sel_o;
+
 dbus_inst: entity work.lxp32_dbus(rtl)
    generic map(
+      ENABLE_LOCALMAP=>USE_RISCV,
       RMW=>DBUS_RMW
    )
    port map(
@@ -369,15 +410,40 @@ dbus_inst: entity work.lxp32_dbus(rtl)
       we_o=>dbus_we,
       misalign_o=>dbus_misalign, -- TH
 
-      dbus_cyc_o=>dbus_cyc_o,
-      dbus_stb_o=>dbus_stb_o,
-      dbus_we_o=>dbus_we_o,
-      dbus_sel_o=>dbus_sel_o,
-      dbus_ack_i=>dbus_ack_i,
-      dbus_adr_o=>dbus_adr_o,
-      dbus_dat_o=>dbus_dat_o,
-      dbus_dat_i=>dbus_dat_i
+      dbus_cyc_o=>s_dbus_cyc_o,
+      dbus_stb_o=>s_dbus_stb_o,
+      dbus_we_o=>s_dbus_we_o,
+      dbus_sel_o=>s_dbus_sel_o,
+      dbus_ack_i=>s_dbus_ack_i,
+      dbus_adr_o=>s_dbus_adr_o,
+      dbus_dat_o=>s_dbus_dat_o,
+      dbus_dat_i=>dbus_dat_i,
+      local_dat_i=>s_local_dat_i,
+      local_cyc_o=>s_local_cyc_o
    );
+   
+   
+-- RISC-V Local Memory mapped registers, currently mtime and mtimecmp
+
+riscv_memmap : if USE_RISCV and ENABLE_TIMER generate
+
+memmap_inst: entity work.riscv_local_memmap 
+
+PORT MAP(
+		clk_i => clk_i,
+		rst_i => rst_i,
+		wbs_cyc_i => s_local_cyc_o,
+		wbs_stb_i => s_dbus_stb_o,
+		wbs_we_i =>  s_dbus_we_o,
+		wbs_sel_i => s_dbus_sel_o,
+		wbs_ack_o => s_local_ack,
+		wbs_adr_i => s_dbus_adr_o(15 downto 2),
+		wbs_dat_i => s_dbus_dat_o,
+		wbs_dat_o => s_local_dat_i,
+		timer_irq_o => timer_irq
+	);
+
+end generate;   
 
 
 -- RISCV control unit
@@ -428,12 +494,15 @@ riscv_cu: if USE_RISCV  generate
 
       mtvec_o => mtvec,
       mepc_o  => mepc,
-
+     
       mcause_i => trap_cause,
       mepc_i => epc_mux,
       mtrap_strobe_i => mtrap_strobe,
       adr_i => adr_reg,
-      cmd_tret_i => csr_tret_exec
+      cmd_tret_i => csr_tret_exec,
+      
+      ext_irq_in => ext_irq_in,
+      interrupt_exec_o => riscv_interrupt_exec_o
     );
 
 end generate;

@@ -88,6 +88,7 @@ signal execute_ready: std_logic;
 signal execute_jump_valid: std_logic;
 signal execute_jump_dst: std_logic_vector(29 downto 0);
 
+
 signal sp_raddr1: std_logic_vector(7 downto 0);
 signal sp_rdata1: std_logic_vector(31 downto 0);
 signal sp_raddr2: std_logic_vector(7 downto 0);
@@ -107,6 +108,8 @@ signal interrupt_return: std_logic;
 signal decode_trap_cause : STD_LOGIC_VECTOR(3 downto 0); -- TH: Trap/Interrupt cause
 signal decode_interrupt :  STD_LOGIC; -- Trap is interrupt 
 signal decode_epc,ex_epc,ex_tvec : std_logic_vector(31 downto 2);
+
+
 
 
 begin
@@ -334,7 +337,12 @@ execute_inst: entity work.lxp32_execute(rtl)
         jump_dst_o=>execute_jump_dst,
         jump_ready_i=>fetch_jump_ready,
         
-        interrupt_return_o=>interrupt_return
+        interrupt_return_o=>interrupt_return,
+        
+        ext_irq_in=>irq_i, -- for RISC-V only...
+        -- for RISC-V: Interrupt are handle by the control unit, the signal below will be asserted by the CU
+        -- to the decode to execute an interrupt  
+        riscv_interrupt_exec_o => interrupt_valid
     );
 
 lxp_regs: if not USE_RISCV  generate
@@ -374,6 +382,7 @@ scratchpad_inst: entity work.riscv_regfile(rtl)
 end generate;    
 
 
+lxp_imux : if not USE_RISCV generate
 interrupt_mux_inst: entity work.lxp32_interrupt_mux(rtl)
     port map(
         clk_i=>clk_i,
@@ -390,5 +399,6 @@ interrupt_mux_inst: entity work.lxp32_interrupt_mux(rtl)
         sp_we_i=>sp_we,
         sp_wdata_i=>sp_wdata
     );
+end generate;    
 
 end architecture;

@@ -1,10 +1,19 @@
 .section .text
 .global _start
+.extern monitor
+.extern mtime
+
 _start:
 
+la s0, monitor
+la s1,mtime
 li a1,0x100 // store area
 li a2,0x0FA55AA55
 
+lw a3,0(s1) // get timer
+sw a3,4(s0)
+addi t1,a3,100 // increment timer value by 100
+sw t1,8(s1) // write to timer compare register
 
 loop:
 li gp,0x200  // test result area
@@ -44,6 +53,12 @@ lw t4,16(a1) // => 00FA5500
 jal store
 lhu t4,1(a1) // => 000055AA
 jal store 
+
+lw a3,0(s1) 
+sw a3,4(s0)
+
+li t0,1  
+sw t0,0(s0) // write 1 to monitor result register 
 
 j loop
 

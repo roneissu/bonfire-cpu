@@ -85,7 +85,7 @@ port(
       cmd_tret_o :  out STD_LOGIC; -- TH: Execute trap returen
       trap_cause_o : out STD_LOGIC_VECTOR(3 downto 0); -- TH: Trap/Interrupt cause
       interrupt_o : out STD_LOGIC; -- Trap is interrupt
-
+      
       epc_o :  out std_logic_vector(31 downto 2);
 
       epc_i : in std_logic_vector(31 downto 2);
