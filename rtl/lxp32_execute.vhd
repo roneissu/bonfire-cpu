@@ -59,7 +59,7 @@ entity lxp32_execute is
 
       -- IRQ handling For RISC-V
       ext_irq_in : in std_logic_vector(7 downto 0);
-      riscv_interrupt_exec_o : std_logic;
+      riscv_interrupt_exec_o : out std_logic;
 
       -- RISC-V Control Unit output to decode stage
 
@@ -500,6 +500,11 @@ riscv_cu: if USE_RISCV  generate
       mtrap_strobe_i => mtrap_strobe,
       adr_i => adr_reg,
       cmd_tret_i => csr_tret_exec,
+      
+     
+		timer_irq_in => timer_irq,
+		
+		interrupt_ack_i =>interrupt_i,
       
       ext_irq_in => ext_irq_in,
       interrupt_exec_o => riscv_interrupt_exec_o

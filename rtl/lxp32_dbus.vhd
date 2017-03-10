@@ -10,6 +10,16 @@
 -- Extension TH 22.10.2016:
 -- Support for hword (16 Bit) Bus Access analogous to byte access
 -- needed to implement lhu/lh/shu/sh RISC-V instructions.
+
+-- 10.03.2017 TH:
+-- Added support for a "local" (processor internal) wishbone bus in the configurable 64K of the address space
+-- Default is the upper 64K of the address space
+-- This bus is intended for memory mapped control registers like mtime and mtimecmp, but can also be used
+-- for a "Microcontroller like" setup with local I/O devices and local RAM
+-- The bus is impemented by an alternative cyc signal (local_cyc_o) and a second data in port (local_dat_i)
+-- All other signals are shared 
+
+
 ---------------------------------------------------------------------
 
 library ieee;

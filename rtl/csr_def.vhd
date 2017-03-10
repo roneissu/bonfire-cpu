@@ -17,7 +17,7 @@ constant status : t_csr_adr:= x"00"; --  Machine status register.
 constant isa    : t_csr_adr:=x"01";
 constant edeleg : t_csr_adr:= x"02";
 constant ideleg : t_csr_adr:= x"03";
-constant ie     : t_csr_adr:= x"04";
+constant a_ie   : t_csr_adr:= x"04";
 constant tvec : t_csr_adr:=   x"05";
 
 --Read only Machine Information Registers
@@ -31,15 +31,34 @@ constant scratch : t_csr_adr:=   x"40";
 constant epc: t_csr_adr:=        x"41";
 constant cause : t_csr_adr:=     x"42";
 constant badaddr : t_csr_adr:=   x"43";
-constant ip : t_csr_adr:=        x"44";
+constant a_ip : t_csr_adr:=      x"44";
 
 -- non standard registers
 constant icontrol : t_csr_adr:=x"C0"; -- full address is 0x7C0
 
 constant impvers : std_logic_vector(31 downto 0) := X"0001000D";
 
+-- Interrupts
+type t_irq_enable is record
+   msie,mtie : std_logic;
+   meie : std_logic_vector(7 downto 0);
+end record;   
+   
+type t_irq_pending is record   
+   msip,mtip : std_logic;
+   meip : std_logic_vector(7 downto 0);
+end record;
+
+
+
 function get_misa(divider_en:boolean;mul_arch:string) return t_csr_word;
 function get_mstatus(pie : std_logic; ie : std_logic) return t_csr_word;
+function get_mip(ir: t_irq_pending) return t_csr_word;
+function get_mie(ir: t_irq_enable) return t_csr_word;
+
+procedure set_mip(csr: in t_csr_word;signal ir : out t_irq_pending);
+procedure set_mie(csr: in t_csr_word;signal ir : out t_irq_enable);
+
 
 end csr_def;
 
@@ -64,6 +83,38 @@ begin
   
   return s;
 
+end;
+
+function get_mip(ir: t_irq_pending) return t_csr_word is
+variable s : t_csr_word := (others=>'0');
+begin
+  s(3):=ir.msip;
+  s(5):=ir.mtip;
+  s(11+ir.meip'high downto 11):=ir.meip;
+  return s;
+end;
+
+function get_mie(ir: t_irq_enable) return t_csr_word is
+variable s : t_csr_word := (others=>'0');
+begin
+  s(3):=ir.msie;
+  s(5):=ir.mtie;
+  s(11+ir.meie'high downto 11):=ir.meie;
+  return s;
+end;
+
+procedure set_mip(csr: in t_csr_word;signal ir : out t_irq_pending) is
+begin
+  ir.msip <= csr(3);
+  ir.mtip <= csr(5);
+  ir.meip <= csr(11+ir.meip'high downto 11);
+end;
+
+procedure set_mie(csr: in t_csr_word;signal ir : out t_irq_enable) is
+begin
+  ir.msie <= csr(3);
+  ir.mtie <= csr(5);
+  ir.meie <= csr(11+ir.meie'high downto 11);
 end;
     
 

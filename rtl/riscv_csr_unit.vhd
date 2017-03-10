@@ -67,7 +67,9 @@ entity riscv_control_unit is
            
            -- IRQ Handling 
            ext_irq_in : in std_logic_vector(7 downto 0);
-           interrupt_exec_o : std_logic;
+           timer_irq_in : in std_logic;
+           interrupt_exec_o : out std_logic;
+           interrupt_ack_i : in std_logic; --  Interrupt was taken
 
            clk_i : in  STD_LOGIC;
            rst_i : in  STD_LOGIC);
@@ -93,8 +95,15 @@ signal mepc : std_logic_vector(31 downto 2) := (others=>'0');
 signal mcause : std_logic_vector(3 downto 0) := (others=>'0');
 signal mbadaddr : std_logic_vector(31 downto 0) := (others=>'0');
 
+
+-- Global Interrupt enable
 signal mie : std_logic := '0';  -- Interrupt Enable
 signal mpie : std_logic :='0';  -- Previous Interrupt enable
+
+-- Interrupt registers
+
+signal irq_enable : t_irq_enable := ('0','0',(others=>'0'));
+signal irq_pending : t_irq_pending;
 
 
 begin
@@ -119,6 +128,8 @@ with csr_offset select
              mbadaddr when badaddr,
              mepc&"00" when epc,        
              impvers when impid,
+             get_mie(irq_enable) when a_ie,
+             get_mip(irq_pending) when a_ip,
              
              (others=>'0') when others;
 
@@ -133,6 +144,20 @@ begin
   end case;
 
 end process;
+
+ irq_unit: entity work.riscv_interrupts PORT MAP(
+		mie =>mie ,
+		ir_in => irq_enable,
+		ir_out => irq_pending,
+		interrupt_exec_o => interrupt_exec_o,
+		interrupt_ack_i => interrupt_ack_i,
+		interrupt_number_o =>open,
+		ext_irq_in => ext_irq_in,
+		timer_irq_in =>timer_irq_in ,
+		clk_i => clk_i,
+		rst_i =>rst_i 
+	);
+
 
 
 
@@ -149,6 +174,7 @@ begin
          we <= '0';
          mie <= '0';
          mpie <= '0';
+         irq_enable <= ('0','0',(others=>'0'));
          
          --busy <= '0';
      else
@@ -177,7 +203,7 @@ begin
         elsif cmd_tret_i='1' then
           mie<=mpie;
         end if;  
-       
+          
         if ce_i='1' then
          
           if csr_adr(11 downto 8)=m_stdprefix then
@@ -196,8 +222,10 @@ begin
               when cause =>
                  mcause <= csr_out(3 downto 0);
               when badaddr =>
-                 mbadaddr <= csr_out;    
-              when edeleg|ideleg=>
+                 mbadaddr <= csr_out;  
+              when a_ie =>
+                set_mie(csr_out,irq_enable);                
+              when edeleg|ideleg|a_ip=>
                 -- currently read only              
               when others=>
                  l_exception:='1';

@@ -62,9 +62,11 @@ architecture rtl of riscv_local_memmap is
 signal mtime : unsigned(TIMER_XLEN-1 downto 0) := (others=>'0');
 signal mtimecmp :  unsigned(TIMER_XLEN-1 downto 0) := (others=>'0');
 signal cs : std_logic;
-
+signal timer_irq : std_logic :='0';
 
 begin
+
+  timer_irq_o<=timer_irq;
 
   cs <= '1'  when wbs_adr_i(15 downto 4) = "000000000000" and wbs_cyc_i='1' and wbs_stb_i='1' else
         '0';
@@ -84,20 +86,21 @@ begin
       if rst_i='1' then
         mtime <= (others=>'0');
         mtimecmp <= (others=>'0');
+        timer_irq<='0';
       else
         mtime <= mtime + 1;
         if mtimecmp /= 0 and mtime=mtimecmp then
-          timer_irq_o <= '1';
+          timer_irq <= '1';
         end if;
         if cs='1' and wbs_we_i='1'  then
           case wbs_adr_i(3 downto 2) is
              when "10" =>
                mtimecmp(31 downto 0) <= unsigned(wbs_dat_i);
-               timer_irq_o <= '0';
+               timer_irq <= '0';
              when "11" =>  
               if mtimecmp'high > 31 then
                 mtimecmp(mtimecmp'high downto 32) <= unsigned(wbs_dat_i(mtimecmp'high-32 downto 0)); 
-                timer_irq_o <= '0';
+                timer_irq <= '0';
               end if;
              when others =>  
           end case;

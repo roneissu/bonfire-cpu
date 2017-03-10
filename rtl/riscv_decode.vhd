@@ -259,7 +259,13 @@ begin
                trap:='0';
  
                if valid_i='1' then
-                  if word_i(1 downto 0) = "11" then -- all RV32IM instructions have the lower bits set to 11                                   
+                  if interrupt_valid_i='1' then
+                    t_valid:='1';
+                    interrupt_o<='1';
+                    trap_cause_o<=X"4"; -- TODO: adapt cause based on interrupt source
+                    cmd_trap_o <= '1';
+                    
+                  elsif word_i(1 downto 0) = "11" then -- all RV32IM instructions have the lower bits set to 11                                   
                     optype:=decode_op(opcode);
                     case optype is
                       
