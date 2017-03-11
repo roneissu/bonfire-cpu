@@ -29,6 +29,7 @@ csr.hex : csr.S
 trap01.hex : trap01.S
 fence.hex : fence.S
 loop.hex : loop.S
+timer_irq.hex : timer_irq.S
 
-all: test02.hex test01.hex test03.hex branch.hex mult.hex slt.hex loadsave.hex csr.hex trap01.hex fence.hex loop.hex
+all: test02.hex test01.hex test03.hex branch.hex mult.hex slt.hex loadsave.hex csr.hex trap01.hex fence.hex loop.hex timer_irq.hex
 

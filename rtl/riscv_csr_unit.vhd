@@ -93,6 +93,7 @@ signal mscratch : std_logic_vector(31 downto 0) := (others=>'0');
 -- trap info
 signal mepc : std_logic_vector(31 downto 2) := (others=>'0');
 signal mcause : std_logic_vector(3 downto 0) := (others=>'0');
+signal mcause_31 : std_logic := '0';
 signal mbadaddr : std_logic_vector(31 downto 0) := (others=>'0');
 
 
@@ -104,7 +105,7 @@ signal mpie : std_logic :='0';  -- Previous Interrupt enable
 
 signal irq_enable : t_irq_enable := ('0','0',(others=>'0'));
 signal irq_pending : t_irq_pending;
-
+signal mcause_irq : std_logic_vector(3 downto 0);
 
 begin
 
@@ -124,7 +125,7 @@ with csr_offset select
              get_misa(DIVIDER_EN,MUL_ARCH) when isa,
              mtvec&"00" when tvec,
              mscratch   when scratch,
-             X"0000000"&mcause when cause,
+             mcause_31&"000"& X"000000"&mcause when cause,
              mbadaddr when badaddr,
              mepc&"00" when epc,        
              impvers when impid,
@@ -152,6 +153,7 @@ end process;
 		interrupt_exec_o => interrupt_exec_o,
 		interrupt_ack_i => interrupt_ack_i,
 		interrupt_number_o =>open,
+      mcause_o => mcause_irq,
 		ext_irq_in => ext_irq_in,
 		timer_irq_in =>timer_irq_in ,
 		clk_i => clk_i,
@@ -171,6 +173,7 @@ begin
          mtvec <=  (others=>'0');
          mepc <= (others=>'0');
          mcause <= (others=>'0');
+         mcause_31 <= '0';
          we <= '0';
          mie <= '0';
          mpie <= '0';
@@ -187,21 +190,27 @@ begin
         end if;
       
         if mtrap_strobe_i='1' then
-          mcause <= mcause_i;
+          if interrupt_ack_i='1' then
+              mcause_31 <= '1';
+              mcause <= mcause_irq;
+          else 
+             mcause_31 <= '0';          
+             mcause <= mcause_i;            
+             case mcause_i is 
+               when X"4"|X"6"|X"0" =>
+                 mbadaddr <= adr_i;
+               when X"2"|X"3" =>
+                 mbadaddr <= mepc_i & "00";
+               when others =>  
+             end case;
+          end if;   
           mepc <= mepc_i;
           -- save IE and disable
           mpie <= mie;
           mie <= '0'; 
-          case mcause_i is 
-            when X"4"|X"6"|X"0" =>
-              mbadaddr <= adr_i;
-            when X"2"|X"3" =>
-              mbadaddr <= mepc_i & "00";
-            when others =>  
-          end case;
           
         elsif cmd_tret_i='1' then
-          mie<=mpie;
+          mie <= mpie;
         end if;  
           
         if ce_i='1' then

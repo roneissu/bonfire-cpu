@@ -42,6 +42,7 @@ entity riscv_interrupts is
       interrupt_exec_o : out std_logic;  -- Signal Interrrupt to exec/decode unit
       interrupt_ack_i : in std_logic; --  Interrupt was taken
       interrupt_number_o : out std_logic_vector(2 downto 0);
+      mcause_o : out std_logic_vector(3 downto 0);
       
       ext_irq_in : in std_logic_vector(7 downto 0);
       timer_irq_in : in std_logic;
@@ -90,13 +91,15 @@ begin
           
           
           if mie='1' then -- process interrupts when globally enabled
-            if ir_in.mtie='1' and irq_pending.mtip='1' then
+            if ir_in.mtie='1' and irq_pending.mtip='1' and interrupt_exec='0' then
               interrupt_exec<='1';
+              mcause_o <= X"7";
             else
               for i in ext_irq_in'reverse_range loop
                  if ir_in.meie(i)='1' and irq_pending.meip(i)='1' then
                     interrupt_exec<='1';
                     interrupt_number_o<=std_logic_vector(to_unsigned(i,3));
+                    mcause_o <= X"B";
                     exit;
                  end if;                 
               end loop;           

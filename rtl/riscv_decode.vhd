@@ -218,6 +218,7 @@ begin
          cmd_csr_o <= '-';
          cmd_trap_o <= '-';
          cmd_tret_o <= '-';
+         interrupt_o <= '-';
 
       else
         if jump_valid_i='1' then
@@ -250,6 +251,7 @@ begin
                cmd_csr_o <= '0';
                cmd_trap_o <= '0';
                cmd_tret_o <= '0';
+               interrupt_o <= '0';
                jump_type_o<="0000";
 
                dst_out<=(others=>'0'); -- defaults to register 0, which is never read
@@ -262,8 +264,11 @@ begin
                   if interrupt_valid_i='1' then
                     t_valid:='1';
                     interrupt_o<='1';
-                    trap_cause_o<=X"4"; -- TODO: adapt cause based on interrupt source
+                    --trap_cause_o<=X"4"; -- TODO: adapt cause based on interrupt source
                     cmd_trap_o <= '1';
+                    cmd_jump_o <= '1';
+                    --self_busy<='1';
+						  --state<=ContinueInterrupt;
                     
                   elsif word_i(1 downto 0) = "11" then -- all RV32IM instructions have the lower bits set to 11                                   
                     optype:=decode_op(opcode);
@@ -491,7 +496,6 @@ begin
                cmd_jump_o<='1';
                self_busy<='0';
                state<=Regular;
-
             when Halt =>
                if interrupt_valid_i='1' then
                   self_busy<='0';

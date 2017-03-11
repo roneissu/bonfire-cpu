@@ -89,7 +89,7 @@ function get_mip(ir: t_irq_pending) return t_csr_word is
 variable s : t_csr_word := (others=>'0');
 begin
   s(3):=ir.msip;
-  s(5):=ir.mtip;
+  s(7):=ir.mtip;
   s(11+ir.meip'high downto 11):=ir.meip;
   return s;
 end;
@@ -98,7 +98,7 @@ function get_mie(ir: t_irq_enable) return t_csr_word is
 variable s : t_csr_word := (others=>'0');
 begin
   s(3):=ir.msie;
-  s(5):=ir.mtie;
+  s(7):=ir.mtie;
   s(11+ir.meie'high downto 11):=ir.meie;
   return s;
 end;
@@ -106,14 +106,14 @@ end;
 procedure set_mip(csr: in t_csr_word;signal ir : out t_irq_pending) is
 begin
   ir.msip <= csr(3);
-  ir.mtip <= csr(5);
+  ir.mtip <= csr(7);
   ir.meip <= csr(11+ir.meip'high downto 11);
 end;
 
 procedure set_mie(csr: in t_csr_word;signal ir : out t_irq_enable) is
 begin
   ir.msie <= csr(3);
-  ir.mtie <= csr(5);
+  ir.mtie <= csr(7);
   ir.meie <= csr(11+ir.meie'high downto 11);
 end;
     
