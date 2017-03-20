@@ -36,7 +36,7 @@ constant a_ip : t_csr_adr:=      x"44";
 -- non standard registers
 constant icontrol : t_csr_adr:=x"C0"; -- full address is 0x7C0
 
-constant impvers : std_logic_vector(31 downto 0) := X"0001000D";
+constant impvers : std_logic_vector(31 downto 0) := X"0001000E";
 
 -- Interrupts
 type t_irq_enable is record

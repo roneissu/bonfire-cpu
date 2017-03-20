@@ -81,12 +81,15 @@ signal sig: std_logic;
 signal rmw_mode: std_logic;
 signal adr_reg : std_logic_vector(1 downto 0); -- TH: Lower two bits of address bus
 
+signal local_cyc : std_logic :='0';
+signal dbus_cyc  : std_logic :='0';
+
 signal dbus_rdata: txword;
 signal selected_byte: std_logic_vector(7 downto 0);
 
 signal misalign : std_logic;
 
-signal local_adr_en : std_logic; -- 1: processor local address 
+signal local_adr_en : std_logic :='0'; -- 1: processor local address 
 
 
 -- Shifts the value to write on the data bus based on the lower bits
@@ -117,6 +120,7 @@ begin
   
 process (clk_i) is
 variable misalign_t : std_logic;
+variable l_local_adr_en : std_logic;
 begin
    if rising_edge(clk_i) then
       if rst_i='1' then
@@ -130,6 +134,8 @@ begin
          dbus_adr_o<=(others=>'-');
          dbus_dat_o<=(others=>'-');
          misalign<='0';
+         local_cyc<='0';
+         dbus_cyc<='0';
       else
          we_out<='0';
          misalign_t:='0';
@@ -145,16 +151,15 @@ begin
                
                -- New TH: Support for processor local wishbone bus
                if ENABLE_LOCALMAP and unsigned(addr_i(LOCAL_PREFIX'high downto LOCAL_PREFIX'low))=LOCAL_PREFIX then
-                 local_adr_en<='1';
+                  l_local_adr_en:='1';
                else
-                 local_adr_en<='0';
+                  l_local_adr_en:='0';
                end if;   
-
+               local_adr_en <= l_local_adr_en;
+               
                if cmd_dbus_byte_i='1' then
                  byte_mode<='1';
                  hword_mode<='0';
-                --  dbus_dat_o<=wdata_i(7 downto 0)&wdata_i(7 downto 0)&
-                --     wdata_i(7 downto 0)&wdata_i(7 downto 0);
 
                   case addr_i(1 downto 0) is
                   when "00" => sel<="0001";
@@ -166,9 +171,6 @@ begin
                elsif cmd_dbus_hword_i='1' then
                  byte_mode<='0';
                  hword_mode<='1';
-              --   dbus_dat_o<=wdata_i(15 downto 0)&wdata_i(15 downto 0);
-
-
                  -- synthesis translate_off
                   assert addr_i(1 downto 0) /= "11"
                      report "Misaligned half word granular access on data bus"
@@ -210,6 +212,11 @@ begin
                end if;
                if misalign_t = '0' then
                  strobe<='1'; -- only start bus cylce when no misalignment
+                 if l_local_adr_en='1' then
+                   local_cyc <= '1';
+                 else
+                    dbus_cyc <= '1';
+                 end if;  
                end if;
             end if;
          else
@@ -224,6 +231,8 @@ begin
                   end loop;
                else
                   strobe<='0';
+                  local_cyc<='0';
+                  dbus_cyc <='0';
                   if we='0' then
                      we_out<='1';
                   end if;
@@ -235,9 +244,12 @@ begin
    end if;
 end process;
 
+
+dbus_cyc_o<=dbus_cyc;
+local_cyc_o<=local_cyc;
+
 no_local_dbus: if not ENABLE_LOCALMAP generate
-  dbus_cyc_o<=strobe;
-  local_cyc_o<='0';
+ 
   
   process (clk_i) is
   begin
@@ -252,8 +264,6 @@ end generate;
 local_dbus: if  ENABLE_LOCALMAP generate
 
  
-  dbus_cyc_o  <= strobe when local_adr_en='0' else '0' ;
-  local_cyc_o <= strobe when local_adr_en='1' else '0' ;
   
   process (clk_i) is
   begin
