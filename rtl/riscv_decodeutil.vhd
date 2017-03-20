@@ -1,4 +1,8 @@
 --
+--   Bonfire CPU 
+--   (c) 2016,2017 Thomas Hornschuh
+--   See license.md for License 
+
 -- Utilities for decoding instructions
 
 library IEEE;

@@ -1,3 +1,8 @@
+-- Description: 
+--   Bonfire CPU 
+--   (c) 2016,2017 Thomas Hornschuh
+--   See license.md for License 
+
 -- Memory module to be synthesized as block RAM
 -- can be initalized with a file 
 

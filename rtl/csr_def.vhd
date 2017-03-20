@@ -1,3 +1,6 @@
+--   Bonfire CPU 
+--   (c) 2016,2017 Thomas Hornschuh
+--   See license.md for License 
 
 library IEEE;
 use IEEE.STD_LOGIC_1164.all;

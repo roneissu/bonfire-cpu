@@ -133,7 +133,9 @@
     </file>
     <file xil_pn:name="../../verify/bonfire/tb_cpu_core.vhd" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="36"/>
-      <association xil_pn:name="Implementation" xil_pn:seqID="36"/>
+      <association xil_pn:name="PostMapSimulation" xil_pn:seqID="34"/>
+      <association xil_pn:name="PostRouteSimulation" xil_pn:seqID="34"/>
+      <association xil_pn:name="PostTranslateSimulation" xil_pn:seqID="34"/>
     </file>
     <file xil_pn:name="../../util/log2.vhd" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="34"/>
@@ -145,11 +147,15 @@
     </file>
     <file xil_pn:name="../../verify/lxp32/src/tb/tb_pkg.vhd" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="19"/>
-      <association xil_pn:name="Implementation" xil_pn:seqID="19"/>
+      <association xil_pn:name="PostMapSimulation" xil_pn:seqID="38"/>
+      <association xil_pn:name="PostRouteSimulation" xil_pn:seqID="38"/>
+      <association xil_pn:name="PostTranslateSimulation" xil_pn:seqID="38"/>
     </file>
     <file xil_pn:name="../../verify/lxp32/src/tb/tb_pkg_body.vhd" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="28"/>
-      <association xil_pn:name="Implementation" xil_pn:seqID="28"/>
+      <association xil_pn:name="PostMapSimulation" xil_pn:seqID="39"/>
+      <association xil_pn:name="PostRouteSimulation" xil_pn:seqID="39"/>
+      <association xil_pn:name="PostTranslateSimulation" xil_pn:seqID="39"/>
     </file>
     <file xil_pn:name="../../verify/common_pkg/common_pkg.vhd" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="11"/>
@@ -298,7 +304,7 @@
     <property xil_pn:name="Ignore User Timing Constraints Par" xil_pn:value="false" xil_pn:valueState="default"/>
     <property xil_pn:name="Implementation Top" xil_pn:value="Architecture|lxp32u_top|rtl" xil_pn:valueState="non-default"/>
     <property xil_pn:name="Implementation Top File" xil_pn:value="../../rtl/lxp32u_top.vhd" xil_pn:valueState="non-default"/>
-    <property xil_pn:name="Implementation Top Instance Path" xil_pn:value="/tb_cpu_core/uut" xil_pn:valueState="non-default"/>
+    <property xil_pn:name="Implementation Top Instance Path" xil_pn:value="/lxp32u_top" xil_pn:valueState="non-default"/>
     <property xil_pn:name="Include 'uselib Directive in Verilog File" xil_pn:value="false" xil_pn:valueState="default"/>
     <property xil_pn:name="Include SIMPRIM Models in Verilog File" xil_pn:value="false" xil_pn:valueState="default"/>
     <property xil_pn:name="Include UNISIM Models in Verilog File" xil_pn:value="false" xil_pn:valueState="default"/>

@@ -9,6 +9,11 @@
 -- Target Devices: 
 -- Tool versions: 
 -- Description: 
+--   Bonfire CPU 
+--   (c) 2016,2017 Thomas Hornschuh
+--   See license.md for License 
+
+-- RISC-V local interrupt controller
 --
 -- Dependencies: 
 --
