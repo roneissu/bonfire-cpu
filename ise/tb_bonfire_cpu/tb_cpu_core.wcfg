@@ -1,0 +1,238 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<wave_config>
+   <wave_state>
+   </wave_state>
+   <db_ref_list>
+      <db_ref path="/home/thomas/riscv/lxp32-cpu/ise/tb_bonfire_cpu/tb_cpu_core_isim_beh.wdb" id="1" type="auto">
+         <top_modules>
+            <top_module name="common_pkg" />
+            <top_module name="csr_def" />
+            <top_module name="log2" />
+            <top_module name="math_real" />
+            <top_module name="numeric_std" />
+            <top_module name="riscv_decodeutil" />
+            <top_module name="std_logic_1164" />
+            <top_module name="std_logic_textio" />
+            <top_module name="tb_cpu_core" />
+            <top_module name="tb_pkg" />
+            <top_module name="textio" />
+         </top_modules>
+      </db_ref>
+   </db_ref_list>
+   <WVObjectSize size="12" />
+   <wvobject fp_name="divider76" type="divider">
+      <obj_property name="label">CLK</obj_property>
+      <obj_property name="DisplayName">label</obj_property>
+      <obj_property name="BkColor">128 128 255</obj_property>
+      <obj_property name="TextColor">230 230 230</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_cpu_core/clk_i" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">clk_i</obj_property>
+      <obj_property name="ObjectShortName">clk_i</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_cpu_core/rst_i" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">rst_i</obj_property>
+      <obj_property name="ObjectShortName">rst_i</obj_property>
+   </wvobject>
+   <wvobject fp_name="divider75" type="divider">
+      <obj_property name="label">CPU Core</obj_property>
+      <obj_property name="DisplayName">label</obj_property>
+      <obj_property name="BkColor">128 128 255</obj_property>
+      <obj_property name="TextColor">230 230 230</obj_property>
+   </wvobject>
+   <wvobject fp_name="group41" type="group">
+      <obj_property name="label">LLI</obj_property>
+      <obj_property name="DisplayName">label</obj_property>
+      <wvobject fp_name="/tb_cpu_core/lli_busy_i" type="logic" db_ref_id="1">
+         <obj_property name="ElementShortName">lli_busy_i</obj_property>
+         <obj_property name="ObjectShortName">lli_busy_i</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_cpu_core/irq_i" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">irq_i[7:0]</obj_property>
+         <obj_property name="ObjectShortName">irq_i[7:0]</obj_property>
+         <obj_property name="Radix">HEXRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_cpu_core/lli_re_o" type="logic" db_ref_id="1">
+         <obj_property name="ElementShortName">lli_re_o</obj_property>
+         <obj_property name="ObjectShortName">lli_re_o</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_cpu_core/lli_adr_o" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">lli_adr_o[29:0]</obj_property>
+         <obj_property name="ObjectShortName">lli_adr_o[29:0]</obj_property>
+         <obj_property name="Radix">HEXRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_cpu_core/lli_dat_i" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">lli_dat_i[31:0]</obj_property>
+         <obj_property name="ObjectShortName">lli_dat_i[31:0]</obj_property>
+         <obj_property name="Radix">HEXRADIX</obj_property>
+      </wvobject>
+   </wvobject>
+   <wvobject fp_name="group42" type="group">
+      <obj_property name="label">Wishbone DBUS</obj_property>
+      <obj_property name="DisplayName">label</obj_property>
+      <wvobject fp_name="/tb_cpu_core/dbus_dat_i" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">dbus_dat_i[31:0]</obj_property>
+         <obj_property name="ObjectShortName">dbus_dat_i[31:0]</obj_property>
+         <obj_property name="Radix">HEXRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_cpu_core/dbus_cyc_o" type="logic" db_ref_id="1">
+         <obj_property name="ElementShortName">dbus_cyc_o</obj_property>
+         <obj_property name="ObjectShortName">dbus_cyc_o</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_cpu_core/dbus_stb_o" type="logic" db_ref_id="1">
+         <obj_property name="ElementShortName">dbus_stb_o</obj_property>
+         <obj_property name="ObjectShortName">dbus_stb_o</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_cpu_core/dbus_we_o" type="logic" db_ref_id="1">
+         <obj_property name="ElementShortName">dbus_we_o</obj_property>
+         <obj_property name="ObjectShortName">dbus_we_o</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_cpu_core/dbus_sel_o" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">dbus_sel_o[3:0]</obj_property>
+         <obj_property name="ObjectShortName">dbus_sel_o[3:0]</obj_property>
+         <obj_property name="Radix">BINARYRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_cpu_core/dbus_adr_o" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">dbus_adr_o[31:2]</obj_property>
+         <obj_property name="ObjectShortName">dbus_adr_o[31:2]</obj_property>
+         <obj_property name="Radix">HEXRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_cpu_core/dbus_dat_o" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">dbus_dat_o[31:0]</obj_property>
+         <obj_property name="ObjectShortName">dbus_dat_o[31:0]</obj_property>
+         <obj_property name="Radix">HEXRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_cpu_core/dbus_ack_i" type="logic" db_ref_id="1">
+         <obj_property name="ElementShortName">dbus_ack_i</obj_property>
+         <obj_property name="ObjectShortName">dbus_ack_i</obj_property>
+      </wvobject>
+   </wvobject>
+   <wvobject fp_name="divider82" type="divider">
+      <obj_property name="label">Testbench</obj_property>
+      <obj_property name="DisplayName">label</obj_property>
+      <obj_property name="BkColor">128 128 255</obj_property>
+      <obj_property name="TextColor">230 230 230</obj_property>
+   </wvobject>
+   <wvobject fp_name="group113" type="group">
+      <obj_property name="label">Memory</obj_property>
+      <obj_property name="DisplayName">label</obj_property>
+      <wvobject fp_name="group110" type="group">
+         <obj_property name="label">Port B (Instruction</obj_property>
+         <obj_property name="DisplayName">label</obj_property>
+         <wvobject fp_name="divider117" type="divider">
+            <obj_property name="label">Instruction Port</obj_property>
+            <obj_property name="DisplayName">label</obj_property>
+            <obj_property name="BkColor">128 128 255</obj_property>
+            <obj_property name="TextColor">230 230 230</obj_property>
+         </wvobject>
+         <wvobject fp_name="/tb_cpu_core/Inst_sim_memory_interface/ram/enb" type="logic" db_ref_id="1">
+            <obj_property name="ElementShortName">enb</obj_property>
+            <obj_property name="ObjectShortName">enb</obj_property>
+         </wvobject>
+         <wvobject fp_name="/tb_cpu_core/Inst_sim_memory_interface/ram/adrbusb" type="array" db_ref_id="1">
+            <obj_property name="ElementShortName">adrbusb[11:0]</obj_property>
+            <obj_property name="ObjectShortName">adrbusb[11:0]</obj_property>
+            <obj_property name="Radix">HEXRADIX</obj_property>
+         </wvobject>
+         <wvobject fp_name="/tb_cpu_core/Inst_sim_memory_interface/ram/dboutb" type="array" db_ref_id="1">
+            <obj_property name="ElementShortName">dboutb[31:0]</obj_property>
+            <obj_property name="ObjectShortName">dboutb[31:0]</obj_property>
+            <obj_property name="Radix">HEXRADIX</obj_property>
+         </wvobject>
+      </wvobject>
+      <wvobject fp_name="group105" type="group">
+         <obj_property name="label"> Port A (Data)</obj_property>
+         <obj_property name="DisplayName">label</obj_property>
+         <wvobject fp_name="divider116" type="divider">
+            <obj_property name="label">Data Port</obj_property>
+            <obj_property name="DisplayName">label</obj_property>
+            <obj_property name="BkColor">128 128 255</obj_property>
+            <obj_property name="TextColor">230 230 230</obj_property>
+         </wvobject>
+         <wvobject fp_name="/tb_cpu_core/Inst_sim_memory_interface/ram/dbout" type="array" db_ref_id="1">
+            <obj_property name="ElementShortName">dbout[31:0]</obj_property>
+            <obj_property name="ObjectShortName">dbout[31:0]</obj_property>
+            <obj_property name="Radix">HEXRADIX</obj_property>
+         </wvobject>
+         <wvobject fp_name="/tb_cpu_core/Inst_sim_memory_interface/ram/dbin" type="array" db_ref_id="1">
+            <obj_property name="ElementShortName">dbin[31:0]</obj_property>
+            <obj_property name="ObjectShortName">dbin[31:0]</obj_property>
+            <obj_property name="Radix">HEXRADIX</obj_property>
+         </wvobject>
+         <wvobject fp_name="/tb_cpu_core/Inst_sim_memory_interface/ram/adrbus" type="array" db_ref_id="1">
+            <obj_property name="ElementShortName">adrbus[11:0]</obj_property>
+            <obj_property name="ObjectShortName">adrbus[11:0]</obj_property>
+            <obj_property name="Radix">HEXRADIX</obj_property>
+         </wvobject>
+         <wvobject fp_name="/tb_cpu_core/Inst_sim_memory_interface/ram/ena" type="logic" db_ref_id="1">
+            <obj_property name="ElementShortName">ena</obj_property>
+            <obj_property name="ObjectShortName">ena</obj_property>
+         </wvobject>
+         <wvobject fp_name="/tb_cpu_core/Inst_sim_memory_interface/ram/wren" type="array" db_ref_id="1">
+            <obj_property name="ElementShortName">wren[3:0]</obj_property>
+            <obj_property name="ObjectShortName">wren[3:0]</obj_property>
+         </wvobject>
+      </wvobject>
+   </wvobject>
+   <wvobject fp_name="group94" type="group">
+      <obj_property name="label">Monitor</obj_property>
+      <obj_property name="DisplayName">label</obj_property>
+      <wvobject fp_name="divider115" type="divider">
+         <obj_property name="label">Monitor</obj_property>
+         <obj_property name="DisplayName">label</obj_property>
+         <obj_property name="BkColor">128 128 255</obj_property>
+         <obj_property name="TextColor">230 230 230</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_cpu_core/mon_cyc" type="logic" db_ref_id="1">
+         <obj_property name="ElementShortName">mon_cyc</obj_property>
+         <obj_property name="ObjectShortName">mon_cyc</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_cpu_core/mon_stb" type="logic" db_ref_id="1">
+         <obj_property name="ElementShortName">mon_stb</obj_property>
+         <obj_property name="ObjectShortName">mon_stb</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_cpu_core/mon_ack" type="logic" db_ref_id="1">
+         <obj_property name="ElementShortName">mon_ack</obj_property>
+         <obj_property name="ObjectShortName">mon_ack</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_cpu_core/mon_sel" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">mon_sel[3:0]</obj_property>
+         <obj_property name="ObjectShortName">mon_sel[3:0]</obj_property>
+         <obj_property name="Radix">BINARYRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_cpu_core/mon_dat_rd" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">mon_dat_rd[31:0]</obj_property>
+         <obj_property name="ObjectShortName">mon_dat_rd[31:0]</obj_property>
+         <obj_property name="Radix">HEXRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_cpu_core/mon_dat_wr" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">mon_dat_wr[31:0]</obj_property>
+         <obj_property name="ObjectShortName">mon_dat_wr[31:0]</obj_property>
+         <obj_property name="Radix">HEXRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_cpu_core/mon_adr" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">mon_adr[27:2]</obj_property>
+         <obj_property name="ObjectShortName">mon_adr[27:2]</obj_property>
+         <obj_property name="Radix">HEXRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb_cpu_core/mon_we" type="logic" db_ref_id="1">
+         <obj_property name="ElementShortName">mon_we</obj_property>
+         <obj_property name="ObjectShortName">mon_we</obj_property>
+      </wvobject>
+   </wvobject>
+   <wvobject fp_name="divider96" type="divider">
+      <obj_property name="label">Test result</obj_property>
+      <obj_property name="DisplayName">label</obj_property>
+      <obj_property name="BkColor">128 128 255</obj_property>
+      <obj_property name="TextColor">230 230 230</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_cpu_core/result" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">result[31:0]</obj_property>
+      <obj_property name="ObjectShortName">result[31:0]</obj_property>
+      <obj_property name="Radix">HEXRADIX</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_cpu_core/finished" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">finished</obj_property>
+      <obj_property name="ObjectShortName">finished</obj_property>
+   </wvobject>
+</wave_config>
