@@ -24,6 +24,14 @@ csrr t1,misa
 sw t1,8(s0) // write misa to monitor
 beqz t1,finish
 
+// Read mcycle/h and write to monitor
+csrr t1,mcycle
+sw t1,24(s0)
+beqz t1, finish // failure->
+csrr t1,mcycleh
+sw t1,28(s0)
+
+
 // Test mstatus register
 csrr t1,mstatus
 sw t1,20(s0) // write to monitor
@@ -32,6 +40,8 @@ csrs mstatus,t2
 csrr t1,mstatus
 sw t1,20(s0) // write to monitor
 
+
+// Test IE Bit
 la t1,trap_mstatus
 csrw mtvec,t1
 ecall
@@ -39,6 +49,7 @@ csrr t1,mstatus
 sw t1,20(s0) // write to monitor
 andi t1,t1,0x08  // mask MIE
 beqz t1, finish // failure when MIE is not set 
+
 
 li a0,1 // success
 j finish
@@ -48,7 +59,7 @@ csrr t1,mepc
 sw t1,12(s0)
 csrr t1,mcause
 sw t1,16(s0)
-
+/// fall through finish/failure
 
 finish:
 sw a0,0(s0) // write  to monitor result register 

@@ -12,34 +12,39 @@ constant m_stdprefix : t_csr_adrprefix := x"3";
 constant m_nonstdprefix : t_csr_adrprefix :=x"7";
 constant m_roprefix : t_csr_adrprefix :=x"F";
 
-subtype t_csr_adr is std_logic_vector(7 downto 0);
+subtype t_csr_adr  is std_logic_vector(11 downto 0);
+subtype t_csr_adr8 is std_logic_vector(7 downto 0);
 subtype t_csr_word is std_logic_vector(31 downto 0);
 
 -- trap setup registers
-constant status : t_csr_adr:= x"00"; --  Machine status register.
-constant isa    : t_csr_adr:=x"01";
-constant edeleg : t_csr_adr:= x"02";
-constant ideleg : t_csr_adr:= x"03";
-constant a_ie   : t_csr_adr:= x"04";
-constant tvec : t_csr_adr:=   x"05";
+constant status : t_csr_adr8 := x"00"; --  Machine status register.
+constant isa    : t_csr_adr8 := x"01";
+constant edeleg : t_csr_adr8 := x"02";
+constant ideleg : t_csr_adr8 := x"03";
+constant a_ie   : t_csr_adr8 := x"04";
+constant tvec : t_csr_adr8 :=   x"05";
 
 --Read only Machine Information Registers
-constant vendorid : t_csr_adr:=  X"11";
-constant marchid :  t_csr_adr:=  X"12";
-constant impid   :  t_csr_adr:=  X"13";
-constant hartid  :  t_csr_adr:=  X"14";
+constant vendorid : t_csr_adr8 :=  X"11";
+constant marchid :  t_csr_adr8 :=  X"12";
+constant impid   :  t_csr_adr8 :=  X"13";
+constant hartid  :  t_csr_adr8 :=  X"14";
 
 --Trap Handling
-constant scratch : t_csr_adr:=   x"40";
-constant epc: t_csr_adr:=        x"41";
-constant cause : t_csr_adr:=     x"42";
-constant badaddr : t_csr_adr:=   x"43";
-constant a_ip : t_csr_adr:=      x"44";
+constant scratch : t_csr_adr8 :=   x"40";
+constant epc: t_csr_adr8 :=        x"41";
+constant cause : t_csr_adr8 :=     x"42";
+constant badaddr : t_csr_adr8 :=   x"43";
+constant a_ip : t_csr_adr8 :=      x"44";
+
+-- Cycle counter
+constant a_mcycle  : t_csr_adr := x"B00";
+constant a_mcycleh : t_csr_adr := x"B80";
 
 -- non standard registers
-constant icontrol : t_csr_adr:=x"C0"; -- full address is 0x7C0
+--constant icontrol : t_csr_adr8:=x"C0"; -- full address is 0x7C0
 
-constant impvers : std_logic_vector(31 downto 0) := X"0001000E";
+constant impvers : std_logic_vector(31 downto 0) := X"0001000D";
 
 -- Interrupts
 type t_irq_enable is record

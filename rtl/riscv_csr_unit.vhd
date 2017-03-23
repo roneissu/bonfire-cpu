@@ -40,7 +40,8 @@ entity riscv_control_unit is
     generic
     (
        DIVIDER_EN: boolean;
-       MUL_ARCH: string
+       MUL_ARCH: string;
+       MCYCLE_EN : boolean:=true
       
     );
     Port ( op1_i : in  STD_LOGIC_VECTOR (31 downto 0);
@@ -79,6 +80,7 @@ architecture Behavioral of riscv_control_unit is
 
 signal csr_in, csr_out : STD_LOGIC_VECTOR (31 downto 0); -- Signals for CSR "ALU"
 signal csr_offset : std_logic_vector(7 downto 0); -- lower 8 Bits of CSR address
+signal csr_t1 : STD_LOGIC_VECTOR (31 downto 0);
 
 signal busy : std_logic := '0';
 signal we : std_logic :='0';
@@ -107,6 +109,9 @@ signal irq_enable : t_irq_enable := ('0','0',(others=>'0'));
 signal irq_pending : t_irq_pending;
 signal mcause_irq : std_logic_vector(3 downto 0);
 
+-- Cycle counter
+signal mcycle : std_logic_vector(63 downto 0); 
+
 begin
 
 -- output wiring
@@ -121,7 +126,7 @@ csr_offset <= csr_adr(7 downto 0);
 
 --csr select mux
 with csr_offset select
-   csr_in <= get_mstatus(mpie,mie) when status,
+   csr_t1 <= get_mstatus(mpie,mie) when status,
              get_misa(DIVIDER_EN,MUL_ARCH) when isa,
              mtvec&"00" when tvec,
              mscratch   when scratch,
@@ -133,6 +138,29 @@ with csr_offset select
              get_mip(irq_pending) when a_ip,
              
              (others=>'0') when others;
+
+
+gen_mcycle: if MCYCLE_EN generate
+
+csr_in <= csr_t1 when csr_adr(11 downto 8)=m_stdprefix or csr_adr(11 downto 8) = m_roprefix else
+          mcycle(31 downto 0) when  csr_adr = a_mcycle else
+          mcycle(63 downto 32) when csr_adr = a_mcycleh else
+          (others=>'X'); -- don't care 
+
+Inst_counter_64Bit: entity work.counter_64Bit PORT MAP(
+		clk_i => clk_i ,
+		reset_i => rst_i,
+		counter_value_o => mcycle
+	);
+
+end generate;
+
+gen_no_mcycle: if not MCYCLE_EN generate
+
+  csr_in <= csr_t1;
+
+end generate;
+
 
 
 csr_alu: process(op1_i,csr_in,csr_op_i)
@@ -239,14 +267,17 @@ begin
               when others=>
                  l_exception:='1';
             end case;
-          elsif csr_adr(11 downto 8) /= m_roprefix then
-            l_exception:='1';
+          elsif MCYCLE_EN and (csr_adr = a_mcycle or csr_adr = a_mcycleh ) then -- cycle counter read
+            l_exception:='0';
+          elsif csr_adr(11 downto 8) = m_roprefix then
+               case csr_adr(7 downto 0) is
+                 when vendorid|marchid|impid|hartid => l_exception:='0';
+                 when others => l_exception:='1';  
+               end case; 
           else
-            case csr_adr(7 downto 0) is
-              when vendorid|marchid|impid|hartid => l_exception:='0';
-              when others => l_exception:='1';  
-            end case;              
+            l_exception:='1';
           end if;
+          
           if l_exception = '0'  then 
             wdata_o <= csr_in;
             we <= '1'; -- Pipeline control, latency one cycle
