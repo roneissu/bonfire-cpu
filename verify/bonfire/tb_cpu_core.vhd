@@ -70,7 +70,7 @@ ARCHITECTURE behavior OF tb_cpu_core IS
         );
     END COMPONENT;
     
-    constant TestFile : string :=  "./compiled_tests/loadsave.hex";
+    constant TestFile : string :=  "../../lxp32-cpu/riscv_test/csr.hex";
     
 
    --Inputs
