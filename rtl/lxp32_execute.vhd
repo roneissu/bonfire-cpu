@@ -43,6 +43,7 @@ entity lxp32_execute is
       cmd_shift_i: in std_logic;
       cmd_shift_right_i: in std_logic;
       cmd_mul_high_i : in std_logic; -- TH: Get high word of mult result
+      cmd_signed_b_i : in std_logic; -- TH: interpret mult operand b is signed 
       cmd_slt_i : in std_logic; -- TH: RISC-V SLT/SLTU command
 
       -- Control Unit
@@ -202,6 +203,13 @@ signal interrupt_return: std_logic:='0';
 
 begin
 
+assert (USE_RISCV and (MUL_ARCH="spartandsp" or MUL_ARCH="none"))
+       or not USE_RISCV
+       
+  report "With RISC-V currently only MUL_ARCH spartandsp or none is supported"
+  severity failure;
+  
+
 ex_exception <= dbus_misalign or csr_exception;
 
 
@@ -241,6 +249,7 @@ alu_inst: entity work.lxp32_alu(rtl)
       cmd_shift_i=>cmd_shift_i,
       cmd_shift_right_i=>cmd_shift_right_i,
       cmd_mul_high_i=>cmd_mul_high_i,
+      cmd_signed_b_i=>cmd_signed_b_i,
       op1_i=>op1_i,
       op2_i=>op2_i,
 

@@ -68,6 +68,7 @@ signal decode_cmd_xor: std_logic;
 signal decode_cmd_shift: std_logic;
 signal decode_cmd_shift_right: std_logic;
 signal decode_cmd_mul_high : std_logic; -- TH
+signal decode_cmd_signed_b: std_logic; -- TH
 signal decode_cmd_slt : std_logic; -- TH
 signal decode_cmd_csr : std_logic; -- TH
 signal decode_cmd_trap :  STD_LOGIC; -- TH: Execute trap
@@ -191,6 +192,7 @@ lxp32decode: if not USE_RISCV generate
     );
     
    decode_cmd_mul_high<='0'; -- TH
+   decode_cmd_signed_b<='0'; -- TH
    decode_cmd_slt <= '0'; -- TH
    decode_cmd_trap <= '0';
    decode_cmd_tret <= '0';
@@ -241,6 +243,7 @@ decode_inst: entity work.riscv_decode(rtl)
         cmd_shift_o=>decode_cmd_shift,
         cmd_shift_right_o=>decode_cmd_shift_right,
         cmd_mul_high_o=>decode_cmd_mul_high, -- TH
+        cmd_signed_b_o=>decode_cmd_signed_b,
         cmd_slt_o => decode_cmd_slt, --TH
       
         -- TH: CSR 
@@ -295,6 +298,7 @@ execute_inst: entity work.lxp32_execute(rtl)
         cmd_shift_i=>decode_cmd_shift,
         cmd_shift_right_i=>decode_cmd_shift_right,
         cmd_mul_high_i=>decode_cmd_mul_high, --TH
+        cmd_signed_b_i=>decode_cmd_signed_b, -- TH
         cmd_slt_i => decode_cmd_slt, -- TH
       
         cmd_csr_i=>decode_cmd_csr,

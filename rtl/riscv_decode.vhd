@@ -71,7 +71,8 @@ port(
       cmd_xor_o: out std_logic;
       cmd_shift_o: out std_logic;
       cmd_shift_right_o: out std_logic;
-      cmd_mul_high_o : out std_logic;
+      cmd_mul_high_o : out std_logic; -- TH: Multiplier bits
+      cmd_signed_b_o : out std_logic; -- Multiplier operand b signed
       cmd_slt_o : out std_logic; -- TH: RISC-V SLT/SLTU command
 
 
@@ -214,6 +215,7 @@ begin
          dst_out<=(others=>'-');
          displacement:= (others=>'-');
          cmd_mul_high_o<='-';
+         cmd_signed_b_o<='-';
          cmd_slt_o<='-';
          cmd_csr_o <= '-';
          cmd_trap_o <= '-';
@@ -288,13 +290,24 @@ begin
                           if funct7=MULEXT and optype=rv_op then
                              -- M extension
                              if funct3(2)='0' then
+                               cmd_mul_o <= '1';
                                case funct3(1 downto 0) is
                                  when "00" => -- mul
-                                   cmd_mul_o <= '1';
                                    cmd_mul_high_o<='0';
+                                   cmd_signed_o <= '0';
+                                   cmd_signed_b_o <= '0';
                                  when "11" => -- mulhu
-                                   cmd_mul_o <= '1';
                                    cmd_mul_high_o<='1';
+                                   cmd_signed_o <= '0';
+                                   cmd_signed_b_o <= '0';
+                                 when "01" => -- mulh (both operands signed)
+                                   cmd_mul_high_o<='1';
+                                   cmd_signed_o <= '1';
+                                   cmd_signed_b_o <= '1';
+                                 when "10" => -- mulhsu (signed, unsigned)
+                                   cmd_mul_high_o<='1';
+                                   cmd_signed_o <= '1';
+                                   cmd_signed_b_o <= '0';
                                  when others => not_implemented:='1';
                                end case;
                              else
