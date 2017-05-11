@@ -41,7 +41,10 @@ generic(
       CACHE_SIZE_WORDS : natural := 2048;
       CACHE_LINE_SIZE_WORDS : natural := 8;
       BRAM_PORT_ADR_SIZE : natural := 13; -- 8K Words= 32KByte
-      BRAM_ADR_BASE : std_logic_vector(7 downto 0) := X"0C"
+      BRAM_ADR_BASE : std_logic_vector(7 downto 0) := X"0C";
+      ENABLE_TIMER : boolean := true;
+      TIMER_XLEN : natural := 32
+      
    );
    port(
       clk_i: in std_logic;
@@ -61,16 +64,33 @@ generic(
       bram_adrb_o : out std_logic_vector(BRAM_PORT_ADR_SIZE-1 downto 0);
       bram_enb_o :  out  STD_LOGIC;
             
-      wb_cyc_o: out std_logic;
-      wb_stb_o: out std_logic;
-      wb_we_o: out std_logic;
-      wb_sel_o: out std_logic_vector(3 downto 0);
-      wb_ack_i: in std_logic;
-      wb_adr_o: out std_logic_vector(31 downto 2);
-      wb_dat_o: out std_logic_vector(31 downto 0);
-      wb_dat_i: in std_logic_vector(31 downto 0);
-      wb_cti_o: out std_logic_vector(2 downto 0);
-      wb_bte_o: out std_logic_vector(1 downto 0);
+--      wb_cyc_o: out std_logic;
+--      wb_stb_o: out std_logic;
+--      wb_we_o: out std_logic;
+--      wb_sel_o: out std_logic_vector(3 downto 0);
+--      wb_ack_i: in std_logic;
+--      wb_adr_o: out std_logic_vector(31 downto 2);
+--      wb_dat_o: out std_logic_vector(31 downto 0);
+--      wb_dat_i: in std_logic_vector(31 downto 0);
+--      wb_cti_o: out std_logic_vector(2 downto 0);
+--      wb_bte_o: out std_logic_vector(1 downto 0);
+
+      wb_ibus_cyc_o: out std_logic;
+      wb_ibus_stb_o: out std_logic;
+      wb_ibus_cti_o: out std_logic_vector(2 downto 0);
+      wb_ibus_bte_o: out std_logic_vector(1 downto 0);
+      wb_ibus_ack_i: in std_logic;
+      wb_ibus_adr_o: out std_logic_vector(29 downto 0);
+      wb_ibus_dat_i: in std_logic_vector(31 downto 0);
+      
+      wb_dbus_cyc_o: out std_logic;
+      wb_dbus_stb_o: out std_logic;
+      wb_dbus_we_o: out std_logic;
+      wb_dbus_sel_o: out std_logic_vector(3 downto 0);
+      wb_dbus_ack_i: in std_logic;
+      wb_dbus_adr_o: out std_logic_vector(31 downto 2);
+      wb_dbus_dat_o: out std_logic_vector(31 downto 0);
+      wb_dbus_dat_i: in std_logic_vector(31 downto 0);
       
       
       irq_i: in std_logic_vector(7 downto 0)
@@ -94,14 +114,14 @@ signal bram_db_ack_read,bram_db_ack_write  : std_logic;
 
 
 
--- Instruction Bus Master (From I-Cache)
-signal ibus_cyc_o:  std_logic;
-signal ibus_stb_o:  std_logic;
-signal ibus_cti_o:  std_logic_vector(2 downto 0);
-signal ibus_bte_o:  std_logic_vector(1 downto 0);
-signal ibus_ack_i:  std_logic;
-signal ibus_adr_o:  std_logic_vector(29 downto 0);
-signal ibus_dat_i:  std_logic_vector(31 downto 0);
+---- Instruction Bus Master (From I-Cache)
+--signal ibus_cyc_o:  std_logic;
+--signal ibus_stb_o:  std_logic;
+--signal ibus_cti_o:  std_logic_vector(2 downto 0);
+--signal ibus_bte_o:  std_logic_vector(1 downto 0);
+--signal ibus_ack_i:  std_logic;
+--signal ibus_adr_o:  std_logic_vector(29 downto 0);
+--signal ibus_dat_i:  std_logic_vector(31 downto 0);
 
 -- Data Bus Master (From CPU Core)
 signal  dbus_cyc_o :  std_logic;
@@ -206,13 +226,21 @@ ext_cyc_o <= dbus_cyc_o and not bram_cs_db;
 -- Data Bus Read multiplexer 
               
 dbus_dat_i <= bram_dba_i when bram_cs_db='1'
-              else  ext_dat_i;  
+              else  wb_dbus_dat_i;
                  
 -- Data Bus Ack
 
 dbus_ack_i <= (bram_db_ack_read or bram_db_ack_write)  when bram_cs_db='1' 
-              else ext_ack_i;                  
+              else wb_dbus_ack_i;                  
 
+
+-- Data bus output wiring
+wb_dbus_cyc_o <= ext_cyc_o;
+wb_dbus_stb_o <= ext_stb_o;
+wb_dbus_we_o <=  dbus_we_o;
+wb_dbus_sel_o <= dbus_sel_o;
+wb_dbus_adr_o <= dbus_adr_o;
+wb_dbus_dat_o <= dbus_dat_o;
 
 
 cpu_inst: entity work.lxp32_cpu(rtl)
@@ -222,7 +250,9 @@ cpu_inst: entity work.lxp32_cpu(rtl)
       MUL_ARCH=>MUL_ARCH,
       START_ADDR=>START_ADDR,
       USE_RISCV=>TRUE,
-      REG_RAM_STYLE=>REG_RAM_STYLE
+      REG_RAM_STYLE=>REG_RAM_STYLE,
+      ENABLE_TIMER=>ENABLE_TIMER,
+      TIMER_XLEN=>TIMER_XLEN
    )
    port map(
       clk_i=>clk_i,
@@ -261,58 +291,21 @@ cpu_inst: entity work.lxp32_cpu(rtl)
          lli_dat_o=>lli_dat_cache,
          lli_busy_o=>lli_cache_busy,
          
-         wbm_cyc_o=>ibus_cyc_o,
-         wbm_stb_o=>ibus_stb_o,
-         wbm_cti_o=>ibus_cti_o,
-         wbm_bte_o=>ibus_bte_o,
-         wbm_ack_i=>ibus_ack_i,
-         wbm_adr_o=>ibus_adr_o,
-         wbm_dat_i=>ibus_dat_i,
+         wbm_cyc_o=>wb_ibus_cyc_o,
+         wbm_stb_o=>wb_ibus_stb_o,
+         wbm_cti_o=>wb_ibus_cti_o,
+         wbm_bte_o=>wb_ibus_bte_o,
+         wbm_ack_i=>wb_ibus_ack_i,
+         wbm_adr_o=>wb_ibus_adr_o,
+         wbm_dat_i=>wb_ibus_dat_i,
          
          dbus_cyc_snoop_i=>dbus_cyc_o -- TH
       );
       
       
-      ext_bus_connect: entity work.bonfire_wb_connect PORT MAP(
-        clk_i => clk_i,
-        rst_i => rst_i,
-
-        -- Data bus
-        s0_cyc_i => ext_cyc_o,
-        s0_stb_i => ext_stb_o,
-        s0_we_i =>  dbus_we_o,
-        s0_sel_i => dbus_sel_o,
-        s0_ack_o => ext_ack_i,
-        s0_adr_i => dbus_adr_o,
-        s0_dat_i => dbus_dat_o,
-        s0_dat_o => ext_dat_i,
-        s0_cti_i => "000",
-        s0_bte_i => "00",
-
-        -- Instruction Bus
-        s1_cyc_i => ibus_cyc_o,
-        s1_stb_i => ibus_stb_o,
-        s1_we_i => '0',
-        s1_sel_i => "1111" ,
-        s1_ack_o => ibus_ack_i,
-        s1_adr_i => ibus_adr_o,
-        s1_dat_i => (others=>'0'),
-        s1_dat_o => ibus_dat_i,
-        s1_cti_i => ibus_cti_o,
-        s1_bte_i => ibus_bte_o,
       
-        -- External Bus Interface
-        m0_cyc_o => wb_cyc_o,
-        m0_stb_o => wb_stb_o,
-        m0_we_o =>  wb_we_o,
-        m0_sel_o => wb_sel_o,
-        m0_cti_o => wb_cti_o,
-        m0_bte_o => wb_bte_o,
-        m0_ack_i => wb_ack_i,
-        m0_adr_o => wb_adr_o,
-        m0_dat_o => wb_dat_o,
-        m0_dat_i => wb_dat_i
-     );
 
+       
+        
 end architecture;
 

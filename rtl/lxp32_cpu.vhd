@@ -16,7 +16,9 @@ entity lxp32_cpu is
         MUL_ARCH: string;
         START_ADDR: std_logic_vector(29 downto 0);
         USE_RISCV : boolean := false;
-        REG_RAM_STYLE : string := "block"
+        REG_RAM_STYLE : string := "block";
+        ENABLE_TIMER : boolean := true;
+        TIMER_XLEN : natural := 32
     );
     port(
         clk_i: in std_logic;
@@ -274,7 +276,9 @@ execute_inst: entity work.lxp32_execute(rtl)
         DBUS_RMW=>DBUS_RMW,
         DIVIDER_EN=>DIVIDER_EN,
         MUL_ARCH=>MUL_ARCH,
-        USE_RISCV=>USE_RISCV
+        USE_RISCV=>USE_RISCV,
+        ENABLE_TIMER=>ENABLE_TIMER,
+        TIMER_XLEN=>TIMER_XLEN
     )
     port map(
         clk_i=>clk_i,
