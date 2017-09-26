@@ -34,6 +34,9 @@ USE ieee.std_logic_1164.ALL;
 
 use work.log2;
 use work.common_pkg.all;
+
+library std;
+use std.env.all;
  
 ENTITY tb_cpu_core IS
 END tb_cpu_core;
@@ -249,7 +252,8 @@ BEGIN
 
       wait until finished='1';
       report "Test finished with result "& hex_string(result);
-		
+	
+	  finish(1);	
       --wait;
       
    end process;
