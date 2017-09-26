@@ -70,7 +70,7 @@ ARCHITECTURE behavior OF tb_cpu_core IS
         );
     END COMPONENT;
     
-    constant TestFile : string :=  "../../lxp32-cpu/riscv_test/csr.hex";
+    constant TestFile : string :=  "../../riscv_test/timer_irq.hex";
     
 
    --Inputs
@@ -128,7 +128,7 @@ BEGIN
    uut: lxp32u_top 
    generic map (
      USE_RISCV=>true,
-     MUL_ARCH=>"dsp"
+     MUL_ARCH=>"spartandsp"
    )
    PORT MAP (
           clk_i => clk_i,
