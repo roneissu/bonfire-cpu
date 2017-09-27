@@ -35,8 +35,8 @@ USE ieee.std_logic_1164.ALL;
 use work.log2;
 use work.common_pkg.all;
 
-library std;
-use std.env.all;
+--library std;
+--use std.env.all;
  
 ENTITY tb_cpu_core IS
 END tb_cpu_core;
@@ -232,16 +232,10 @@ BEGIN
    -- Clock process definitions
    clk_i_process :process
    begin
-  
-      clk_i <= '0';
-      wait for clk_i_period/2;
-      clk_i <= '1';
-      wait for clk_i_period/2;
-      if finished='1' then 
-        wait; 
-      end if;
-   
-     
+        clk_i <= '0';
+        wait for clk_i_period/2;
+        clk_i <= '1';
+        wait for clk_i_period/2;
    end process;
  
 
@@ -251,10 +245,11 @@ BEGIN
    
 
       wait until finished='1';
-      report "Test finished with result "& hex_string(result);
+      report "Test finished with result "& hex_string(result)
+      severity failure; -- ugly but portable ....
 	
-	  finish(1);	
-      --wait;
+	  --finish(1);	
+      wait;
       
    end process;
 

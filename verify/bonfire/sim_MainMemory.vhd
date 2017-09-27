@@ -11,7 +11,7 @@
 
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
-use IEEE.std_logic_textio.all;
+--use IEEE.std_logic_textio.all;
 
 -- Uncomment the following library declaration if using
 -- arithmetic functions with Signed or Unsigned values
@@ -24,7 +24,7 @@ use IEEE.NUMERIC_STD.ALL;
 
 library STD;
 use STD.textio.all;
-
+use work.std_logic_textio.all;
 
 
 entity sim_MainMemory is

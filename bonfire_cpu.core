@@ -5,18 +5,23 @@ depend =
 backend = ise
 
 [fileset rtl]
-files = rtl/lxp32u_top.vhd rtl/lxp32_cpu.vhd rtl/lxp32_fetch.vhd rtl/riscv_decode.vhd rtl/lxp32_decode.vhd rtl/lxp32_execute.vhd 
-	rtl/lxp32_alu.vhd rtl/lxp32_dbus.vhd rtl/riscv_local_memmap.vhd rtl/riscv_csr_unit.vhd rtl/riscv_counter_64Bit.vhd 
-	rtl/riscv_interrupts.vhd rtl/lxp32_scratchpad.vhd rtl/riscv_regfile.vhd rtl/lxp32_interrupt_mux.vhd util/log2.vhd rtl/csr_def.vhd 
-	rtl/lxp32_ubuf.vhd rtl/lxp32_ram256x32.vhd rtl/riscv_decodeutil.vhd
+files = rtl/riscv_counter_64Bit.vhd util/log2.vhd rtl/csr_def.vhd rtl/riscv_decodeutil.vhd rtl/lxp32_ram256x32.vhd 
+	rtl/lxp32_mul16x16.vhd
+	rtl/lxp32_ubuf.vhd  rtl/lxp32_compl.vhd
+	rtl/riscv_interrupts.vhd rtl/lxp32_scratchpad.vhd rtl/riscv_regfile.vhd rtl/lxp32_interrupt_mux.vhd 
 	rtl/lxp32_shifter.vhd rtl/lxp32_mul_dsp.vhd rtl/lxp32_mul_opt.vhd rtl/lxp32_mul_seq.vhd rtl/lxp32_divider.vhd
-	rtl/lxp32_mul16x16.vhd rtl/lxp32_compl.vhd rtl/riscv_mulsp6.vhd
+	 rtl/riscv_mulsp6.vhd 
+	rtl/lxp32_alu.vhd rtl/lxp32_dbus.vhd rtl/riscv_local_memmap.vhd rtl/riscv_csr_unit.vhd
+	rtl/lxp32_fetch.vhd rtl/riscv_decode.vhd rtl/lxp32_decode.vhd rtl/lxp32_execute.vhd 
+	rtl/lxp32_cpu.vhd rtl/lxp32u_top.vhd
 file_type=vhdlSource
 
-[fileset sim]
-files=verify/bonfire/tb_cpu_core.vhd verify/bonfire/sim_bus.vhd verify/bonfire/sim_memory_interface.vhd verify/bonfire/sim_MainMemory.vhd 
-	verify/lxp32/src/tb/monitor.vhd verify/common_pkg/common_pkg.vhd verify/common_pkg/common_pkg_body.vhd  
-	verify/lxp32/src/tb/tb_pkg.vhd verify/lxp32/src/tb/tb_pkg_body.vhd
+[fileset sim]    
+files=verify/std_logic_textio/std_logic_textio.vhd 
+    verify/common_pkg/common_pkg.vhd verify/common_pkg/common_pkg_body.vhd  
+    verify/bonfire/sim_bus.vhd verify/bonfire/sim_MainMemory.vhd verify/bonfire/sim_memory_interface.vhd 
+	verify/lxp32/src/tb/monitor.vhd 
+	verify/bonfire/tb_cpu_core.vhd 	
 file_type=vhdlSource
 usage=sim
 scope = private
