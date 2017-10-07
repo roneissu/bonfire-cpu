@@ -1,6 +1,6 @@
 CAPI=1
 [main]
-name = ::bonfire_cpu:0
+name = ::bonfire-cpu:0
 depend =
 backend = ise
 
@@ -14,6 +14,7 @@ files = rtl/riscv_counter_64Bit.vhd util/log2.vhd rtl/csr_def.vhd rtl/riscv_deco
 	rtl/lxp32_alu.vhd rtl/lxp32_dbus.vhd rtl/riscv_local_memmap.vhd rtl/riscv_csr_unit.vhd
 	rtl/lxp32_fetch.vhd rtl/riscv_decode.vhd rtl/lxp32_decode.vhd rtl/lxp32_execute.vhd 
 	rtl/lxp32_cpu.vhd rtl/lxp32u_top.vhd
+    rtl/bonfire_dm_icache.vhd rtl/bonfire_cpu_top.vhd 
 file_type=vhdlSource
 
 [fileset sim]    
@@ -32,13 +33,6 @@ usage=sim
 scope=private
 
 
-[ise]
-ucf_files = BPC3011-Papilio_Pro-general.ucf
-family = spartan6
-device = xc6slx9
-package = tqg144
-speed = -2
-top_module = tb_cpu_core
 
 [simulator]
 toplevel = tb_cpu_core

@@ -73,7 +73,7 @@ ARCHITECTURE behavior OF tb_cpu_core IS
         );
     END COMPONENT;
 
-    constant TestFile : string :=  "../src/bonfire_cpu_0/ise/tb_bonfire_cpu/compiled_tests/timer_irq.hex";
+    constant TestFile : string :=  "../src/bonfire-cpu_0/ise/tb_bonfire_cpu/compiled_tests/timer_irq.hex";
 
 
    --Inputs
