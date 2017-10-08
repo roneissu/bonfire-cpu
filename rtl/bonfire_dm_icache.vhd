@@ -90,6 +90,9 @@ signal tag_value : t_tag_value;
 signal tag_index : unsigned(LINE_SELECT_ADR_BITS-1 downto 0); -- Offset into TAG RAM
 
 signal tag_ram : t_tag_ram := (others => (others=> '0')) ;
+attribute ram_style: string; -- for Xilinx
+attribute ram_style of tag_ram: signal is  "distributed"; -- "block";
+
 signal cache_ram : t_cache_ram;
 
 signal adr :  std_logic_vector(29 downto 0);
