@@ -28,6 +28,7 @@ entity lxp32_cpu is
         lli_adr_o: out std_logic_vector(29 downto 0);
         lli_dat_i: in std_logic_vector(31 downto 0);
         lli_busy_i: in std_logic;
+        lli_cc_invalidate_o : out std_logic;
         
         dbus_cyc_o: out std_logic;
         dbus_stb_o: out std_logic;
@@ -37,6 +38,7 @@ entity lxp32_cpu is
         dbus_adr_o: out std_logic_vector(31 downto 2);
         dbus_dat_o: out std_logic_vector(31 downto 0);
         dbus_dat_i: in std_logic_vector(31 downto 0);
+        
         
         irq_i: in std_logic_vector(7 downto 0)
     );
@@ -48,6 +50,7 @@ signal fetch_word: std_logic_vector(31 downto 0);
 signal fetch_next_ip: std_logic_vector(29 downto 0);
 signal fetch_valid: std_logic;
 signal fetch_jump_ready: std_logic;
+signal fetch_fence_i : std_logic;
 
 signal decode_ready: std_logic;
 signal decode_valid: std_logic;
@@ -130,11 +133,13 @@ fetch_inst: entity work.lxp32_fetch(rtl)
         lli_adr_o=>lli_adr_o,
         lli_dat_i=>lli_dat_i,
         lli_busy_i=>lli_busy_i,
+        lli_cc_invalidate_o=>lli_cc_invalidate_o,
         
         word_o=>fetch_word,
         next_ip_o=>fetch_next_ip,
         valid_o=>fetch_valid,
         ready_i=>decode_ready,
+        fence_i_i=>fetch_fence_i,
         
         jump_valid_i=>execute_jump_valid,
         jump_dst_i=>execute_jump_dst,
@@ -153,6 +158,7 @@ lxp32decode: if not USE_RISCV generate
         valid_i=>fetch_valid,
         jump_valid_i=>execute_jump_valid,
         ready_o=>decode_ready,
+        
         
         interrupt_valid_i=>interrupt_valid,
         interrupt_vector_i=>interrupt_vector,
@@ -199,6 +205,7 @@ lxp32decode: if not USE_RISCV generate
    decode_cmd_trap <= '0';
    decode_cmd_tret <= '0';
    decode_cmd_csr <= '0';
+   fetch_fence_i <= '0';
 end generate;
 
 riscv_decode: if USE_RISCV generate 
@@ -212,6 +219,7 @@ decode_inst: entity work.riscv_decode(rtl)
         valid_i=>fetch_valid,
         jump_valid_i=>execute_jump_valid,
         ready_o=>decode_ready,
+        fencei_o=>fetch_fence_i,
         
         interrupt_valid_i=>interrupt_valid,
         interrupt_vector_i=>interrupt_vector,

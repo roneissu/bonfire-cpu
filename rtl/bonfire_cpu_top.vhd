@@ -64,17 +64,6 @@ generic(
       bram_adrb_o : out std_logic_vector(BRAM_PORT_ADR_SIZE-1 downto 0);
       bram_enb_o :  out  STD_LOGIC;
             
---      wb_cyc_o: out std_logic;
---      wb_stb_o: out std_logic;
---      wb_we_o: out std_logic;
---      wb_sel_o: out std_logic_vector(3 downto 0);
---      wb_ack_i: in std_logic;
---      wb_adr_o: out std_logic_vector(31 downto 2);
---      wb_dat_o: out std_logic_vector(31 downto 0);
---      wb_dat_i: in std_logic_vector(31 downto 0);
---      wb_cti_o: out std_logic_vector(2 downto 0);
---      wb_bte_o: out std_logic_vector(1 downto 0);
-
       wb_ibus_cyc_o: out std_logic;
       wb_ibus_stb_o: out std_logic;
       wb_ibus_cti_o: out std_logic_vector(2 downto 0);
@@ -103,7 +92,9 @@ architecture rtl of bonfire_cpu_top is
 signal lli_re: std_logic;
 signal lli_adr: std_logic_vector(29 downto 0);
 signal lli_dat, lli_dat_cache : std_logic_vector(31 downto 0);
-signal lli_busy, lli_cache_busy: std_logic;
+signal lli_busy, lli_cache_busy, lli_cc_invalidate : std_logic;
+
+
 signal bram_cs_ib,bram_cs_db : std_logic;
 signal bram_cs_ib_reg,bram_cs_db_reg,bram_ena : std_logic;
 
@@ -111,17 +102,6 @@ signal icache_cs,icache_re : std_logic;
 
 signal bram_db_ack_read,bram_db_ack_write  : std_logic;
 
-
-
-
----- Instruction Bus Master (From I-Cache)
---signal ibus_cyc_o:  std_logic;
---signal ibus_stb_o:  std_logic;
---signal ibus_cti_o:  std_logic_vector(2 downto 0);
---signal ibus_bte_o:  std_logic_vector(1 downto 0);
---signal ibus_ack_i:  std_logic;
---signal ibus_adr_o:  std_logic_vector(29 downto 0);
---signal ibus_dat_i:  std_logic_vector(31 downto 0);
 
 -- Data Bus Master (From CPU Core)
 signal  dbus_cyc_o :  std_logic;
@@ -262,6 +242,7 @@ cpu_inst: entity work.lxp32_cpu(rtl)
       lli_adr_o=>lli_adr,
       lli_dat_i=>lli_dat,
       lli_busy_i=>lli_busy,
+      lli_cc_invalidate_o=>lli_cc_invalidate,
       
       dbus_cyc_o=>dbus_cyc_o,
       dbus_stb_o=>dbus_stb_o,
@@ -298,8 +279,9 @@ cpu_inst: entity work.lxp32_cpu(rtl)
          wbm_ack_i=>wb_ibus_ack_i,
          wbm_adr_o=>wb_ibus_adr_o,
          wbm_dat_i=>wb_ibus_dat_i,
-         
-         dbus_cyc_snoop_i=>dbus_cyc_o -- TH
+         cc_invalidate_i => lli_cc_invalidate,
+         cc_invalidate_complete_o => open
+        
       );
       
       

@@ -39,6 +39,7 @@ port(
       valid_i: in std_logic;  -- input valid
       jump_valid_i: in std_logic;
       ready_o: out std_logic;  -- decode stage ready to decode next instruction
+      fencei_o : out std_logic; -- FENCE.I Instruction 
 
       interrupt_valid_i: in std_logic;
       interrupt_vector_i: in std_logic_vector(2 downto 0);
@@ -221,6 +222,7 @@ begin
          cmd_trap_o <= '-';
          cmd_tret_o <= '-';
          interrupt_o <= '-';
+         fencei_o <= '0';
 
       else
         if jump_valid_i='1' then
@@ -255,6 +257,8 @@ begin
                cmd_tret_o <= '0';
                interrupt_o <= '0';
                jump_type_o<="0000";
+               
+               fencei_o<='0';
 
                dst_out<=(others=>'0'); -- defaults to register 0, which is never read
                displacement:= (others=>'0');
@@ -474,6 +478,7 @@ begin
                             rd1_select<=Imm;
                             rd1_direct<=std_logic_vector(signed(next_ip_i&"00"));
                             cmd_jump_o<='1';
+                            fencei_o<='1';
                             t_valid:='1';                            
                           when others =>
                             not_implemented:='1';

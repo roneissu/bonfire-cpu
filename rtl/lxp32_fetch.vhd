@@ -25,11 +25,13 @@ entity lxp32_fetch is
 		lli_adr_o: out std_logic_vector(29 downto 0);
 		lli_dat_i: in std_logic_vector(31 downto 0);
 		lli_busy_i: in std_logic;
+      lli_cc_invalidate_o : out std_logic;
 		
 		word_o: out std_logic_vector(31 downto 0);
 		next_ip_o: out std_logic_vector(29 downto 0);
 		valid_o: out std_logic;
 		ready_i: in std_logic;
+      fence_i_i : in std_logic;
 		
 		jump_valid_i: in std_logic;
 		jump_dst_i: in std_logic_vector(29 downto 0);
@@ -134,6 +136,8 @@ lli_re_o<=re;
 lli_adr_o<=fetch_addr;
 
 jump_ready_o<=jr;
+
+lli_cc_invalidate_o <= fence_i_i; -- currently only pass through
 
 -- Small instruction buffer
 
