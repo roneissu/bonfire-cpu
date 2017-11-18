@@ -66,7 +66,8 @@ entity lxp32_execute is
 
       epc_o : out std_logic_vector(31 downto 2);
       tvec_o : out std_logic_vector(31 downto 2);
-      interrupt_o : out std_logic; -- Execute Interrupt (For RISC-V the Control Unit will handle all interrupt processing
+      interrupt_o : out std_logic; -- Execute Interrupt (For RISC-V the Control Unit will handle all interrupt processing)
+      sstep_o : out std_logic; -- when '1' trap after first instruction after next eret 
       
 
       jump_type_i: in std_logic_vector(3 downto 0);
@@ -503,6 +504,7 @@ riscv_cu: if USE_RISCV  generate
 
       mtvec_o => mtvec,
       mepc_o  => mepc,
+      sstep_o => sstep_o,
      
       mcause_i => trap_cause,
       mepc_i => epc_mux,

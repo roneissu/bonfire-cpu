@@ -7,14 +7,15 @@ TARGET_SIZE := $(TARGET_PREFIX)-size
 TARGET_OBJCOPY := $(TARGET_PREFIX)-objcopy
 ARCH= rv32im
 HEXDUMP ?= hexdump
+LINKDEF?=lxp.ld
 
 %.elf : %.S
-	$(TARGET_CC) -march=$(ARCH)  -nostartfiles -Tlxp.ld -o $@ $<
+	$(TARGET_CC) -march=$(ARCH)  -nostartfiles -T$(LINKDEF) -o $@ $<
 
 
 %.hex : %.elf
 	$(TARGET_OBJCOPY) -j .text -O binary $< $(basename $@).bin
-	$(HEXDUMP) -v -e '1/4 "%08x\n"' $(basename $@).bin >$@	
+	$(HEXDUMP) -v -e '1/4 "%08x\n"' $(basename $@).bin >$@
 	$(TARGET_PREFIX)-objdump -d $< >$(basename $@).lst
 	$(TARGET_PREFIX)-size  $<
 
@@ -30,6 +31,7 @@ trap01.hex : trap01.S
 fence.hex : fence.S
 loop.hex : loop.S
 timer_irq.hex : timer_irq.S
+sstep.hex : sstep.S
 
-all: test02.hex test01.hex test03.hex branch.hex mult.hex slt.hex loadsave.hex csr.hex trap01.hex fence.hex loop.hex timer_irq.hex
+all: test02.hex test01.hex test03.hex branch.hex mult.hex slt.hex loadsave.hex csr.hex trap01.hex fence.hex loop.hex timer_irq.hex sstep.hex
 

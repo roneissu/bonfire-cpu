@@ -115,6 +115,8 @@ signal decode_trap_cause : STD_LOGIC_VECTOR(3 downto 0); -- TH: Trap/Interrupt c
 signal decode_interrupt :  STD_LOGIC; -- Trap is interrupt 
 signal decode_epc,ex_epc,ex_tvec : std_logic_vector(31 downto 2);
 
+signal sstep : std_logic;
+
 
 
 
@@ -269,6 +271,7 @@ decode_inst: entity work.riscv_decode(rtl)
         
         epc_i => ex_epc,
         tvec_i => ex_tvec,
+        sstep_i => sstep,
         
         jump_type_o=>decode_jump_type,
         
@@ -324,6 +327,7 @@ execute_inst: entity work.lxp32_execute(rtl)
         epc_i => decode_epc,
         epc_o => ex_epc,
         tvec_o => ex_tvec,
+        sstep_o => sstep, 
         
         jump_type_i=>decode_jump_type,
         

@@ -58,6 +58,8 @@ entity riscv_control_unit is
 
            mtvec_o : out std_logic_vector(31 downto 2);
            mepc_o  : out std_logic_vector(31 downto 2);
+           
+           sstep_o : out std_logic; -- when '1' trap after first instruction after next eret 
           
            -- trap info import
            mcause_i : in STD_LOGIC_VECTOR (3 downto 0);
@@ -108,9 +110,13 @@ signal mpie : std_logic :='0';  -- Previous Interrupt enable
 signal irq_enable : t_irq_enable := ('0','0',(others=>'0'));
 signal irq_pending : t_irq_pending;
 signal mcause_irq : std_logic_vector(3 downto 0);
+signal m_bonfire : t_bonfire_csr :=  ( '0','0' ) ;
 
 -- Cycle counter
 signal mcycle : std_logic_vector(63 downto 0); 
+
+-- bonfire csr
+
 
 begin
 
@@ -120,6 +126,8 @@ busy_o<=we or exception;
 csr_exception <= exception;
 mtvec_o <= mtvec;
 mepc_o <= mepc;
+
+sstep_o <= m_bonfire.sstep;
 
 
 csr_offset <= csr_adr(7 downto 0);
@@ -145,6 +153,7 @@ gen_mcycle: if MCYCLE_EN generate
 csr_in <= csr_t1 when csr_adr(11 downto 8)=m_stdprefix or csr_adr(11 downto 8) = m_roprefix else
           mcycle(31 downto 0) when  csr_adr = a_mcycle else
           mcycle(63 downto 32) when csr_adr = a_mcycleh else
+          get_bonfire_csr(m_bonfire) when csr_adr = m_bonfire_csr else
           (others=>'X'); -- don't care 
 
 Inst_counter_64Bit: entity work.counter_64Bit PORT MAP(
@@ -206,8 +215,7 @@ begin
          mie <= '0';
          mpie <= '0';
          irq_enable <= ('0','0',(others=>'0'));
-         
-         --busy <= '0';
+         m_bonfire <= ('0','0');
      else
         -- always deassert exception after one cycle
         if exception='1' then
@@ -273,7 +281,10 @@ begin
                case csr_adr(7 downto 0) is
                  when vendorid|marchid|impid|hartid => l_exception:='0';
                  when others => l_exception:='1';  
-               end case; 
+               end case;
+          elsif csr_adr=m_bonfire_csr then
+              l_exception:='0';
+              set_bonfire_csr(csr_out,m_bonfire);
           else
             l_exception:='1';
           end if;

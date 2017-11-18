@@ -92,6 +92,7 @@ port(
 
       epc_i : in std_logic_vector(31 downto 2);
       tvec_i : in std_logic_vector(31 downto 2);
+      sstep_i :  in std_logic;
 
       jump_type_o: out std_logic_vector(3 downto 0);
 
@@ -140,6 +141,8 @@ signal rd1_zero,rd2_zero : std_logic; -- TH: Buffered zero address flags
 
 signal dst_out,radr1_out,radr2_out : std_logic_vector(7 downto 0);
 
+signal trap_on_next : std_logic :='0';  -- '1' -> Raise a break trap after the next instruction
+signal trap_on_current : std_logic :='0'; -- '1' break trap now ...
 -- Decoder FSM state
 
 type DecoderState is (Regular,ContinueCjmp,Halt);
@@ -223,6 +226,8 @@ begin
          cmd_tret_o <= '-';
          interrupt_o <= '-';
          fencei_o <= '0';
+         trap_on_next <= '0';
+         trap_on_current <= '0';
 
       else
         if jump_valid_i='1' then
@@ -267,15 +272,24 @@ begin
                trap:='0';
  
                if valid_i='1' then
+                  -- single step trap propagation pipeline             
+                  trap_on_current<= trap_on_next;
+                  trap_on_next <= '0';
+               
                   if interrupt_valid_i='1' then
                     t_valid:='1';
                     interrupt_o<='1';
                     --trap_cause_o<=X"4"; -- TODO: adapt cause based on interrupt source
                     cmd_trap_o <= '1';
                     cmd_jump_o <= '1';
-                    --self_busy<='1';
-						  --state<=ContinueInterrupt;
-                    
+                    -- Clear pending single steps in case of an interrupt
+                    trap_on_next <= '0';
+                    trap_on_current <= '0';
+                  elsif trap_on_current='1' then -- execute Single step trap
+                    cmd_trap_o <= '1';
+                    cmd_jump_o <= '1';
+                    trap_cause_o <= X"3";
+                    t_valid:='1';
                   elsif word_i(1 downto 0) = "11" then -- all RV32IM instructions have the lower bits set to 11                                   
                     optype:=decode_op(opcode);
                     case optype is
@@ -447,6 +461,9 @@ begin
                                when "10" => -- XRET
                                  cmd_tret_o <= '1';
                                  t_valid:='1';
+                                 if sstep_i='1' then
+                                   trap_on_next<='1';
+                                 end if;  
                                when others =>
                                  -- nothing...
                              end case;

@@ -42,9 +42,9 @@ constant a_mcycle  : t_csr_adr := x"B00";
 constant a_mcycleh : t_csr_adr := x"B80";
 
 -- non standard registers
---constant icontrol : t_csr_adr8:=x"C0"; -- full address is 0x7C0
+constant m_bonfire_csr : t_csr_adr :=x"7C0"; 
 
-constant impvers : std_logic_vector(31 downto 0) := X"00010010";
+constant impvers : std_logic_vector(31 downto 0) := X"00010011";
 
 -- Interrupts
 type t_irq_enable is record
@@ -57,15 +57,22 @@ type t_irq_pending is record
    meip : std_logic_vector(7 downto 0);
 end record;
 
+type t_bonfire_csr is record
+  sstep,dummy : std_logic;
+
+end record;
+
 
 
 function get_misa(divider_en:boolean;mul_arch:string) return t_csr_word;
 function get_mstatus(pie : std_logic; ie : std_logic) return t_csr_word;
 function get_mip(ir: t_irq_pending) return t_csr_word;
 function get_mie(ir: t_irq_enable) return t_csr_word;
+function get_bonfire_csr(b_csr : t_bonfire_csr) return t_csr_word;
 
 procedure set_mip(csr: in t_csr_word;signal ir : out t_irq_pending);
 procedure set_mie(csr: in t_csr_word;signal ir : out t_irq_enable);
+procedure set_bonfire_csr(csr: in t_csr_word;signal b_csr : out t_bonfire_csr);
 
 
 end csr_def;
@@ -111,6 +118,14 @@ begin
   return s;
 end;
 
+function get_bonfire_csr(b_csr : t_bonfire_csr) return t_csr_word is
+variable s : t_csr_word := (others=>'0');
+begin
+  s(0):=b_csr.sstep;
+  return s;
+  
+end;
+
 procedure set_mip(csr: in t_csr_word;signal ir : out t_irq_pending) is
 begin
   ir.msip <= csr(3);
@@ -125,5 +140,10 @@ begin
   ir.meie <= csr(11+ir.meie'high downto 11);
 end;
     
+procedure set_bonfire_csr(csr: in t_csr_word;signal b_csr : out t_bonfire_csr) is
+begin
+  b_csr.sstep <= csr(0);
+
+end;    
 
 end csr_def;

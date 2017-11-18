@@ -3,7 +3,7 @@ CAPI=1
 name = ::bonfire-cpu:0
 depend = ::bonfire-util:0
 backend = ise
-simulators=isim ghdl
+simulators=ghdl isim
 
 [fileset rtl]
 files = rtl/riscv_counter_64Bit.vhd  rtl/csr_def.vhd rtl/riscv_decodeutil.vhd rtl/lxp32_ram256x32.vhd
