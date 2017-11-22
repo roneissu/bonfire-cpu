@@ -19,3 +19,5 @@ monitor = 0x10000000;
 
 mtime   = 0x0FFFF0000;
 
+gpio = 0x04030000;
+

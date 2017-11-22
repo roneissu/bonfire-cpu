@@ -225,11 +225,12 @@ begin
          cmd_trap_o <= '-';
          cmd_tret_o <= '-';
          interrupt_o <= '-';
-         fencei_o <= '0';
+        
          trap_on_next <= '0';
          trap_on_current <= '0';
 
       else
+        fencei_o <= '0'; -- clear fencei_o always after one cycle
         if jump_valid_i='1' then
             -- When exeuction stage exeuctes jump do nothing
             valid_out<='0';
@@ -263,8 +264,6 @@ begin
                interrupt_o <= '0';
                jump_type_o<="0000";
                
-               fencei_o<='0';
-
                dst_out<=(others=>'0'); -- defaults to register 0, which is never read
                displacement:= (others=>'0');
                t_valid := '0';

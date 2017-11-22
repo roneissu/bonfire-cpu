@@ -256,6 +256,7 @@ begin
             case csr_adr(7 downto 0) is
               when status =>
                 mie <= csr_out(3);
+                mpie <= csr_out(7);
               when isa =>
                 -- no register to write here...
               when tvec =>

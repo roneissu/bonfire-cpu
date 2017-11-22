@@ -44,7 +44,7 @@ constant a_mcycleh : t_csr_adr := x"B80";
 -- non standard registers
 constant m_bonfire_csr : t_csr_adr :=x"7C0"; 
 
-constant impvers : std_logic_vector(31 downto 0) := X"00010011";
+constant impvers : std_logic_vector(31 downto 0) := X"00010013";
 
 -- Interrupts
 type t_irq_enable is record
