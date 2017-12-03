@@ -96,7 +96,7 @@ signal mscratch : std_logic_vector(31 downto 0) := (others=>'0');
 
 -- trap info
 signal mepc : std_logic_vector(31 downto 2) := (others=>'0');
-signal mcause : std_logic_vector(3 downto 0) := (others=>'0');
+signal mcause :  t_mcause := (others=>'0');
 signal mcause_31 : std_logic := '0';
 signal mbadaddr : std_logic_vector(31 downto 0) := (others=>'0');
 
@@ -107,9 +107,9 @@ signal mpie : std_logic :='0';  -- Previous Interrupt enable
 
 -- Interrupt registers
 
-signal irq_enable : t_irq_enable := ('0','0',(others=>'0'));
+signal irq_enable : t_irq_enable := c_enable_init;
 signal irq_pending : t_irq_pending;
-signal mcause_irq : std_logic_vector(3 downto 0);
+signal mcause_irq : t_mcause;
 signal m_bonfire : t_bonfire_csr :=  ( '0','0' ) ;
 
 -- Cycle counter
@@ -138,7 +138,7 @@ with csr_offset select
              get_misa(DIVIDER_EN,MUL_ARCH) when isa,
              mtvec&"00" when tvec,
              mscratch   when scratch,
-             mcause_31&"000"& X"000000"&mcause when cause,
+             cause_csr(mcause_31,mcause)  when cause,
              mbadaddr when badaddr,
              mepc&"00" when epc,        
              impvers when impid,
@@ -183,16 +183,21 @@ begin
 
 end process;
 
- irq_unit: entity work.riscv_interrupts PORT MAP(
+ irq_unit: entity work.riscv_interrupts 
+ GENERIC MAP(
+   NUM_LOCALINTERUPTS=>ext_irq_in'length-1
+ )
+ PORT MAP(
 		mie =>mie ,
 		ir_in => irq_enable,
 		ir_out => irq_pending,
 		interrupt_exec_o => interrupt_exec_o,
 		interrupt_ack_i => interrupt_ack_i,
-		interrupt_number_o =>open,
       mcause_o => mcause_irq,
-		ext_irq_in => ext_irq_in,
+		ext_irq_in => ext_irq_in(0), 
+      l_irq_in => ext_irq_in(ext_irq_in'high downto 1),
 		timer_irq_in =>timer_irq_in ,
+      software_irq_in => '0',
 		clk_i => clk_i,
 		rst_i =>rst_i 
 	);
@@ -214,7 +219,7 @@ begin
          we <= '0';
          mie <= '0';
          mpie <= '0';
-         irq_enable <= ('0','0',(others=>'0'));
+         irq_enable <= c_enable_init;
          m_bonfire <= ('0','0');
      else
         -- always deassert exception after one cycle
@@ -231,7 +236,7 @@ begin
               mcause <= mcause_irq;
           else 
              mcause_31 <= '0';          
-             mcause <= mcause_i;            
+             mcause <= '0' & mcause_i;            
              case mcause_i is 
                when X"4"|X"6"|X"0" =>
                  mbadaddr <= adr_i;
@@ -266,7 +271,8 @@ begin
               when epc =>
                  mepc <= csr_out(31 downto 2);
               when cause =>
-                 mcause <= csr_out(3 downto 0);
+                 mcause <= csr_out(mcause'range);
+                 mcause_31 <= csr_out(31);
               when badaddr =>
                  mbadaddr <= csr_out;  
               when a_ie =>

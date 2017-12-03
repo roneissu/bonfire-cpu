@@ -4,6 +4,7 @@
 
 library IEEE;
 use IEEE.STD_LOGIC_1164.all;
+use IEEE.NUMERIC_STD.ALL;
 
 package csr_def is
 
@@ -15,6 +16,35 @@ constant m_roprefix : t_csr_adrprefix :=x"F";
 subtype t_csr_adr  is std_logic_vector(11 downto 0);
 subtype t_csr_adr8 is std_logic_vector(7 downto 0);
 subtype t_csr_word is std_logic_vector(31 downto 0);
+subtype t_mcause is std_logic_vector(4 downto 0);
+
+-- Exception causes
+
+--#define CAUSE_MISALIGNED_FETCH 0x0
+--#define CAUSE_FAULT_FETCH 0x1
+--#define CAUSE_ILLEGAL_INSTRUCTION 0x2
+--#define CAUSE_BREAKPOINT 0x3
+--#define CAUSE_MISALIGNED_LOAD 0x4
+--#define CAUSE_FAULT_LOAD 0x5
+--#define CAUSE_MISALIGNED_STORE 0x6
+--#define CAUSE_FAULT_STORE 0x7
+--#define CAUSE_USER_ECALL 0x8
+--#define CAUSE_SUPERVISOR_ECALL 0x9
+--#define CAUSE_HYPERVISOR_ECALL 0xa
+--#define CAUSE_MACHINE_ECALL 0xb
+
+constant CAUSE_MISALIGNED_FETCH : natural := 0;
+constant CAUSE_ILLEGAL_INSTRUCTION : natural := 2;
+constant CAUSE_BREAKPOINT : natural := 3;
+constant CAUSE_MISALIGNED_LOAD : natural := 4;
+constant CAUSE_MISALIGNED_STORE : natural := 6;
+constant CAUSE_MACHINE_ECALL : natural := 11; 
+
+constant IRQ_CODE_MSOFTWARE : natural := 3;
+constant IRQ_CODE_MTIMER : natural := 7;
+constant IRQ_CODE_MEXTERNAL : natural := 11;
+constant IRQ_CODE_LOCAL_BASE : natural := 16;
+
 
 -- trap setup registers
 constant status : t_csr_adr8 := x"00"; --  Machine status register.
@@ -44,18 +74,32 @@ constant a_mcycleh : t_csr_adr := x"B80";
 -- non standard registers
 constant m_bonfire_csr : t_csr_adr :=x"7C0"; 
 
-constant impvers : std_logic_vector(31 downto 0) := X"00010013";
+-- Version 1.20
+constant major_version : natural := 1;
+constant minor_version : natural := 20;
+constant impvers : std_logic_vector(31 downto 0) := std_logic_vector(to_unsigned(major_version,16)) &
+                                                    std_logic_vector(to_unsigned(minor_version,16));
 
 -- Interrupts
+
+subtype t_lirq_flags is std_logic_vector(15 downto 0); 
+
 type t_irq_enable is record
    msie,mtie : std_logic;
-   meie : std_logic_vector(7 downto 0);
+   meie : std_logic;
+   lie : t_lirq_flags;
 end record;   
+
+constant c_enable_init : t_irq_enable :=('0','0','0',(others=>'0'));
    
 type t_irq_pending is record   
    msip,mtip : std_logic;
-   meip : std_logic_vector(7 downto 0);
+   meip : std_logic;
+   lip : t_lirq_flags; 
 end record;
+
+constant c_pending_init : t_irq_pending :=('0','0','0',(others=>'0'));
+
 
 type t_bonfire_csr is record
   sstep,dummy : std_logic;
@@ -68,7 +112,10 @@ function get_misa(divider_en:boolean;mul_arch:string) return t_csr_word;
 function get_mstatus(pie : std_logic; ie : std_logic) return t_csr_word;
 function get_mip(ir: t_irq_pending) return t_csr_word;
 function get_mie(ir: t_irq_enable) return t_csr_word;
+function irq_cause(cause : natural) return t_mcause;
 function get_bonfire_csr(b_csr : t_bonfire_csr) return t_csr_word;
+
+function cause_csr(is_irq: std_logic;cause:t_mcause) return t_csr_word;
 
 procedure set_mip(csr: in t_csr_word;signal ir : out t_irq_pending);
 procedure set_mie(csr: in t_csr_word;signal ir : out t_irq_enable);
@@ -105,7 +152,8 @@ variable s : t_csr_word := (others=>'0');
 begin
   s(3):=ir.msip;
   s(7):=ir.mtip;
-  s(11+ir.meip'high downto 11):=ir.meip;
+  s(11):=ir.meip;
+  s(31 downto 16):=ir.lip;
   return s;
 end;
 
@@ -114,8 +162,16 @@ variable s : t_csr_word := (others=>'0');
 begin
   s(3):=ir.msie;
   s(7):=ir.mtie;
-  s(11+ir.meie'high downto 11):=ir.meie;
+  s(11):=ir.meie;
+  s(31 downto 16):=ir.lie;
   return s;
+end;
+
+function irq_cause(cause : natural) return t_mcause is
+variable r : t_mcause;
+begin
+  r:=std_logic_vector(to_unsigned(cause,r'length));
+  return r;
 end;
 
 function get_bonfire_csr(b_csr : t_bonfire_csr) return t_csr_word is
@@ -130,14 +186,16 @@ procedure set_mip(csr: in t_csr_word;signal ir : out t_irq_pending) is
 begin
   ir.msip <= csr(3);
   ir.mtip <= csr(7);
-  ir.meip <= csr(11+ir.meip'high downto 11);
+  ir.meip <= csr(11);
+  ir.lip <= csr(31 downto 16);
 end;
 
 procedure set_mie(csr: in t_csr_word;signal ir : out t_irq_enable) is
 begin
   ir.msie <= csr(3);
   ir.mtie <= csr(7);
-  ir.meie <= csr(11+ir.meie'high downto 11);
+  ir.meie <= csr(11);
+  ir.lie <= csr(31 downto 16);
 end;
     
 procedure set_bonfire_csr(csr: in t_csr_word;signal b_csr : out t_bonfire_csr) is
@@ -145,5 +203,14 @@ begin
   b_csr.sstep <= csr(0);
 
 end;    
+
+function cause_csr(is_irq: std_logic;cause:t_mcause) return t_csr_word is
+variable r: t_csr_word;
+begin
+  r:=(others=>'0');
+  r(cause'range):=cause;
+  r(r'high):=is_irq;
+  return r;
+end;
 
 end csr_def;

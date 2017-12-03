@@ -39,6 +39,9 @@ use IEEE.NUMERIC_STD.ALL;
 use work.csr_def.all;
 
 entity riscv_interrupts is
+    generic (
+      NUM_LOCALINTERUPTS : natural :=16
+    );
     Port ( 
       mie : in  STD_LOGIC; -- Global M-Mode Interrupt Enable
       ir_in  : in t_irq_enable;
@@ -46,11 +49,12 @@ entity riscv_interrupts is
       --ir_we_o : out std_logic; -- Interrupt register Write Enable
       interrupt_exec_o : out std_logic;  -- Signal Interrrupt to exec/decode unit
       interrupt_ack_i : in std_logic; --  Interrupt was taken
-      interrupt_number_o : out std_logic_vector(2 downto 0);
-      mcause_o : out std_logic_vector(3 downto 0);
+      mcause_o : out t_mcause;
       
-      ext_irq_in : in std_logic_vector(7 downto 0);
+      ext_irq_in : in std_logic;
       timer_irq_in : in std_logic;
+      software_irq_in : in std_logic;
+      l_irq_in : in std_logic_vector(NUM_LOCALINTERUPTS-1 downto 0);
       
       clk_i : in  STD_LOGIC;
       rst_i : in  STD_LOGIC
@@ -62,9 +66,13 @@ architecture rtl of riscv_interrupts is
 
 signal interrupt_exec: std_logic:='0';
 
-signal irq_pending : t_irq_pending:=('0','0',(others=>'0'));
+signal irq_pending : t_irq_pending := c_pending_init;
 
 begin
+
+  assert  NUM_LOCALINTERUPTS<=16
+    report "NUM_LOCALINTERUPTS out of range 0..8"
+    severity failure;
 
   ir_out<=irq_pending;
 
@@ -73,10 +81,12 @@ begin
   
     if rising_edge(clk_i) then
       if rst_i='1' then
-          irq_pending<=('0','0',(others=>'0'));
+          irq_pending<= c_pending_init;
       else  
         irq_pending.mtip<=timer_irq_in;
+        irq_pending.msip<=software_irq_in;
         irq_pending.meip<=ext_irq_in;
+        irq_pending.lip(l_irq_in'range) <= l_irq_in;    
       end if;  
     end if;
   end process;
@@ -88,29 +98,37 @@ begin
 
   -- Interrupt priority decoder
   process(clk_i)
+  variable found : boolean;
   begin
     if rising_edge(clk_i) then
       if rst_i='1' then
           interrupt_exec<='0';
       else  
           
-          
-          if mie='1' then -- process interrupts when globally enabled
-            if ir_in.mtie='1' and irq_pending.mtip='1' and interrupt_exec='0' then
-              interrupt_exec<='1';
-              mcause_o <= X"7";
-            else
-              for i in ext_irq_in'reverse_range loop
-                 if ir_in.meie(i)='1' and irq_pending.meip(i)='1' then
-                    interrupt_exec<='1';
-                    interrupt_number_o<=std_logic_vector(to_unsigned(i,3));
-                    mcause_o <= X"B";
-                    exit;
-                 end if;                 
-              end loop;           
+          found:=false;
+          if mie='1' and interrupt_exec='0' then -- process interrupts when globally enabled
+            for i in l_irq_in'range loop
+              if ir_in.lie(i)='1' and irq_pending.lip(i)='1' then
+                 interrupt_exec<='1';
+                 mcause_o <= irq_cause(i+16);
+                 found:=true;
+                 exit;
+              end if;                 
+            end loop; 
+            if not found then                   
+               if ir_in.meie='1' and irq_pending.meip='1' then
+                 interrupt_exec<='1';
+                 mcause_o <= irq_cause(IRQ_CODE_MEXTERNAL);
+               elsif ir_in.msie='1' and irq_pending.msip='1' then 
+                 interrupt_exec<='1';
+                 mcause_o <= irq_cause(IRQ_CODE_MSOFTWARE);
+               elsif ir_in.mtie='1' and irq_pending.mtip='1'  then
+                 interrupt_exec<='1';
+                 mcause_o <= irq_cause(IRQ_CODE_MTIMER);           
+               end if;
             end if;
-          end if;
-          if interrupt_exec='1' and interrupt_ack_i='1' then
+          --end if;            
+          elsif interrupt_exec='1' and interrupt_ack_i='1' then
             interrupt_exec<='0';
           end if;  
       end if; 
