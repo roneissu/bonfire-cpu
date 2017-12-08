@@ -71,7 +71,7 @@ signal irq_pending : t_irq_pending := c_pending_init;
 begin
 
   assert  NUM_LOCALINTERUPTS<=16
-    report "NUM_LOCALINTERUPTS out of range 0..8"
+    report "NUM_LOCALINTERUPTS out of range 0..16"
     severity failure;
 
   ir_out<=irq_pending;
@@ -126,8 +126,7 @@ begin
                  interrupt_exec<='1';
                  mcause_o <= irq_cause(IRQ_CODE_MTIMER);           
                end if;
-            end if;
-          --end if;            
+            end if;           
           elsif interrupt_exec='1' and interrupt_ack_i='1' then
             interrupt_exec<='0';
           end if;  
