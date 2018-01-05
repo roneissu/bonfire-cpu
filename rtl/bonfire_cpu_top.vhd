@@ -1,21 +1,15 @@
 ----------------------------------------------------------------------------------
--- Company: 
--- Engineer: 
--- 
--- Create Date:    19:17:47 05/06/2017 
--- Design Name: 
+ 
 -- Module Name:    bonfire_cpu_top - Behavioral 
--- Project Name: 
--- Target Devices: 
--- Tool versions: 
--- Description: 
---
--- Dependencies: 
---
--- Revision: 
--- Revision 0.01 - File Created
--- Additional Comments: 
---
+
+
+-- The Bonfire Processor Project, (c) 2016,2017 Thomas Hornschuh
+
+-- Bonfire CPU Toplevel module with Block RAM und WISHBONE interfaces
+-- Includes Instruction Cache
+
+-- License: See LICENSE or LICENSE.txt File in git project root. 
+
 ----------------------------------------------------------------------------------
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
