@@ -148,8 +148,13 @@ signal trap_on_current : std_logic :='0'; -- '1' break trap now ...
 type DecoderState is (Regular,ContinueCjmp,Halt);
 signal state: DecoderState:=Regular;
 
+-- debug PC only to make debugging more comfortable
+-- will be optimized away in synthesis
+signal debug_pc : unsigned(31 downto 0); 
 
 begin
+
+  
 
  -- extract instruction fields
    opcode<=word_i(6 downto 2);
@@ -168,7 +173,10 @@ begin
 
    downstream_busy<=valid_out and not ready_i;
    busy<=downstream_busy or self_busy;
+   
+ -- Instruction pointer  
    current_ip<=unsigned(next_ip_i)-1;
+   debug_pc <= current_ip & "00";
 
 -- Control outputs
    valid_o<=valid_out;
