@@ -3,7 +3,8 @@ CAPI=1
 name = ::bonfire-cpu:0
 depend = ::bonfire-util:0
 backend = ise
-simulators=ghdl isim
+simulators=ghdl isim xsim
+
 
 [fileset rtl]
 files = rtl/riscv_counter_64Bit.vhd  rtl/csr_def.vhd rtl/riscv_decodeutil.vhd rtl/lxp32_ram256x32.vhd
@@ -33,7 +34,10 @@ files=ise/tb_bonfire_cpu/compiled_tests/timer_irq.hex
 usage=sim
 scope=private
 
-
+[xsim]
+;xsim_options = --debug all
+toplevel = tb_cpu_core
 
 [simulator]
 toplevel = tb_cpu_core
+

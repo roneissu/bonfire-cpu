@@ -40,6 +40,7 @@ END tb_icache;
 ARCHITECTURE behavior OF tb_icache IS 
 
 constant  MASTER_DATA_WIDTH : natural := 32;
+--constant  LINE_SIZE : natural := 1;
 constant  LINE_SIZE : natural := 8;
 --constant  LINE_SIZE : natural := 16;
 constant  LINE_SIZE_BYTES : natural := MASTER_DATA_WIDTH/8 * LINE_SIZE;
@@ -108,6 +109,9 @@ constant  CACHE_SIZE_BYTES : natural := CACHE_SIZE*MASTER_DATA_WIDTH/8;
    signal adr_taken : std_logic_vector(lli_adr_i'range);
    signal re_reg : std_logic := '0';
    
+   signal do_invalidate : boolean := false;
+   signal clk_enabled : boolean := true;
+   
    impure function get_pattern(adr : std_logic_vector(wbm_adr_o'range)) return t_wbm_dat is
     
     variable d : t_wbm_dat;
@@ -148,10 +152,12 @@ BEGIN
    -- Clock process definitions
    clk_i_process :process
    begin
-		clk_i <= '0';
-		wait for clk_i_period/2;
-		clk_i <= '1';
-		wait for clk_i_period/2;
+        if clk_enabled then
+		  clk_i <= '0';
+		  wait for clk_i_period/2;
+		  clk_i <= '1';
+		  wait for clk_i_period/2;
+		end if;  
    end process;
    
    
@@ -214,7 +220,7 @@ BEGIN
    inval: process
    begin
    
-     wait until rising_edge(clk_i) and lli_adr_i&"00" =X"00000010";
+     wait until rising_edge(clk_i) and do_invalidate;
      cc_invalidate_i<='1'; -- just invaidate in the midle of a read cycle
      wait until rising_edge(clk_i);
      cc_invalidate_i<='0';
@@ -242,15 +248,16 @@ BEGIN
       wait for 100 ns;	
     --  wait until rising_edge(clk_i);
       read_lli(to_unsigned(0,t_lli_adr'length),LINE_SIZE);
-      read_lli(to_unsigned(0,t_lli_adr'length),LINE_SIZE);
-    
+      read_lli(to_unsigned(LINE_SIZE,t_lli_adr'length),LINE_SIZE);
+      read_lli(to_unsigned(0,t_lli_adr'length),LINE_SIZE); --s should be a hit
+      read_lli(to_unsigned(CACHE_SIZE,t_lli_adr'length),LINE_SIZE); -- wrap over, must be a tag mismatch and miss
       
     
       read_lli(to_unsigned(0,t_lli_adr'length),LINE_SIZE);
       wait until rising_edge(clk_i);
-     
+      wait for 100ns;
+      clk_enabled <= false;
 
-      wait;
    end process;
 
 END;
