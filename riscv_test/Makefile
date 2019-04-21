@@ -6,11 +6,12 @@ TARGET_LD := $(TARGET_PREFIX)-gcc
 TARGET_SIZE := $(TARGET_PREFIX)-size
 TARGET_OBJCOPY := $(TARGET_PREFIX)-objcopy
 ARCH= rv32im
+ABI = ilp32
 HEXDUMP ?= hexdump
 LINKDEF?=lxp.ld
 
 %.elf : %.S
-	$(TARGET_CC) -march=$(ARCH)  -nostartfiles -T$(LINKDEF) -o $@ $<
+	$(TARGET_CC) -march=$(ARCH) -mabi=$(ABI)  -nostartfiles -T$(LINKDEF) -o $@ $<
 
 
 %.hex : %.elf
@@ -32,7 +33,6 @@ fence.hex : fence.S
 loop.hex : loop.S
 timer_irq.hex : timer_irq.S
 sstep.hex : sstep.S
-fence_soc.hex : fence_soc.S
+#fence_soc.hex : fence_soc.S
 
-all: test02.hex test01.hex test03.hex branch.hex mult.hex slt.hex loadsave.hex csr.hex trap01.hex fence.hex loop.hex timer_irq.hex sstep.hex fence_soc.hex
-
+all: test02.hex test01.hex test03.hex branch.hex mult.hex slt.hex loadsave.hex csr.hex trap01.hex fence.hex loop.hex timer_irq.hex sstep.hex 

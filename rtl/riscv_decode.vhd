@@ -5,9 +5,9 @@
 -- Module Name:    riscv_decode - Behavioral
 
 
---   Bonfire CPU 
+--   Bonfire CPU
 --   (c) 2016,2017 Thomas Hornschuh
---   See license.md for License 
+--   See license.md for License
 --   Second stage of lxp32 pipeline. Designed as "plug-in" replacement for the lxp32 orginal deocoder
 --   riscv instruction set decoder
 
@@ -39,7 +39,7 @@ port(
       valid_i: in std_logic;  -- input valid
       jump_valid_i: in std_logic;
       ready_o: out std_logic;  -- decode stage ready to decode next instruction
-      fencei_o : out std_logic; -- FENCE.I Instruction 
+      fencei_o : out std_logic; -- FENCE.I Instruction
 
       interrupt_valid_i: in std_logic;
       interrupt_vector_i: in std_logic_vector(2 downto 0);
@@ -87,7 +87,7 @@ port(
       cmd_tret_o :  out STD_LOGIC; -- TH: Execute trap returen
       trap_cause_o : out STD_LOGIC_VECTOR(3 downto 0); -- TH: Trap/Interrupt cause
       interrupt_o : out STD_LOGIC; -- Trap is interrupt
-      
+
       epc_o :  out std_logic_vector(31 downto 2);
 
       epc_i : in std_logic_vector(31 downto 2);
@@ -150,11 +150,11 @@ signal state: DecoderState:=Regular;
 
 -- debug PC only to make debugging more comfortable
 -- will be optimized away in synthesis
-signal debug_pc : unsigned(31 downto 0); 
+signal debug_pc : unsigned(31 downto 0);
 
 begin
 
-  
+
 
  -- extract instruction fields
    opcode<=word_i(6 downto 2);
@@ -173,8 +173,8 @@ begin
 
    downstream_busy<=valid_out and not ready_i;
    busy<=downstream_busy or self_busy;
-   
- -- Instruction pointer  
+
+ -- Instruction pointer
    current_ip<=unsigned(next_ip_i)-1;
    debug_pc <= current_ip & "00";
 
@@ -233,18 +233,19 @@ begin
          cmd_trap_o <= '-';
          cmd_tret_o <= '-';
          interrupt_o <= '-';
-        
+
          trap_on_next <= '0';
          trap_on_current <= '0';
 
       else
         fencei_o <= '0'; -- clear fencei_o always after one cycle
-        if jump_valid_i='1' then
-            -- When exeuction stage exeuctes jump do nothing
-            valid_out<='0';
-            self_busy<='0';
-            state<=Regular;
-        elsif downstream_busy='0' then
+        -- if jump_valid_i='1' then
+        --     -- When exeuction stage exeuctes jump do nothing
+        --     valid_out<='0';
+        --     self_busy<='0';
+        --     state<=Regular;
+        -- elsif downstream_busy='0' then
+        if downstream_busy='0' then
           case state is
             when Regular =>
                cmd_loadop3_o<='0';
@@ -271,18 +272,18 @@ begin
                cmd_tret_o <= '0';
                interrupt_o <= '0';
                jump_type_o<="0000";
-               
+
                dst_out<=(others=>'0'); -- defaults to register 0, which is never read
                displacement:= (others=>'0');
                t_valid := '0';
                not_implemented:='0';
                trap:='0';
- 
+
                if valid_i='1' then
-                  -- single step trap propagation pipeline             
+                  -- single step trap propagation pipeline
                   trap_on_current<= trap_on_next;
                   trap_on_next <= '0';
-               
+
                   if interrupt_valid_i='1' then
                     t_valid:='1';
                     interrupt_o<='1';
@@ -297,12 +298,12 @@ begin
                     cmd_jump_o <= '1';
                     trap_cause_o <= X"3";
                     t_valid:='1';
-                  elsif word_i(1 downto 0) = "11" then -- all RV32IM instructions have the lower bits set to 11                                   
+                  elsif word_i(1 downto 0) = "11" then -- all RV32IM instructions have the lower bits set to 11
                     optype:=decode_op(opcode);
                     case optype is
-                      
-                       when rv_imm|rv_op =>               
-                        
+
+                       when rv_imm|rv_op =>
+
                           rd1_select<=Reg;
                           dst_out<="000"&rd;
                           if opcode(5)='1' then -- OP_OP...
@@ -374,18 +375,18 @@ begin
                              end case;
                           end if;
                           t_valid:='1';
-                 
+
                        when rv_jal =>
                            rd1_select<=Imm;
                            rd1_direct<=std_logic_vector(signed(current_ip&"00")+get_UJ_immediate(word_i));
                            cmd_jump_o<='1';
                            cmd_loadop3_o<='1';
                            op3_o<=next_ip_i&"00";
-                           dst_out<="000"&rd;                          
+                           dst_out<="000"&rd;
                            t_valid:='1';
-                  
+
                        when rv_jalr =>
-                       
+
                            rd1_select<=Reg;
                            cmd_jump_o<='1';
                            cmd_loadop3_o<='1';
@@ -393,9 +394,9 @@ begin
                            dst_out<="000"&rd;
                            displacement:=get_I_displacement(word_i);
                            t_valid:='1';
-                 
+
                        when rv_branch =>
-                
+
                            branch_target:=std_logic_vector(signed(current_ip&"00")+get_SB_immediate(word_i));
                            rd1_select<=Reg;
                            rd2_select<=Reg;
@@ -405,9 +406,9 @@ begin
                            t_valid:='1';
                            self_busy<='1';
                            state<=ContinueCjmp;
-                  
-                       when rv_load => 
-                  
+
+                       when rv_load =>
+
                            rd1_select<=Reg;
                            displacement:=get_I_displacement(word_i);
                            cmd_dbus_o<='1';
@@ -419,9 +420,9 @@ begin
                            end if;
                            cmd_signed_o <= not funct3(2);
                            t_valid:='1';
-                
-                      when rv_store => 
-              
+
+                      when rv_store =>
+
                            rd1_select<=Reg;
                            displacement:=get_S_displacement(word_i);
                            rd2_select<=Reg;
@@ -433,7 +434,7 @@ begin
                              cmd_dbus_hword_o<='1';
                            end if; -- TODO: Implement 16 BIT (H) instructons
                            t_valid:='1';
-                      when rv_lui|rv_auipc =>   
+                      when rv_lui|rv_auipc =>
                            -- we will use the ALU to calculate the result
                            -- this saves an adder and time
                            U_immed:=get_U_immediate(word_i);
@@ -448,14 +449,14 @@ begin
                            end if;
                            dst_out<="000"&rd;
                            t_valid:='1';
-                  
-                      when rv_system =>    
-                      
+
+                      when rv_system =>
+
                            if funct3="000" then
                              -- ECALL EBREAK
-                             cmd_jump_o<='1';                            
+                             cmd_jump_o<='1';
                              interrupt_o <= '0';
- 
+
                              case word_i(21 downto 20) is
                                when  "01" =>  -- EBREAK
                                  trap_cause_o <= X"3";
@@ -470,7 +471,7 @@ begin
                                  t_valid:='1';
                                  if sstep_i='1' then
                                    trap_on_next<='1';
-                                 end if;  
+                                 end if;
                                when others =>
                                  -- nothing...
                              end case;
@@ -493,8 +494,8 @@ begin
                               dst_out<="000"&rd;
                               t_valid:='1';
                             end if;
-                      when rv_miscmem => 
-                        case funct3 is 
+                      when rv_miscmem =>
+                        case funct3 is
                           when "000" => -- FENCE: currently like a NOP
                             t_valid:='1';
                           when "001" => -- FENCE.I
@@ -503,23 +504,23 @@ begin
                             rd1_direct<=std_logic_vector(signed(next_ip_i&"00"));
                             cmd_jump_o<='1';
                             fencei_o<='1';
-                            t_valid:='1';                            
+                            t_valid:='1';
                           when others =>
                             not_implemented:='1';
-                         end case;   
-                          
+                         end case;
+
                       when rv_invalid =>
                         not_implemented:='1';
-                    end case;  
-                      
+                    end case;
+
                   else
                      not_implemented:='1';
-                  end if; 
-                   
+                  end if;
+
                    if t_valid='0' or not_implemented='1' then
                      -- illegal opcode
                      cmd_jump_o<='1';
-                     interrupt_o <= '0';                    
+                     interrupt_o <= '0';
                      trap_cause_o<=X"2";
                      cmd_trap_o <= '1';
                      valid_out<='1';
@@ -529,7 +530,7 @@ begin
                    -- the epc_o register is always set
                    -- In case of an exception downstream the pipeline this register can be copied
                    -- to the CSR register.
-                   epc_o <= std_logic_vector(current_ip);                   
+                   epc_o <= std_logic_vector(current_ip);
                end if; -- if valid_i='1'
             when ContinueCjmp =>
                rd1_select<=Imm;
@@ -612,4 +613,3 @@ end process;
 
 
 end rtl;
-

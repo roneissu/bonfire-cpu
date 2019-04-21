@@ -73,8 +73,8 @@ ARCHITECTURE behavior OF tb_cpu_core IS
         );
     END COMPONENT;
 
-    constant TestFile : string :=  "../src/bonfire-cpu_0/ise/tb_bonfire_cpu/compiled_tests/timer_irq.hex";
-
+    --constant TestFile : string :=  "../src/bonfire-cpu_0/ise/tb_bonfire_cpu/compiled_tests/timer_irq.hex";
+   constant TestFile : string :=  "../src/bonfire-cpu_0/riscv_test/loop.hex";
 
    --Inputs
    signal clk_i : std_logic := '0';

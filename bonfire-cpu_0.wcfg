@@ -1,0 +1,196 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<wave_config>
+   <wave_state>
+   </wave_state>
+   <db_ref_list>
+      <db_ref path="bonfire-cpu_0.wdb" id="1">
+         <top_modules>
+            <top_module name="common_pkg" />
+            <top_module name="csr_def" />
+            <top_module name="log2" />
+            <top_module name="riscv_decodeutil" />
+            <top_module name="std_logic_textio" />
+            <top_module name="tb_cpu_core" />
+            <top_module name="txt_util" />
+         </top_modules>
+      </db_ref>
+   </db_ref_list>
+   <zoom_setting>
+      <ZoomStartTime time="0fs"></ZoomStartTime>
+      <ZoomEndTime time="157500001fs"></ZoomEndTime>
+      <Cursor1Time time="85000000fs"></Cursor1Time>
+   </zoom_setting>
+   <column_width_setting>
+      <NameColumnWidth column_width="175"></NameColumnWidth>
+      <ValueColumnWidth column_width="126"></ValueColumnWidth>
+   </column_width_setting>
+   <WVObjectSize size="42" />
+   <wave_markers>
+      <marker label="" time="105000000" />
+   </wave_markers>
+   <wvobject type="logic" fp_name="/tb_cpu_core/clk_i">
+      <obj_property name="ElementShortName">clk_i</obj_property>
+      <obj_property name="ObjectShortName">clk_i</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/tb_cpu_core/rst_i">
+      <obj_property name="ElementShortName">rst_i</obj_property>
+      <obj_property name="ObjectShortName">rst_i</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/tb_cpu_core/lli_dat_i">
+      <obj_property name="ElementShortName">lli_dat_i[31:0]</obj_property>
+      <obj_property name="ObjectShortName">lli_dat_i[31:0]</obj_property>
+      <obj_property name="Radix">HEXRADIX</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/tb_cpu_core/lli_busy_i">
+      <obj_property name="ElementShortName">lli_busy_i</obj_property>
+      <obj_property name="ObjectShortName">lli_busy_i</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/tb_cpu_core/irq_i">
+      <obj_property name="ElementShortName">irq_i[7:0]</obj_property>
+      <obj_property name="ObjectShortName">irq_i[7:0]</obj_property>
+      <obj_property name="Radix">HEXRADIX</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/tb_cpu_core/lli_re_o">
+      <obj_property name="ElementShortName">lli_re_o</obj_property>
+      <obj_property name="ObjectShortName">lli_re_o</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/tb_cpu_core/lli_adr_o">
+      <obj_property name="ElementShortName">lli_adr_o[29:0]</obj_property>
+      <obj_property name="ObjectShortName">lli_adr_o[29:0]</obj_property>
+      <obj_property name="Radix">HEXRADIX</obj_property>
+   </wvobject>
+   <wvobject fp_name="divider40" type="divider">
+   </wvobject>
+   <wvobject type="logic" fp_name="/tb_cpu_core/uut/cpu_inst/g_fetch_bonfire/fetch_inst/jump_valid_i">
+      <obj_property name="ElementShortName">jump_valid_i</obj_property>
+      <obj_property name="ObjectShortName">jump_valid_i</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/tb_cpu_core/uut/cpu_inst/g_fetch_bonfire/fetch_inst/jump_dst_i">
+      <obj_property name="ElementShortName">jump_dst_i[29:0]</obj_property>
+      <obj_property name="ObjectShortName">jump_dst_i[29:0]</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/tb_cpu_core/uut/cpu_inst/g_fetch_bonfire/fetch_inst/jump_ready_o">
+      <obj_property name="ElementShortName">jump_ready_o</obj_property>
+      <obj_property name="ObjectShortName">jump_ready_o</obj_property>
+   </wvobject>
+   <wvobject fp_name="divider44" type="divider">
+   </wvobject>
+   <wvobject type="array" fp_name="/tb_cpu_core/uut/cpu_inst/g_fetch_bonfire/fetch_inst/fetch_addr">
+      <obj_property name="ElementShortName">fetch_addr[29:0]</obj_property>
+      <obj_property name="ObjectShortName">fetch_addr[29:0]</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/tb_cpu_core/uut/cpu_inst/g_fetch_bonfire/fetch_inst/next_word">
+      <obj_property name="ElementShortName">next_word</obj_property>
+      <obj_property name="ObjectShortName">next_word</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/tb_cpu_core/uut/cpu_inst/g_fetch_bonfire/fetch_inst/suppress_re">
+      <obj_property name="ElementShortName">suppress_re</obj_property>
+      <obj_property name="ObjectShortName">suppress_re</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/tb_cpu_core/uut/cpu_inst/g_fetch_bonfire/fetch_inst/re">
+      <obj_property name="ElementShortName">re</obj_property>
+      <obj_property name="ObjectShortName">re</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/tb_cpu_core/uut/cpu_inst/g_fetch_bonfire/fetch_inst/requested">
+      <obj_property name="ElementShortName">requested</obj_property>
+      <obj_property name="ObjectShortName">requested</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/tb_cpu_core/uut/cpu_inst/g_fetch_bonfire/fetch_inst/fifo_rst">
+      <obj_property name="ElementShortName">fifo_rst</obj_property>
+      <obj_property name="ObjectShortName">fifo_rst</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/tb_cpu_core/uut/cpu_inst/g_fetch_bonfire/fetch_inst/fifo_we">
+      <obj_property name="ElementShortName">fifo_we</obj_property>
+      <obj_property name="ObjectShortName">fifo_we</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/tb_cpu_core/uut/cpu_inst/g_fetch_bonfire/fetch_inst/fifo_din">
+      <obj_property name="ElementShortName">fifo_din[61:0]</obj_property>
+      <obj_property name="ObjectShortName">fifo_din[61:0]</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/tb_cpu_core/uut/cpu_inst/g_fetch_bonfire/fetch_inst/fifo_re">
+      <obj_property name="ElementShortName">fifo_re</obj_property>
+      <obj_property name="ObjectShortName">fifo_re</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/tb_cpu_core/uut/cpu_inst/g_fetch_bonfire/fetch_inst/fifo_dout">
+      <obj_property name="ElementShortName">fifo_dout[61:0]</obj_property>
+      <obj_property name="ObjectShortName">fifo_dout[61:0]</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/tb_cpu_core/uut/cpu_inst/g_fetch_bonfire/fetch_inst/fifo_empty">
+      <obj_property name="ElementShortName">fifo_empty</obj_property>
+      <obj_property name="ObjectShortName">fifo_empty</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/tb_cpu_core/uut/cpu_inst/g_fetch_bonfire/fetch_inst/fifo_full">
+      <obj_property name="ElementShortName">fifo_full</obj_property>
+      <obj_property name="ObjectShortName">fifo_full</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/tb_cpu_core/uut/cpu_inst/g_fetch_bonfire/fetch_inst/jr">
+      <obj_property name="ElementShortName">jr</obj_property>
+      <obj_property name="ObjectShortName">jr</obj_property>
+   </wvobject>
+   <wvobject type="other" fp_name="/tb_cpu_core/uut/cpu_inst/g_fetch_bonfire/fetch_inst/op">
+      <obj_property name="ElementShortName">op</obj_property>
+      <obj_property name="ObjectShortName">op</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/tb_cpu_core/uut/cpu_inst/g_fetch_bonfire/fetch_inst/branch_offset">
+      <obj_property name="ElementShortName">branch_offset[31:0]</obj_property>
+      <obj_property name="ObjectShortName">branch_offset[31:0]</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/tb_cpu_core/uut/cpu_inst/g_fetch_bonfire/fetch_inst/branch_target">
+      <obj_property name="ElementShortName">branch_target[31:0]</obj_property>
+      <obj_property name="ObjectShortName">branch_target[31:0]</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/tb_cpu_core/uut/cpu_inst/g_fetch_bonfire/fetch_inst/fetch_branch_target">
+      <obj_property name="ElementShortName">fetch_branch_target</obj_property>
+      <obj_property name="ObjectShortName">fetch_branch_target</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/tb_cpu_core/uut/cpu_inst/g_fetch_bonfire/fetch_inst/branch_target_fetched">
+      <obj_property name="ElementShortName">branch_target_fetched</obj_property>
+      <obj_property name="ObjectShortName">branch_target_fetched</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/tb_cpu_core/uut/cpu_inst/g_fetch_bonfire/fetch_inst/stall_re">
+      <obj_property name="ElementShortName">stall_re</obj_property>
+      <obj_property name="ObjectShortName">stall_re</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/tb_cpu_core/uut/cpu_inst/g_fetch_bonfire/fetch_inst/predict_success">
+      <obj_property name="ElementShortName">predict_success</obj_property>
+      <obj_property name="ObjectShortName">predict_success</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/tb_cpu_core/uut/cpu_inst/g_fetch_bonfire/fetch_inst/target_address_buffer">
+      <obj_property name="ElementShortName">target_address_buffer[29:0]</obj_property>
+      <obj_property name="ObjectShortName">target_address_buffer[29:0]</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/tb_cpu_core/uut/cpu_inst/g_fetch_bonfire/fetch_inst/current_addr">
+      <obj_property name="ElementShortName">current_addr[29:0]</obj_property>
+      <obj_property name="ObjectShortName">current_addr[29:0]</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/tb_cpu_core/uut/cpu_inst/g_fetch_bonfire/fetch_inst/debug_jump_dst_i">
+      <obj_property name="ElementShortName">debug_jump_dst_i[31:0]</obj_property>
+      <obj_property name="ObjectShortName">debug_jump_dst_i[31:0]</obj_property>
+   </wvobject>
+   <wvobject type="other" fp_name="/tb_cpu_core/uut/cpu_inst/g_fetch_bonfire/fetch_inst/fetch_state">
+      <obj_property name="ElementShortName">fetch_state</obj_property>
+      <obj_property name="ObjectShortName">fetch_state</obj_property>
+   </wvobject>
+   <wvobject fp_name="divider73" type="divider">
+   </wvobject>
+   <wvobject type="array" fp_name="/tb_cpu_core/uut/cpu_inst/g_fetch_bonfire/fetch_inst/next_ip_o">
+      <obj_property name="ElementShortName">next_ip_o[29:0]</obj_property>
+      <obj_property name="ObjectShortName">next_ip_o[29:0]</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/tb_cpu_core/uut/cpu_inst/g_fetch_bonfire/fetch_inst/word_o">
+      <obj_property name="ElementShortName">word_o[31:0]</obj_property>
+      <obj_property name="ObjectShortName">word_o[31:0]</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/tb_cpu_core/uut/cpu_inst/g_fetch_bonfire/fetch_inst/valid_o">
+      <obj_property name="ElementShortName">valid_o</obj_property>
+      <obj_property name="ObjectShortName">valid_o</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/tb_cpu_core/uut/cpu_inst/g_fetch_bonfire/fetch_inst/ready_i">
+      <obj_property name="ElementShortName">ready_i</obj_property>
+      <obj_property name="ObjectShortName">ready_i</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/tb_cpu_core/uut/cpu_inst/execute_inst/cmd_jump_i">
+      <obj_property name="ElementShortName">cmd_jump_i</obj_property>
+      <obj_property name="ObjectShortName">cmd_jump_i</obj_property>
+   </wvobject>
+</wave_config>

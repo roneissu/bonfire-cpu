@@ -43,8 +43,10 @@ entity lxp32_execute is
       cmd_shift_i: in std_logic;
       cmd_shift_right_i: in std_logic;
       cmd_mul_high_i : in std_logic; -- TH: Get high word of mult result
-      cmd_signed_b_i : in std_logic; -- TH: interpret mult operand b is signed 
+      cmd_signed_b_i : in std_logic; -- TH: interpret mult operand b is signed
       cmd_slt_i : in std_logic; -- TH: RISC-V SLT/SLTU command
+
+      next_ip_i : in std_logic_vector(29 downto 0); -- TH: Next PC
 
       -- Control Unit
       cmd_csr_i : in std_logic;
@@ -67,8 +69,8 @@ entity lxp32_execute is
       epc_o : out std_logic_vector(31 downto 2);
       tvec_o : out std_logic_vector(31 downto 2);
       interrupt_o : out std_logic; -- Execute Interrupt (For RISC-V the Control Unit will handle all interrupt processing)
-      sstep_o : out std_logic; -- when '1' trap after first instruction after next eret 
-      
+      sstep_o : out std_logic; -- when '1' trap after first instruction after next eret
+
 
       jump_type_i: in std_logic_vector(3 downto 0);
 
@@ -100,7 +102,7 @@ entity lxp32_execute is
       jump_ready_i: in std_logic;
 
       interrupt_return_o: out std_logic
-      
+
    );
 end entity;
 
@@ -154,7 +156,7 @@ signal csr_tret_exec : std_logic;
 signal mepc,mtvec :  std_logic_vector(31 downto 2);
 signal mie : std_logic;
 
--- Registers for storing data address and direction, needed for recording misalignment traps 
+-- Registers for storing data address and direction, needed for recording misalignment traps
 signal adr_reg : std_logic_vector(31 downto 0);
 signal store_reg : std_logic;
 
@@ -185,7 +187,7 @@ signal s_dbus_ack_i  :  std_logic;
 signal s_local_ack   :  std_logic;
 signal s_dbus_adr_o  :  std_logic_vector(31 downto 2);
 signal s_dbus_dat_o,
-       s_local_dat_i :  std_logic_vector(31 downto 0);       
+       s_local_dat_i :  std_logic_vector(31 downto 0);
 --signal s_dbus_dat_i: std_logic_vector(31 downto 0);
 
 signal timer_irq : std_logic;
@@ -206,10 +208,10 @@ begin
 
 assert (USE_RISCV and (MUL_ARCH="spartandsp" or MUL_ARCH="none"))
        or not USE_RISCV
-       
+
   report "With RISC-V currently only MUL_ARCH spartandsp or none is supported"
   severity failure;
-  
+
 
 ex_exception <= dbus_misalign or csr_exception;
 
@@ -346,7 +348,11 @@ begin
    elsif cmd_trap_i = '1' or ex_exception='1' then
      jump_dst<=mtvec;
    else
-     jump_dst<=target_address(31 downto 2);
+     if jump_condition='1' then
+        jump_dst<=target_address(31 downto 2);
+     else
+        jump_dst<=std_logic_vector(signed(epc_i) + 1);
+     end if;
    end if;
 end process;
 
@@ -360,23 +366,23 @@ begin
          jump_dst_r<=(others=>'-');
          ex_exception_r<='0';
       else
-         if jump_valid='0' then
+        if jump_ready_i='1' then
+         jump_valid<='0';
+         ex_exception_r<='0';
+         interrupt_return<='0';
+       elsif jump_valid='0' then
             jump_dst_r <= jump_dst; -- latch jump destination
             ex_exception_r <= ex_exception;
-            if (can_execute='1' and cmd_jump_i='1' and jump_condition='1') or ex_exception='1' then
+            if (can_execute='1' and cmd_jump_i='1' ) or ex_exception='1' then
                jump_valid<='1';
                if not USE_RISCV then interrupt_return<=op1_i(0); end if;
             end if;
-         elsif jump_ready_i='1' then
-            jump_valid<='0';
-            ex_exception_r<='0';
-            interrupt_return<='0';
-         end if;
-      end if;
+        end if;
+       end if;
    end if;
 end process;
 
-jump_valid_o<=jump_valid or (can_execute and cmd_jump_i and jump_condition);
+jump_valid_o<=jump_valid or (can_execute and cmd_jump_i);
 jump_dst_o<=jump_dst_r when jump_valid='1' else jump_dst;
 
 
@@ -387,12 +393,12 @@ interrupt_return_o<=interrupt_return;
 s_dbus_ack_i <= dbus_ack_i when s_dbus_cyc_o='1' else
                 s_local_ack when s_local_cyc_o='1' else
                 'X';
-                
+
 
 dbus_adr_o <= s_dbus_adr_o;
 dbus_cyc_o <= s_dbus_cyc_o;
 dbus_stb_o <= s_dbus_stb_o and s_dbus_cyc_o; -- Mask stb output with cyc output
-dbus_we_o  <= s_dbus_we_o;	
+dbus_we_o  <= s_dbus_we_o;
 dbus_dat_o <= s_dbus_dat_o;
 dbus_sel_o <= s_dbus_sel_o;
 
@@ -431,13 +437,13 @@ dbus_inst: entity work.lxp32_dbus(rtl)
       local_dat_i=>s_local_dat_i,
       local_cyc_o=>s_local_cyc_o
    );
-   
-   
+
+
 -- RISC-V Local Memory mapped registers, currently mtime and mtimecmp
 
 riscv_memmap : if USE_RISCV and ENABLE_TIMER generate
 
-memmap_inst: entity work.riscv_local_memmap 
+memmap_inst: entity work.riscv_local_memmap
 
 PORT MAP(
 		clk_i => clk_i,
@@ -453,7 +459,7 @@ PORT MAP(
 		timer_irq_o => timer_irq
 	);
 
-end generate;   
+end generate;
 
 
 -- RISCV control unit
@@ -480,14 +486,14 @@ riscv_cu: if USE_RISCV  generate
    end process;
 
    epc_mux <= epc_reg when ex_exception='1' else epc_i;
-   
+
    csr_tret_exec <= cmd_tret_i and can_execute;
 
-   csr_inst: entity work.riscv_control_unit 
+   csr_inst: entity work.riscv_control_unit
    GENERIC MAP (
-   
+
       DIVIDER_EN=>DIVIDER_EN,
-      MUL_ARCH => MUL_ARCH   
+      MUL_ARCH => MUL_ARCH
    )
    PORT MAP(
         op1_i => op1_i,
@@ -505,18 +511,18 @@ riscv_cu: if USE_RISCV  generate
       mtvec_o => mtvec,
       mepc_o  => mepc,
       sstep_o => sstep_o,
-     
+
       mcause_i => trap_cause,
       mepc_i => epc_mux,
       mtrap_strobe_i => mtrap_strobe,
       adr_i => adr_reg,
       cmd_tret_i => csr_tret_exec,
-      
-     
+
+
 		timer_irq_in => timer_irq,
-		
+
 		interrupt_ack_i =>interrupt_i,
-      
+
       ext_irq_in => ext_irq_in,
       interrupt_exec_o => riscv_interrupt_exec_o
     );

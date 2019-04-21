@@ -11,12 +11,9 @@ la s0, monitor
 la s1,mtime
 
 la a1, trap_handler
-csrw mtvec,a1 
+csrw mtvec,a1
 
-
-
-
-call set_timer
+jal set_timer
 
 li a3, 5 // iteration counter
 li a1,MIP_MTIP
@@ -37,7 +34,7 @@ csrr t4,mcause
 sw t4,4(s0) // write mcause to monitor port
 bgtz t4, sw_trap
 
-call set_timer 
+jal set_timer
 addi a3,a3,-1 // finish program after 5 timer events
 beqz a3, finish
 mret // return from interrupt
@@ -54,5 +51,3 @@ li t4,1
 sw t4,0(s0)
 f0:
 j f0
-
-
