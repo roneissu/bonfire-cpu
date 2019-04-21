@@ -75,6 +75,7 @@ signal stall_re : std_logic;
 signal predict_success : std_logic;
 signal predict_fail : std_logic;
 signal target_address_buffer : std_logic_vector(fetch_addr'range) := (others=>'0');
+signal target_valid : std_logic := '0';
 signal target_match : std_logic;
 
 signal current_addr : std_logic_vector(fetch_addr'range);
@@ -90,7 +91,7 @@ begin
 
 debug_adr_o <= fetch_addr&"00";
 
-op <= decode_op(lli_dat_i(6 downto 2));
+op <= decode_op(lli_dat_i(6 downto 2)) when fifo_we='1' else rv_invalid;
 debug_jump_dst_i <= jump_dst_i&"00";
 
 branch_target <= std_logic_vector(signed(current_addr&"00")+branch_offset);
@@ -124,13 +125,14 @@ end process;
 
 
 valid_o<=not (fifo_empty or  predict_fail);
+jump_ready_o<= jump_valid_i and  not ( fifo_empty or predict_fail );
 
-target_match <= '1' when jump_dst_i=target_address_buffer else '0';
+target_match <= '1' when jump_dst_i=target_address_buffer and target_valid='1' else '0';
 predict_success <= '1'  when  fetch_state=s_target_fetched and jump_valid_i='1'
-                               and target_match='1'
+                               and target_match='1' and fifo_empty='0'
                     else '0';
 
-predict_fail <= '1' when fetch_state=s_target_fetched and target_match='0' and jump_valid_i='1'
+predict_fail <= '1' when target_match='0' and jump_valid_i='1' and fetch_state=s_target_fetched
                  else '0';
 
 -- FETCH state machine
@@ -156,6 +158,7 @@ begin
              fetch_addr <= branch_target(31 downto 2);
              target_address_buffer <= branch_target(31 downto 2);
              branch_target_fetched <= '1';
+             target_valid <= '1';
              fetch_state <= s_fetch_target;
            elsif next_word = '1' then
              fetch_addr  <= std_logic_vector(unsigned(fetch_addr)+1);
@@ -166,50 +169,35 @@ begin
              fetch_addr  <= std_logic_vector(unsigned(fetch_addr)+1);
            end if;
         when s_target_fetched =>
-           if jump_valid_i='1' then
-             if predict_success='1' then
+           if jump_valid_i='1' and fifo_empty='0' then
+             target_valid <= '0';
+             if target_match='1' then
                fetch_state <= s_fetch_next;
              else
                fetch_addr <= jump_dst_i;
                fetch_state <= s_fetch_next;
              end if;
            end if;
-           if next_word = '1' then
+           if fetch_branch_target='1' then
+             fetch_addr <= branch_target(31 downto 2);
+             target_address_buffer <= branch_target(31 downto 2);
+             branch_target_fetched <= '1';
+             target_valid <= '1';
+             fetch_state <= s_fetch_target;
+           elsif next_word = '1' then
              fetch_addr  <= std_logic_vector(unsigned(fetch_addr)+1);
            end if;
+           -- if next_word = '1' then
+           --   fetch_addr  <= std_logic_vector(unsigned(fetch_addr)+1);
+           -- end if;
          when s_mispredict =>
-            fetch_state<=s_fetch_next;
+            if fifo_empty='0' then
+              fetch_state<=s_fetch_next;
+            end if;
       end case;
 
---       jr<='0';
---       current_addr <= fetch_addr;
--- -- Suppress LLI request if jump signal is active but will not be processed
--- -- in this cycle. Helps to reduce jump latency with high-latency LLI slaves.
--- -- Note: gating "re" with "jump_valid_i and not jr" asynchronously would
--- -- reduce jump latency even more, but we really want to avoid too large
--- -- clock-to-out on LLI outputs.
---       suppress_re<=jump_valid_i and not jr and not next_word;
---       if lli_busy_i='0' then
---         requested<=re and not (jump_valid_i and not jr);
---       end if;
---       if fetch_branch_target = '1' then
---         fetch_addr <= branch_target(31 downto 2);
---         predict_taken <= '1';
---         branch_target_fetched <= '1';
---       elsif next_word='1' then
---         if jump_valid_i='1' and jr='0' then
---           if branch_target_fetched='1' then
---             jr <= '1';
---           else
---             fetch_addr<=jump_dst_i;
---             jr<='1';
---           end if;
---         else
---           fetch_addr <= std_logic_vector(unsigned(fetch_addr)+1);
---         end if;
---       end if;
-       end if;
-     end if;
+    end if;
+  end if;
 end process;
 
 next_word<=(fifo_empty or ready_i) and not lli_busy_i and not fetch_branch_target;
@@ -218,7 +206,7 @@ re<=(fifo_empty or ready_i)  and  not (  suppress_re or stall_re ) ;
 lli_re_o<=re;
 lli_adr_o<=fetch_addr;
 
-jump_ready_o<=predict_success or jr;
+
 
 lli_cc_invalidate_o <= fence_i_i; -- currently only pass through
 

@@ -16,15 +16,15 @@
       </db_ref>
    </db_ref_list>
    <zoom_setting>
-      <ZoomStartTime time="0fs"></ZoomStartTime>
-      <ZoomEndTime time="157500001fs"></ZoomEndTime>
-      <Cursor1Time time="85000000fs"></Cursor1Time>
+      <ZoomStartTime time="114500100fs"></ZoomStartTime>
+      <ZoomEndTime time="268000101fs"></ZoomEndTime>
+      <Cursor1Time time="250900000fs"></Cursor1Time>
    </zoom_setting>
    <column_width_setting>
-      <NameColumnWidth column_width="175"></NameColumnWidth>
-      <ValueColumnWidth column_width="126"></ValueColumnWidth>
+      <NameColumnWidth column_width="219"></NameColumnWidth>
+      <ValueColumnWidth column_width="122"></ValueColumnWidth>
    </column_width_setting>
-   <WVObjectSize size="42" />
+   <WVObjectSize size="43" />
    <wave_markers>
       <marker label="" time="105000000" />
    </wave_markers>
@@ -36,20 +36,6 @@
       <obj_property name="ElementShortName">rst_i</obj_property>
       <obj_property name="ObjectShortName">rst_i</obj_property>
    </wvobject>
-   <wvobject type="array" fp_name="/tb_cpu_core/lli_dat_i">
-      <obj_property name="ElementShortName">lli_dat_i[31:0]</obj_property>
-      <obj_property name="ObjectShortName">lli_dat_i[31:0]</obj_property>
-      <obj_property name="Radix">HEXRADIX</obj_property>
-   </wvobject>
-   <wvobject type="logic" fp_name="/tb_cpu_core/lli_busy_i">
-      <obj_property name="ElementShortName">lli_busy_i</obj_property>
-      <obj_property name="ObjectShortName">lli_busy_i</obj_property>
-   </wvobject>
-   <wvobject type="array" fp_name="/tb_cpu_core/irq_i">
-      <obj_property name="ElementShortName">irq_i[7:0]</obj_property>
-      <obj_property name="ObjectShortName">irq_i[7:0]</obj_property>
-      <obj_property name="Radix">HEXRADIX</obj_property>
-   </wvobject>
    <wvobject type="logic" fp_name="/tb_cpu_core/lli_re_o">
       <obj_property name="ElementShortName">lli_re_o</obj_property>
       <obj_property name="ObjectShortName">lli_re_o</obj_property>
@@ -57,6 +43,15 @@
    <wvobject type="array" fp_name="/tb_cpu_core/lli_adr_o">
       <obj_property name="ElementShortName">lli_adr_o[29:0]</obj_property>
       <obj_property name="ObjectShortName">lli_adr_o[29:0]</obj_property>
+      <obj_property name="Radix">HEXRADIX</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/tb_cpu_core/lli_busy_i">
+      <obj_property name="ElementShortName">lli_busy_i</obj_property>
+      <obj_property name="ObjectShortName">lli_busy_i</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/tb_cpu_core/lli_dat_i">
+      <obj_property name="ElementShortName">lli_dat_i[31:0]</obj_property>
+      <obj_property name="ObjectShortName">lli_dat_i[31:0]</obj_property>
       <obj_property name="Radix">HEXRADIX</obj_property>
    </wvobject>
    <wvobject fp_name="divider40" type="divider">
@@ -155,6 +150,10 @@
       <obj_property name="ElementShortName">predict_success</obj_property>
       <obj_property name="ObjectShortName">predict_success</obj_property>
    </wvobject>
+   <wvobject type="logic" fp_name="/tb_cpu_core/uut/cpu_inst/g_fetch_bonfire/fetch_inst/predict_fail">
+      <obj_property name="ElementShortName">predict_fail</obj_property>
+      <obj_property name="ObjectShortName">predict_fail</obj_property>
+   </wvobject>
    <wvobject type="array" fp_name="/tb_cpu_core/uut/cpu_inst/g_fetch_bonfire/fetch_inst/target_address_buffer">
       <obj_property name="ElementShortName">target_address_buffer[29:0]</obj_property>
       <obj_property name="ObjectShortName">target_address_buffer[29:0]</obj_property>
@@ -185,12 +184,16 @@
       <obj_property name="ElementShortName">valid_o</obj_property>
       <obj_property name="ObjectShortName">valid_o</obj_property>
    </wvobject>
+   <wvobject type="logic" fp_name="/tb_cpu_core/uut/cpu_inst/g_fetch_bonfire/fetch_inst/jump_valid_i">
+      <obj_property name="ElementShortName">jump_valid_i</obj_property>
+      <obj_property name="ObjectShortName">jump_valid_i</obj_property>
+   </wvobject>
    <wvobject type="logic" fp_name="/tb_cpu_core/uut/cpu_inst/g_fetch_bonfire/fetch_inst/ready_i">
       <obj_property name="ElementShortName">ready_i</obj_property>
       <obj_property name="ObjectShortName">ready_i</obj_property>
    </wvobject>
-   <wvobject type="logic" fp_name="/tb_cpu_core/uut/cpu_inst/execute_inst/cmd_jump_i">
-      <obj_property name="ElementShortName">cmd_jump_i</obj_property>
-      <obj_property name="ObjectShortName">cmd_jump_i</obj_property>
+   <wvobject type="logic" fp_name="/tb_cpu_core/uut/cpu_inst/g_fetch_bonfire/fetch_inst/jump_ready_o">
+      <obj_property name="ElementShortName">jump_ready_o</obj_property>
+      <obj_property name="ObjectShortName">jump_ready_o</obj_property>
    </wvobject>
 </wave_config>

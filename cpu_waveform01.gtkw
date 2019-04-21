@@ -1,23 +1,23 @@
 [*]
 [*] GTKWave Analyzer v3.3.66 (w)1999-2015 BSI
-[*] Sun Apr 21 14:21:52 2019
+[*] Sun Apr 21 17:53:09 2019
 [*]
 [dumpfile] "/home/thomas/development/fusesoc_build/vivado2018.2.3/bonfire-cpu_0/sim-ghdl/cpu.ghw"
-[dumpfile_mtime] "Sun Apr 21 14:05:12 2019"
-[dumpfile_size] 610424
+[dumpfile_mtime] "Sun Apr 21 17:49:25 2019"
+[dumpfile_size] 584748
 [savefile] "/home/thomas/development/bonfire/bonfire-cpu/cpu_waveform01.gtkw"
-[timestart] 0
+[timestart] 181800000
 [size] 1920 1031
 [pos] -1 -1
-*-24.403469 144900000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+*-24.403469 268600000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
 [treeopen] top.
 [treeopen] top.tb_cpu_core.
 [treeopen] top.tb_cpu_core.inst_sim_memory_interface.ram.ram.
 [treeopen] top.tb_cpu_core.uut.
 [treeopen] top.tb_cpu_core.uut.cpu_inst.
+[treeopen] top.tb_cpu_core.uut.cpu_inst.g_fetch_bonfire.
 [treeopen] top.tb_cpu_core.uut.cpu_inst.g_fetch_bonfire.fetch_inst.
 [treeopen] top.tb_cpu_core.uut.cpu_inst.riscv_decode.
-[treeopen] top.tb_cpu_core.uut.cpu_inst.riscv_regs.
 [treeopen] top.tb_cpu_core.uut.cpu_inst.riscv_regs.scratchpad_inst.
 [sst_width] 344
 [signals_width] 392
@@ -25,10 +25,6 @@
 [sst_vpaned_height] 608
 @28
 top.tb_cpu_core.clk_i
-top.tb_cpu_core.inst_sim_memory_interface.ram.enb
-@22
-#{top.tb_cpu_core.inst_sim_memory_interface.ram.adrbusb[11:0]} top.tb_cpu_core.inst_sim_memory_interface.ram.adrbusb[11] top.tb_cpu_core.inst_sim_memory_interface.ram.adrbusb[10] top.tb_cpu_core.inst_sim_memory_interface.ram.adrbusb[9] top.tb_cpu_core.inst_sim_memory_interface.ram.adrbusb[8] top.tb_cpu_core.inst_sim_memory_interface.ram.adrbusb[7] top.tb_cpu_core.inst_sim_memory_interface.ram.adrbusb[6] top.tb_cpu_core.inst_sim_memory_interface.ram.adrbusb[5] top.tb_cpu_core.inst_sim_memory_interface.ram.adrbusb[4] top.tb_cpu_core.inst_sim_memory_interface.ram.adrbusb[3] top.tb_cpu_core.inst_sim_memory_interface.ram.adrbusb[2] top.tb_cpu_core.inst_sim_memory_interface.ram.adrbusb[1] top.tb_cpu_core.inst_sim_memory_interface.ram.adrbusb[0]
-#{top.tb_cpu_core.inst_sim_memory_interface.ram.dboutb[31:0]} top.tb_cpu_core.inst_sim_memory_interface.ram.dboutb[31] top.tb_cpu_core.inst_sim_memory_interface.ram.dboutb[30] top.tb_cpu_core.inst_sim_memory_interface.ram.dboutb[29] top.tb_cpu_core.inst_sim_memory_interface.ram.dboutb[28] top.tb_cpu_core.inst_sim_memory_interface.ram.dboutb[27] top.tb_cpu_core.inst_sim_memory_interface.ram.dboutb[26] top.tb_cpu_core.inst_sim_memory_interface.ram.dboutb[25] top.tb_cpu_core.inst_sim_memory_interface.ram.dboutb[24] top.tb_cpu_core.inst_sim_memory_interface.ram.dboutb[23] top.tb_cpu_core.inst_sim_memory_interface.ram.dboutb[22] top.tb_cpu_core.inst_sim_memory_interface.ram.dboutb[21] top.tb_cpu_core.inst_sim_memory_interface.ram.dboutb[20] top.tb_cpu_core.inst_sim_memory_interface.ram.dboutb[19] top.tb_cpu_core.inst_sim_memory_interface.ram.dboutb[18] top.tb_cpu_core.inst_sim_memory_interface.ram.dboutb[17] top.tb_cpu_core.inst_sim_memory_interface.ram.dboutb[16] top.tb_cpu_core.inst_sim_memory_interface.ram.dboutb[15] top.tb_cpu_core.inst_sim_memory_interface.ram.dboutb[14] top.tb_cpu_core.inst_sim_memory_interface.ram.dboutb[13] top.tb_cpu_core.inst_sim_memory_interface.ram.dboutb[12] top.tb_cpu_core.inst_sim_memory_interface.ram.dboutb[11] top.tb_cpu_core.inst_sim_memory_interface.ram.dboutb[10] top.tb_cpu_core.inst_sim_memory_interface.ram.dboutb[9] top.tb_cpu_core.inst_sim_memory_interface.ram.dboutb[8] top.tb_cpu_core.inst_sim_memory_interface.ram.dboutb[7] top.tb_cpu_core.inst_sim_memory_interface.ram.dboutb[6] top.tb_cpu_core.inst_sim_memory_interface.ram.dboutb[5] top.tb_cpu_core.inst_sim_memory_interface.ram.dboutb[4] top.tb_cpu_core.inst_sim_memory_interface.ram.dboutb[3] top.tb_cpu_core.inst_sim_memory_interface.ram.dboutb[2] top.tb_cpu_core.inst_sim_memory_interface.ram.dboutb[1] top.tb_cpu_core.inst_sim_memory_interface.ram.dboutb[0]
 @200
 -Fetch
 @22
@@ -75,6 +71,7 @@ top.tb_cpu_core.uut.cpu_inst.g_fetch_bonfire.fetch_inst.fetch_branch_target
 @28
 top.tb_cpu_core.uut.cpu_inst.g_fetch_bonfire.fetch_inst.branch_target_fetched
 top.tb_cpu_core.uut.cpu_inst.g_fetch_bonfire.fetch_inst.predict_success
+top.tb_cpu_core.uut.cpu_inst.g_fetch_bonfire.fetch_inst.predict_fail
 top.tb_cpu_core.uut.cpu_inst.g_fetch_bonfire.fetch_inst.stall_re
 top.tb_cpu_core.uut.cpu_inst.g_fetch_bonfire.fetch_inst.suppress_re
 top.tb_cpu_core.uut.cpu_inst.g_fetch_bonfire.fetch_inst.fetch_state
@@ -105,7 +102,8 @@ top.tb_cpu_core.uut.cpu_inst.execute_inst.jump_ready_i
 @22
 #{top.tb_cpu_core.uut.cpu_inst.riscv_regs.scratchpad_inst.waddr_i[7:0]} top.tb_cpu_core.uut.cpu_inst.riscv_regs.scratchpad_inst.waddr_i[7] top.tb_cpu_core.uut.cpu_inst.riscv_regs.scratchpad_inst.waddr_i[6] top.tb_cpu_core.uut.cpu_inst.riscv_regs.scratchpad_inst.waddr_i[5] top.tb_cpu_core.uut.cpu_inst.riscv_regs.scratchpad_inst.waddr_i[4] top.tb_cpu_core.uut.cpu_inst.riscv_regs.scratchpad_inst.waddr_i[3] top.tb_cpu_core.uut.cpu_inst.riscv_regs.scratchpad_inst.waddr_i[2] top.tb_cpu_core.uut.cpu_inst.riscv_regs.scratchpad_inst.waddr_i[1] top.tb_cpu_core.uut.cpu_inst.riscv_regs.scratchpad_inst.waddr_i[0]
 #{top.tb_cpu_core.uut.cpu_inst.riscv_regs.scratchpad_inst.wdata_i[31:0]} top.tb_cpu_core.uut.cpu_inst.riscv_regs.scratchpad_inst.wdata_i[31] top.tb_cpu_core.uut.cpu_inst.riscv_regs.scratchpad_inst.wdata_i[30] top.tb_cpu_core.uut.cpu_inst.riscv_regs.scratchpad_inst.wdata_i[29] top.tb_cpu_core.uut.cpu_inst.riscv_regs.scratchpad_inst.wdata_i[28] top.tb_cpu_core.uut.cpu_inst.riscv_regs.scratchpad_inst.wdata_i[27] top.tb_cpu_core.uut.cpu_inst.riscv_regs.scratchpad_inst.wdata_i[26] top.tb_cpu_core.uut.cpu_inst.riscv_regs.scratchpad_inst.wdata_i[25] top.tb_cpu_core.uut.cpu_inst.riscv_regs.scratchpad_inst.wdata_i[24] top.tb_cpu_core.uut.cpu_inst.riscv_regs.scratchpad_inst.wdata_i[23] top.tb_cpu_core.uut.cpu_inst.riscv_regs.scratchpad_inst.wdata_i[22] top.tb_cpu_core.uut.cpu_inst.riscv_regs.scratchpad_inst.wdata_i[21] top.tb_cpu_core.uut.cpu_inst.riscv_regs.scratchpad_inst.wdata_i[20] top.tb_cpu_core.uut.cpu_inst.riscv_regs.scratchpad_inst.wdata_i[19] top.tb_cpu_core.uut.cpu_inst.riscv_regs.scratchpad_inst.wdata_i[18] top.tb_cpu_core.uut.cpu_inst.riscv_regs.scratchpad_inst.wdata_i[17] top.tb_cpu_core.uut.cpu_inst.riscv_regs.scratchpad_inst.wdata_i[16] top.tb_cpu_core.uut.cpu_inst.riscv_regs.scratchpad_inst.wdata_i[15] top.tb_cpu_core.uut.cpu_inst.riscv_regs.scratchpad_inst.wdata_i[14] top.tb_cpu_core.uut.cpu_inst.riscv_regs.scratchpad_inst.wdata_i[13] top.tb_cpu_core.uut.cpu_inst.riscv_regs.scratchpad_inst.wdata_i[12] top.tb_cpu_core.uut.cpu_inst.riscv_regs.scratchpad_inst.wdata_i[11] top.tb_cpu_core.uut.cpu_inst.riscv_regs.scratchpad_inst.wdata_i[10] top.tb_cpu_core.uut.cpu_inst.riscv_regs.scratchpad_inst.wdata_i[9] top.tb_cpu_core.uut.cpu_inst.riscv_regs.scratchpad_inst.wdata_i[8] top.tb_cpu_core.uut.cpu_inst.riscv_regs.scratchpad_inst.wdata_i[7] top.tb_cpu_core.uut.cpu_inst.riscv_regs.scratchpad_inst.wdata_i[6] top.tb_cpu_core.uut.cpu_inst.riscv_regs.scratchpad_inst.wdata_i[5] top.tb_cpu_core.uut.cpu_inst.riscv_regs.scratchpad_inst.wdata_i[4] top.tb_cpu_core.uut.cpu_inst.riscv_regs.scratchpad_inst.wdata_i[3] top.tb_cpu_core.uut.cpu_inst.riscv_regs.scratchpad_inst.wdata_i[2] top.tb_cpu_core.uut.cpu_inst.riscv_regs.scratchpad_inst.wdata_i[1] top.tb_cpu_core.uut.cpu_inst.riscv_regs.scratchpad_inst.wdata_i[0]
-@29
+@28
 top.tb_cpu_core.uut.cpu_inst.riscv_regs.scratchpad_inst.we_i
+top.tb_cpu_core.uut.cpu_inst.g_fetch_bonfire.fetch_inst.jr
 [pattern_trace] 1
 [pattern_trace] 0
