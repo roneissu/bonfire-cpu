@@ -11,9 +11,10 @@ addi a0,a0,-1
 sw a0,4(s0)
 bnez a0, loop
 nop
+
 // Forward branch test
-beqz a0, forward
 li a0, -1
+bnez a0, forward
 sw a0,0(s0) // should not happen...
 forward:
 // jalr test and call return test

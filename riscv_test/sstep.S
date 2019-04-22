@@ -5,14 +5,14 @@ _start:
 
 
 la s1, monitor
-
+li a1,5
 la t1, trap_handler
 csrw mtvec,t1
 li a2,0
 ebreak
 
 // "debuggee"
-li a1,5
+
 loop:
 addi a1,a1,-1
 //sw a1, 8(s1) // test output
