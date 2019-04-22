@@ -19,7 +19,8 @@ entity lxp32_execute is
       MUL_ARCH: string;
       USE_RISCV : boolean := false;
       ENABLE_TIMER : boolean := true;
-      TIMER_XLEN : natural := 32
+      TIMER_XLEN : natural := 32;
+      BRANCH_PREDICTTOR : boolean
    );
    port(
       clk_i: in std_logic;
@@ -348,15 +349,20 @@ begin
    elsif cmd_trap_i = '1' or ex_exception='1' then
      jump_dst<=mtvec;
    else
-     if jump_condition='1' then
-        jump_dst<=target_address(31 downto 2);
+     if BRANCH_PREDICTTOR then
+       if jump_condition='1' then
+          jump_dst<=target_address(31 downto 2);
+       else
+          jump_dst<=std_logic_vector(signed(epc_i) + 1);
+       end if;
      else
-        jump_dst<=std_logic_vector(signed(epc_i) + 1);
+       jump_dst<=target_address(31 downto 2);
      end if;
    end if;
 end process;
 
 
+jump_pred: if BRANCH_PREDICTTOR generate
 process (clk_i) is
 begin
    if rising_edge(clk_i) then
@@ -383,6 +389,42 @@ begin
 end process;
 
 jump_valid_o<=jump_valid or (can_execute and cmd_jump_i);
+
+end generate;
+
+no_jump_pred: if not BRANCH_PREDICTTOR generate
+process (clk_i) is
+begin
+   if rising_edge(clk_i) then
+      if rst_i='1' then
+         jump_valid<='0';
+         interrupt_return<='0';
+         jump_dst_r<=(others=>'-');
+         ex_exception_r<='0';
+      else
+       if jump_valid='0' then
+            jump_dst_r <= jump_dst; -- latch jump destination
+            ex_exception_r <= ex_exception;
+            if (can_execute='1' and cmd_jump_i='1' and jump_condition='1' ) or ex_exception='1' then
+               jump_valid<='1';
+               if not USE_RISCV then interrupt_return<=op1_i(0); end if;
+            end if;
+       elsif jump_ready_i='1' then
+         jump_valid<='0';
+         ex_exception_r<='0';
+         interrupt_return<='0';
+       end if;
+     end if;   
+   end if;
+end process;
+
+jump_valid_o<=jump_valid or (can_execute and cmd_jump_i and jump_condition);
+
+end generate;
+
+
+
+
 jump_dst_o<=jump_dst_r when jump_valid='1' else jump_dst;
 
 

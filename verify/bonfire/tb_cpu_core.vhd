@@ -43,6 +43,14 @@ END tb_cpu_core;
 
 ARCHITECTURE behavior OF tb_cpu_core IS
 
+constant BRANCH_PREDICTTOR : boolean := false;
+
+--constant TestFile : string :=  "../src/bonfire-cpu_0/ise/tb_bonfire_cpu/compiled_tests/timer_irq.hex";
+--constant TestFile : string :=  "../src/bonfire-cpu_0/riscv_test/timer_irq.hex";
+--constant TestFile : string :=  "../src/bonfire-cpu_0/riscv_test/loop.hex";
+--constant TestFile : string :=  "../src/bonfire-cpu_0/riscv_test/branch.hex";
+constant TestFile : string :=  "../src/bonfire-cpu_0/riscv_test/sstep.hex";
+
     -- Component Declaration for the Unit Under Test (UUT)
 
     COMPONENT lxp32u_top
@@ -74,8 +82,7 @@ ARCHITECTURE behavior OF tb_cpu_core IS
         );
     END COMPONENT;
 
-    --constant TestFile : string :=  "../src/bonfire-cpu_0/ise/tb_bonfire_cpu/compiled_tests/timer_irq.hex";
-   constant TestFile : string :=  "../src/bonfire-cpu_0/riscv_test/loop.hex";
+
 
    --Inputs
    signal clk_i : std_logic := '0';
@@ -135,7 +142,7 @@ BEGIN
    generic map (
      USE_RISCV=>true,
      MUL_ARCH=>"spartandsp",
-     BRANCH_PREDICTTOR=>true
+     BRANCH_PREDICTTOR=>BRANCH_PREDICTTOR
    )
    PORT MAP (
           clk_i => clk_i,

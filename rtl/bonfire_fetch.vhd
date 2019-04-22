@@ -105,26 +105,27 @@ begin
   branch_offset <= (others => '-');
   fetch_branch_target <= '0';
   -- Allow only one level of prefetch
-  if branch_target_fetched = '0' then
-    if op = rv_jal  then
-      o  := get_UJ_immediate(lli_dat_i);
+  if jump_valid_i='0' then -- and only predict when no active jump request
+    if branch_target_fetched = '0' then
+      if op = rv_jal  then
+        o  := get_UJ_immediate(lli_dat_i);
 
-      --if not (o = 0) then
-        fetch_branch_target <= '1';
-      --end if;
-      branch_offset <= o;
-    elsif op = rv_branch then
-       o := get_SB_immediate(lli_dat_i);
-      -- From RISCV ISA Spec:
-      --Software should also assume that backward branches will be predicted
-      --taken and forward branches as not taken.
-      if o(o'high)='1' then
-        fetch_branch_target <= '1';
+        --if not (o = 0) then
+          fetch_branch_target <= '1';
+        --end if;
         branch_offset <= o;
+      elsif op = rv_branch then
+         o := get_SB_immediate(lli_dat_i);
+        -- From RISCV ISA Spec:
+        --Software should also assume that backward branches will be predicted
+        --taken and forward branches as not taken.
+        if o(o'high)='1' then
+          fetch_branch_target <= '1';
+          branch_offset <= o;
+        end if;
       end if;
     end if;
   end if;
-
 end process;
 
 
@@ -167,7 +168,7 @@ begin
        end if;
        branch_target_fetched <= '0';
        if next_word = '1' then
-         if fetch_branch_target='1' then
+         if  jump_valid_i='0' and fetch_branch_target='1' then
             fetch_addr <= branch_target(31 downto 2);
             target_address_buffer <= branch_target(31 downto 2);
             branch_target_fetched <= '1';

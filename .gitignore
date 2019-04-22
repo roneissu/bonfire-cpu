@@ -58,7 +58,7 @@ Thumbs.db
 *.tcl
 *.projectmgr
 *.lst
-*.txt
+
 *.csv
 *.pcf
 *.par

@@ -3,7 +3,7 @@
 .extern monitor
 _start:
 
-li a0,3 // loop counter
+li a0,10 // loop counter
 la s0, monitor
 
 loop:

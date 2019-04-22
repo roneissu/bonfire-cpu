@@ -1,20 +1,24 @@
 [*]
 [*] GTKWave Analyzer v3.3.66 (w)1999-2015 BSI
-[*] Mon Apr 22 15:42:16 2019
+[*] Mon Apr 22 19:25:38 2019
 [*]
 [dumpfile] "/home/thomas/development/fusesoc_build/vivado2018.2.3/bonfire-cpu_0/sim-ghdl/cpu.ghw"
-[dumpfile_mtime] "Mon Apr 22 15:42:03 2019"
-[dumpfile_size] 603353
+[dumpfile_mtime] "Mon Apr 22 19:23:26 2019"
+[dumpfile_size] 863216
 [savefile] "/home/thomas/development/bonfire/bonfire-cpu/cpu_waveform01.gtkw"
-[timestart] 31600000
+[timestart] 478300000
 [size] 1920 1031
 [pos] -1 -1
-*-24.426395 108000000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+*-24.426395 95000000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
 [treeopen] top.
 [treeopen] top.tb_cpu_core.
 [treeopen] top.tb_cpu_core.inst_sim_memory_interface.ram.
 [treeopen] top.tb_cpu_core.uut.
 [treeopen] top.tb_cpu_core.uut.cpu_inst.
+[treeopen] top.tb_cpu_core.uut.cpu_inst.execute_inst.
+[treeopen] top.tb_cpu_core.uut.cpu_inst.execute_inst.riscv_cu.
+[treeopen] top.tb_cpu_core.uut.cpu_inst.execute_inst.riscv_cu.csr_inst.
+[treeopen] top.tb_cpu_core.uut.cpu_inst.execute_inst.riscv_cu.csr_inst.irq_unit.
 [treeopen] top.tb_cpu_core.uut.cpu_inst.g_fetch_bonfire.
 [treeopen] top.tb_cpu_core.uut.cpu_inst.g_fetch_bonfire.fetch_inst.
 [treeopen] top.tb_cpu_core.uut.cpu_inst.riscv_decode.
@@ -22,7 +26,7 @@
 [sst_width] 344
 [signals_width] 392
 [sst_expanded] 1
-[sst_vpaned_height] 608
+[sst_vpaned_height] 623
 @28
 top.tb_cpu_core.clk_i
 @200
@@ -63,9 +67,8 @@ top.tb_cpu_core.uut.cpu_inst.g_fetch_bonfire.fetch_inst.branch_target_fetched
 top.tb_cpu_core.uut.cpu_inst.g_fetch_bonfire.fetch_inst.fetch_branch_target
 @22
 #{top.tb_cpu_core.uut.cpu_inst.g_fetch_bonfire.fetch_inst.fetch_addr[29:0]} top.tb_cpu_core.uut.cpu_inst.g_fetch_bonfire.fetch_inst.fetch_addr[29] top.tb_cpu_core.uut.cpu_inst.g_fetch_bonfire.fetch_inst.fetch_addr[28] top.tb_cpu_core.uut.cpu_inst.g_fetch_bonfire.fetch_inst.fetch_addr[27] top.tb_cpu_core.uut.cpu_inst.g_fetch_bonfire.fetch_inst.fetch_addr[26] top.tb_cpu_core.uut.cpu_inst.g_fetch_bonfire.fetch_inst.fetch_addr[25] top.tb_cpu_core.uut.cpu_inst.g_fetch_bonfire.fetch_inst.fetch_addr[24] top.tb_cpu_core.uut.cpu_inst.g_fetch_bonfire.fetch_inst.fetch_addr[23] top.tb_cpu_core.uut.cpu_inst.g_fetch_bonfire.fetch_inst.fetch_addr[22] top.tb_cpu_core.uut.cpu_inst.g_fetch_bonfire.fetch_inst.fetch_addr[21] top.tb_cpu_core.uut.cpu_inst.g_fetch_bonfire.fetch_inst.fetch_addr[20] top.tb_cpu_core.uut.cpu_inst.g_fetch_bonfire.fetch_inst.fetch_addr[19] top.tb_cpu_core.uut.cpu_inst.g_fetch_bonfire.fetch_inst.fetch_addr[18] top.tb_cpu_core.uut.cpu_inst.g_fetch_bonfire.fetch_inst.fetch_addr[17] top.tb_cpu_core.uut.cpu_inst.g_fetch_bonfire.fetch_inst.fetch_addr[16] top.tb_cpu_core.uut.cpu_inst.g_fetch_bonfire.fetch_inst.fetch_addr[15] top.tb_cpu_core.uut.cpu_inst.g_fetch_bonfire.fetch_inst.fetch_addr[14] top.tb_cpu_core.uut.cpu_inst.g_fetch_bonfire.fetch_inst.fetch_addr[13] top.tb_cpu_core.uut.cpu_inst.g_fetch_bonfire.fetch_inst.fetch_addr[12] top.tb_cpu_core.uut.cpu_inst.g_fetch_bonfire.fetch_inst.fetch_addr[11] top.tb_cpu_core.uut.cpu_inst.g_fetch_bonfire.fetch_inst.fetch_addr[10] top.tb_cpu_core.uut.cpu_inst.g_fetch_bonfire.fetch_inst.fetch_addr[9] top.tb_cpu_core.uut.cpu_inst.g_fetch_bonfire.fetch_inst.fetch_addr[8] top.tb_cpu_core.uut.cpu_inst.g_fetch_bonfire.fetch_inst.fetch_addr[7] top.tb_cpu_core.uut.cpu_inst.g_fetch_bonfire.fetch_inst.fetch_addr[6] top.tb_cpu_core.uut.cpu_inst.g_fetch_bonfire.fetch_inst.fetch_addr[5] top.tb_cpu_core.uut.cpu_inst.g_fetch_bonfire.fetch_inst.fetch_addr[4] top.tb_cpu_core.uut.cpu_inst.g_fetch_bonfire.fetch_inst.fetch_addr[3] top.tb_cpu_core.uut.cpu_inst.g_fetch_bonfire.fetch_inst.fetch_addr[2] top.tb_cpu_core.uut.cpu_inst.g_fetch_bonfire.fetch_inst.fetch_addr[1] top.tb_cpu_core.uut.cpu_inst.g_fetch_bonfire.fetch_inst.fetch_addr[0]
-@29
-top.tb_cpu_core.uut.cpu_inst.g_fetch_bonfire.fetch_inst.predict_fail
 @28
+top.tb_cpu_core.uut.cpu_inst.g_fetch_bonfire.fetch_inst.predict_fail
 top.tb_cpu_core.uut.cpu_inst.g_fetch_bonfire.fetch_inst.stall_re
 top.tb_cpu_core.uut.cpu_inst.g_fetch_bonfire.fetch_inst.suppress_re
 top.tb_cpu_core.uut.cpu_inst.g_fetch_bonfire.fetch_inst.wipe_fifo
@@ -84,13 +87,6 @@ top.tb_cpu_core.uut.cpu_inst.g_fetch_bonfire.fetch_inst.valid_o
 #{top.tb_cpu_core.uut.cpu_inst.g_fetch_bonfire.fetch_inst.word_o[31:0]} top.tb_cpu_core.uut.cpu_inst.g_fetch_bonfire.fetch_inst.word_o[31] top.tb_cpu_core.uut.cpu_inst.g_fetch_bonfire.fetch_inst.word_o[30] top.tb_cpu_core.uut.cpu_inst.g_fetch_bonfire.fetch_inst.word_o[29] top.tb_cpu_core.uut.cpu_inst.g_fetch_bonfire.fetch_inst.word_o[28] top.tb_cpu_core.uut.cpu_inst.g_fetch_bonfire.fetch_inst.word_o[27] top.tb_cpu_core.uut.cpu_inst.g_fetch_bonfire.fetch_inst.word_o[26] top.tb_cpu_core.uut.cpu_inst.g_fetch_bonfire.fetch_inst.word_o[25] top.tb_cpu_core.uut.cpu_inst.g_fetch_bonfire.fetch_inst.word_o[24] top.tb_cpu_core.uut.cpu_inst.g_fetch_bonfire.fetch_inst.word_o[23] top.tb_cpu_core.uut.cpu_inst.g_fetch_bonfire.fetch_inst.word_o[22] top.tb_cpu_core.uut.cpu_inst.g_fetch_bonfire.fetch_inst.word_o[21] top.tb_cpu_core.uut.cpu_inst.g_fetch_bonfire.fetch_inst.word_o[20] top.tb_cpu_core.uut.cpu_inst.g_fetch_bonfire.fetch_inst.word_o[19] top.tb_cpu_core.uut.cpu_inst.g_fetch_bonfire.fetch_inst.word_o[18] top.tb_cpu_core.uut.cpu_inst.g_fetch_bonfire.fetch_inst.word_o[17] top.tb_cpu_core.uut.cpu_inst.g_fetch_bonfire.fetch_inst.word_o[16] top.tb_cpu_core.uut.cpu_inst.g_fetch_bonfire.fetch_inst.word_o[15] top.tb_cpu_core.uut.cpu_inst.g_fetch_bonfire.fetch_inst.word_o[14] top.tb_cpu_core.uut.cpu_inst.g_fetch_bonfire.fetch_inst.word_o[13] top.tb_cpu_core.uut.cpu_inst.g_fetch_bonfire.fetch_inst.word_o[12] top.tb_cpu_core.uut.cpu_inst.g_fetch_bonfire.fetch_inst.word_o[11] top.tb_cpu_core.uut.cpu_inst.g_fetch_bonfire.fetch_inst.word_o[10] top.tb_cpu_core.uut.cpu_inst.g_fetch_bonfire.fetch_inst.word_o[9] top.tb_cpu_core.uut.cpu_inst.g_fetch_bonfire.fetch_inst.word_o[8] top.tb_cpu_core.uut.cpu_inst.g_fetch_bonfire.fetch_inst.word_o[7] top.tb_cpu_core.uut.cpu_inst.g_fetch_bonfire.fetch_inst.word_o[6] top.tb_cpu_core.uut.cpu_inst.g_fetch_bonfire.fetch_inst.word_o[5] top.tb_cpu_core.uut.cpu_inst.g_fetch_bonfire.fetch_inst.word_o[4] top.tb_cpu_core.uut.cpu_inst.g_fetch_bonfire.fetch_inst.word_o[3] top.tb_cpu_core.uut.cpu_inst.g_fetch_bonfire.fetch_inst.word_o[2] top.tb_cpu_core.uut.cpu_inst.g_fetch_bonfire.fetch_inst.word_o[1] top.tb_cpu_core.uut.cpu_inst.g_fetch_bonfire.fetch_inst.word_o[0]
 #{top.tb_cpu_core.uut.cpu_inst.g_fetch_bonfire.fetch_inst.next_ip_o[29:0]} top.tb_cpu_core.uut.cpu_inst.g_fetch_bonfire.fetch_inst.next_ip_o[29] top.tb_cpu_core.uut.cpu_inst.g_fetch_bonfire.fetch_inst.next_ip_o[28] top.tb_cpu_core.uut.cpu_inst.g_fetch_bonfire.fetch_inst.next_ip_o[27] top.tb_cpu_core.uut.cpu_inst.g_fetch_bonfire.fetch_inst.next_ip_o[26] top.tb_cpu_core.uut.cpu_inst.g_fetch_bonfire.fetch_inst.next_ip_o[25] top.tb_cpu_core.uut.cpu_inst.g_fetch_bonfire.fetch_inst.next_ip_o[24] top.tb_cpu_core.uut.cpu_inst.g_fetch_bonfire.fetch_inst.next_ip_o[23] top.tb_cpu_core.uut.cpu_inst.g_fetch_bonfire.fetch_inst.next_ip_o[22] top.tb_cpu_core.uut.cpu_inst.g_fetch_bonfire.fetch_inst.next_ip_o[21] top.tb_cpu_core.uut.cpu_inst.g_fetch_bonfire.fetch_inst.next_ip_o[20] top.tb_cpu_core.uut.cpu_inst.g_fetch_bonfire.fetch_inst.next_ip_o[19] top.tb_cpu_core.uut.cpu_inst.g_fetch_bonfire.fetch_inst.next_ip_o[18] top.tb_cpu_core.uut.cpu_inst.g_fetch_bonfire.fetch_inst.next_ip_o[17] top.tb_cpu_core.uut.cpu_inst.g_fetch_bonfire.fetch_inst.next_ip_o[16] top.tb_cpu_core.uut.cpu_inst.g_fetch_bonfire.fetch_inst.next_ip_o[15] top.tb_cpu_core.uut.cpu_inst.g_fetch_bonfire.fetch_inst.next_ip_o[14] top.tb_cpu_core.uut.cpu_inst.g_fetch_bonfire.fetch_inst.next_ip_o[13] top.tb_cpu_core.uut.cpu_inst.g_fetch_bonfire.fetch_inst.next_ip_o[12] top.tb_cpu_core.uut.cpu_inst.g_fetch_bonfire.fetch_inst.next_ip_o[11] top.tb_cpu_core.uut.cpu_inst.g_fetch_bonfire.fetch_inst.next_ip_o[10] top.tb_cpu_core.uut.cpu_inst.g_fetch_bonfire.fetch_inst.next_ip_o[9] top.tb_cpu_core.uut.cpu_inst.g_fetch_bonfire.fetch_inst.next_ip_o[8] top.tb_cpu_core.uut.cpu_inst.g_fetch_bonfire.fetch_inst.next_ip_o[7] top.tb_cpu_core.uut.cpu_inst.g_fetch_bonfire.fetch_inst.next_ip_o[6] top.tb_cpu_core.uut.cpu_inst.g_fetch_bonfire.fetch_inst.next_ip_o[5] top.tb_cpu_core.uut.cpu_inst.g_fetch_bonfire.fetch_inst.next_ip_o[4] top.tb_cpu_core.uut.cpu_inst.g_fetch_bonfire.fetch_inst.next_ip_o[3] top.tb_cpu_core.uut.cpu_inst.g_fetch_bonfire.fetch_inst.next_ip_o[2] top.tb_cpu_core.uut.cpu_inst.g_fetch_bonfire.fetch_inst.next_ip_o[1] top.tb_cpu_core.uut.cpu_inst.g_fetch_bonfire.fetch_inst.next_ip_o[0]
 @28
-top.tb_cpu_core.uut.cpu_inst.g_fetch_bonfire.fetch_inst.jump_valid_i
-top.tb_cpu_core.uut.cpu_inst.g_fetch_bonfire.fetch_inst.target_match
-top.tb_cpu_core.uut.cpu_inst.g_fetch_bonfire.fetch_inst.jump_ready_o
-@22
-#{top.tb_cpu_core.uut.cpu_inst.g_fetch_bonfire.fetch_inst.jump_dst_i[29:0]} top.tb_cpu_core.uut.cpu_inst.g_fetch_bonfire.fetch_inst.jump_dst_i[29] top.tb_cpu_core.uut.cpu_inst.g_fetch_bonfire.fetch_inst.jump_dst_i[28] top.tb_cpu_core.uut.cpu_inst.g_fetch_bonfire.fetch_inst.jump_dst_i[27] top.tb_cpu_core.uut.cpu_inst.g_fetch_bonfire.fetch_inst.jump_dst_i[26] top.tb_cpu_core.uut.cpu_inst.g_fetch_bonfire.fetch_inst.jump_dst_i[25] top.tb_cpu_core.uut.cpu_inst.g_fetch_bonfire.fetch_inst.jump_dst_i[24] top.tb_cpu_core.uut.cpu_inst.g_fetch_bonfire.fetch_inst.jump_dst_i[23] top.tb_cpu_core.uut.cpu_inst.g_fetch_bonfire.fetch_inst.jump_dst_i[22] top.tb_cpu_core.uut.cpu_inst.g_fetch_bonfire.fetch_inst.jump_dst_i[21] top.tb_cpu_core.uut.cpu_inst.g_fetch_bonfire.fetch_inst.jump_dst_i[20] top.tb_cpu_core.uut.cpu_inst.g_fetch_bonfire.fetch_inst.jump_dst_i[19] top.tb_cpu_core.uut.cpu_inst.g_fetch_bonfire.fetch_inst.jump_dst_i[18] top.tb_cpu_core.uut.cpu_inst.g_fetch_bonfire.fetch_inst.jump_dst_i[17] top.tb_cpu_core.uut.cpu_inst.g_fetch_bonfire.fetch_inst.jump_dst_i[16] top.tb_cpu_core.uut.cpu_inst.g_fetch_bonfire.fetch_inst.jump_dst_i[15] top.tb_cpu_core.uut.cpu_inst.g_fetch_bonfire.fetch_inst.jump_dst_i[14] top.tb_cpu_core.uut.cpu_inst.g_fetch_bonfire.fetch_inst.jump_dst_i[13] top.tb_cpu_core.uut.cpu_inst.g_fetch_bonfire.fetch_inst.jump_dst_i[12] top.tb_cpu_core.uut.cpu_inst.g_fetch_bonfire.fetch_inst.jump_dst_i[11] top.tb_cpu_core.uut.cpu_inst.g_fetch_bonfire.fetch_inst.jump_dst_i[10] top.tb_cpu_core.uut.cpu_inst.g_fetch_bonfire.fetch_inst.jump_dst_i[9] top.tb_cpu_core.uut.cpu_inst.g_fetch_bonfire.fetch_inst.jump_dst_i[8] top.tb_cpu_core.uut.cpu_inst.g_fetch_bonfire.fetch_inst.jump_dst_i[7] top.tb_cpu_core.uut.cpu_inst.g_fetch_bonfire.fetch_inst.jump_dst_i[6] top.tb_cpu_core.uut.cpu_inst.g_fetch_bonfire.fetch_inst.jump_dst_i[5] top.tb_cpu_core.uut.cpu_inst.g_fetch_bonfire.fetch_inst.jump_dst_i[4] top.tb_cpu_core.uut.cpu_inst.g_fetch_bonfire.fetch_inst.jump_dst_i[3] top.tb_cpu_core.uut.cpu_inst.g_fetch_bonfire.fetch_inst.jump_dst_i[2] top.tb_cpu_core.uut.cpu_inst.g_fetch_bonfire.fetch_inst.jump_dst_i[1] top.tb_cpu_core.uut.cpu_inst.g_fetch_bonfire.fetch_inst.jump_dst_i[0]
-@28
-top.tb_cpu_core.uut.cpu_inst.g_fetch_bonfire.fetch_inst.target_match
 top.tb_cpu_core.uut.cpu_inst.g_fetch_bonfire.fetch_inst.jr
 @200
 -
@@ -99,7 +95,14 @@ top.tb_cpu_core.uut.cpu_inst.g_fetch_bonfire.fetch_inst.jr
 @200
 -
 @28
-top.tb_cpu_core.uut.cpu_inst.execute_inst.jump_condition
-top.tb_cpu_core.uut.cpu_inst.execute_inst.can_execute
+top.tb_cpu_core.uut.cpu_inst.g_fetch_bonfire.fetch_inst.jump_valid_i
+@22
+#{top.tb_cpu_core.uut.cpu_inst.g_fetch_bonfire.fetch_inst.jump_dst_i[29:0]} top.tb_cpu_core.uut.cpu_inst.g_fetch_bonfire.fetch_inst.jump_dst_i[29] top.tb_cpu_core.uut.cpu_inst.g_fetch_bonfire.fetch_inst.jump_dst_i[28] top.tb_cpu_core.uut.cpu_inst.g_fetch_bonfire.fetch_inst.jump_dst_i[27] top.tb_cpu_core.uut.cpu_inst.g_fetch_bonfire.fetch_inst.jump_dst_i[26] top.tb_cpu_core.uut.cpu_inst.g_fetch_bonfire.fetch_inst.jump_dst_i[25] top.tb_cpu_core.uut.cpu_inst.g_fetch_bonfire.fetch_inst.jump_dst_i[24] top.tb_cpu_core.uut.cpu_inst.g_fetch_bonfire.fetch_inst.jump_dst_i[23] top.tb_cpu_core.uut.cpu_inst.g_fetch_bonfire.fetch_inst.jump_dst_i[22] top.tb_cpu_core.uut.cpu_inst.g_fetch_bonfire.fetch_inst.jump_dst_i[21] top.tb_cpu_core.uut.cpu_inst.g_fetch_bonfire.fetch_inst.jump_dst_i[20] top.tb_cpu_core.uut.cpu_inst.g_fetch_bonfire.fetch_inst.jump_dst_i[19] top.tb_cpu_core.uut.cpu_inst.g_fetch_bonfire.fetch_inst.jump_dst_i[18] top.tb_cpu_core.uut.cpu_inst.g_fetch_bonfire.fetch_inst.jump_dst_i[17] top.tb_cpu_core.uut.cpu_inst.g_fetch_bonfire.fetch_inst.jump_dst_i[16] top.tb_cpu_core.uut.cpu_inst.g_fetch_bonfire.fetch_inst.jump_dst_i[15] top.tb_cpu_core.uut.cpu_inst.g_fetch_bonfire.fetch_inst.jump_dst_i[14] top.tb_cpu_core.uut.cpu_inst.g_fetch_bonfire.fetch_inst.jump_dst_i[13] top.tb_cpu_core.uut.cpu_inst.g_fetch_bonfire.fetch_inst.jump_dst_i[12] top.tb_cpu_core.uut.cpu_inst.g_fetch_bonfire.fetch_inst.jump_dst_i[11] top.tb_cpu_core.uut.cpu_inst.g_fetch_bonfire.fetch_inst.jump_dst_i[10] top.tb_cpu_core.uut.cpu_inst.g_fetch_bonfire.fetch_inst.jump_dst_i[9] top.tb_cpu_core.uut.cpu_inst.g_fetch_bonfire.fetch_inst.jump_dst_i[8] top.tb_cpu_core.uut.cpu_inst.g_fetch_bonfire.fetch_inst.jump_dst_i[7] top.tb_cpu_core.uut.cpu_inst.g_fetch_bonfire.fetch_inst.jump_dst_i[6] top.tb_cpu_core.uut.cpu_inst.g_fetch_bonfire.fetch_inst.jump_dst_i[5] top.tb_cpu_core.uut.cpu_inst.g_fetch_bonfire.fetch_inst.jump_dst_i[4] top.tb_cpu_core.uut.cpu_inst.g_fetch_bonfire.fetch_inst.jump_dst_i[3] top.tb_cpu_core.uut.cpu_inst.g_fetch_bonfire.fetch_inst.jump_dst_i[2] top.tb_cpu_core.uut.cpu_inst.g_fetch_bonfire.fetch_inst.jump_dst_i[1] top.tb_cpu_core.uut.cpu_inst.g_fetch_bonfire.fetch_inst.jump_dst_i[0]
+@29
+top.tb_cpu_core.uut.cpu_inst.g_fetch_bonfire.fetch_inst.target_match
+@28
+top.tb_cpu_core.uut.cpu_inst.g_fetch_bonfire.fetch_inst.jump_ready_o
+top.tb_cpu_core.uut.cpu_inst.execute_inst.riscv_cu.csr_inst.irq_unit.interrupt_exec_o
+top.tb_cpu_core.uut.cpu_inst.execute_inst.riscv_cu.csr_inst.irq_unit.interrupt_ack_i
 [pattern_trace] 1
 [pattern_trace] 0

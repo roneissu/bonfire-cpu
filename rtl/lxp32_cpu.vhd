@@ -123,7 +123,7 @@ signal sstep : std_logic;
 
 begin
 
-g_fetch_simple: if not ( USE_RISCV  or  BRANCH_PREDICTTOR )  generate
+g_fetch_simple: if  not  BRANCH_PREDICTTOR  generate
 
 fetch_inst: entity work.lxp32_fetch(rtl)
     generic map(
@@ -153,7 +153,11 @@ fetch_inst: entity work.lxp32_fetch(rtl)
 
 end generate;
 
-g_fetch_bonfire: if USE_RISCV and BRANCH_PREDICTTOR generate
+g_fetch_bonfire: if  BRANCH_PREDICTTOR generate
+
+  assert USE_RISCV
+    report "BRANCH_PREDICTTOR only supported with USE_RISCV = true "
+    severity failure; 
 
   fetch_inst: entity work.bonfire_fetch(rtl)
       generic map(
@@ -187,6 +191,7 @@ end generate;
 
 lxp32decode: if not USE_RISCV generate
   decode_inst: entity work.lxp32_decode(rtl)
+
     port map(
         clk_i=>clk_i,
         rst_i=>rst_i,
@@ -248,6 +253,9 @@ end generate;
 
 riscv_decode: if USE_RISCV generate
 decode_inst: entity work.riscv_decode(rtl)
+    generic map (
+     BRANCH_PREDICTTOR=>BRANCH_PREDICTTOR
+    )
     port map(
         clk_i=>clk_i,
         rst_i=>rst_i,
@@ -325,7 +333,8 @@ execute_inst: entity work.lxp32_execute(rtl)
         MUL_ARCH=>MUL_ARCH,
         USE_RISCV=>USE_RISCV,
         ENABLE_TIMER=>ENABLE_TIMER,
-        TIMER_XLEN=>TIMER_XLEN
+        TIMER_XLEN=>TIMER_XLEN,
+        BRANCH_PREDICTTOR=>BRANCH_PREDICTTOR
     )
     port map(
         clk_i=>clk_i,

@@ -30,6 +30,9 @@ use IEEE.NUMERIC_STD.ALL;
 use work.riscv_decodeutil.all;
 
 entity riscv_decode is
+generic (
+   BRANCH_PREDICTTOR : boolean
+);
 port(
       clk_i: in std_logic;
       rst_i: in std_logic;
@@ -239,13 +242,13 @@ begin
 
       else
         fencei_o <= '0'; -- clear fencei_o always after one cycle
-        -- if jump_valid_i='1' then
-        --     -- When exeuction stage exeuctes jump do nothing
-        --     valid_out<='0';
-        --     self_busy<='0';
-        --     state<=Regular;
-        -- elsif downstream_busy='0' then
-        if downstream_busy='0' then
+        if not BRANCH_PREDICTTOR and  jump_valid_i='1' then
+            -- When exeuction stage exeuctes jump do nothing
+            valid_out<='0';
+            self_busy<='0';
+            state<=Regular;
+        elsif downstream_busy='0' then
+        --if downstream_busy='0' then
           case state is
             when Regular =>
                cmd_loadop3_o<='0';
