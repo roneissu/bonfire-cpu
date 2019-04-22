@@ -72,7 +72,7 @@ signal branch_target : std_logic_vector(31 downto 0);
 signal fetch_branch_target : std_logic;
 signal branch_target_fetched : std_logic := '0';
 signal stall_re : std_logic;
-signal predict_success : std_logic;
+--signal predict_success : std_logic;
 signal predict_fail : std_logic;
 signal target_address_buffer : std_logic_vector(fetch_addr'range) := (others=>'0');
 signal target_valid : std_logic := '0';
@@ -107,8 +107,12 @@ begin
   -- Allow only one level of prefetch
   if branch_target_fetched = '0' then
     if op = rv_jal  then
-      branch_offset <= get_UJ_immediate(lli_dat_i);
-      fetch_branch_target <= '1';
+      o  := get_UJ_immediate(lli_dat_i);
+
+      --if not (o = 0) then
+        fetch_branch_target <= '1';
+      --end if;
+      branch_offset <= o;
     elsif op = rv_branch then
        o := get_SB_immediate(lli_dat_i);
       -- From RISCV ISA Spec:
@@ -129,12 +133,13 @@ valid_o<=not (fifo_empty or  predict_fail);
 jump_ready_o<= jump_valid_i and  not ( fifo_empty or predict_fail );
 
 target_match <= '1' when jump_dst_i=target_address_buffer and target_valid='1' else '0';
-predict_success <= '1'  when  branch_target_fetched='1' and jump_valid_i='1'
-                               and target_match='1' and fifo_empty='0'
-                    else '0';
+-- predict_success <= '1'  when  target_valid='1' and jump_valid_i='1'
+--                                and target_match='1' and fifo_empty='0'
+--                     else '0';
 
-predict_fail <= '1' when target_match='0' and target_valid='1' and
-                         jump_valid_i='1' and wipe_fifo='0'
+predict_fail <= '1' when ((target_match='0' and target_valid='1' and jump_valid_i='1')
+                           or (target_valid='0' and jump_valid_i='1') )
+                         and wipe_fifo='0' and fifo_empty='0'
                  else '0';
 
 -- FETCH state machine

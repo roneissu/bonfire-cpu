@@ -52,7 +52,8 @@ ARCHITECTURE behavior OF tb_cpu_core IS
         MUL_ARCH: string:="dsp";
         START_ADDR: std_logic_vector(29 downto 0):=(others=>'0');
         USE_RISCV : boolean := false;
-      REG_RAM_STYLE : string := "block"
+        REG_RAM_STYLE : string := "block";
+        BRANCH_PREDICTTOR : boolean := false
      );
     PORT(
          clk_i : IN  std_logic;
@@ -133,7 +134,8 @@ BEGIN
    uut: lxp32u_top
    generic map (
      USE_RISCV=>true,
-     MUL_ARCH=>"spartandsp"
+     MUL_ARCH=>"spartandsp",
+     BRANCH_PREDICTTOR=>true
    )
    PORT MAP (
           clk_i => clk_i,

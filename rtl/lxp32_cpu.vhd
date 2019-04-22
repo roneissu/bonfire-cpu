@@ -18,7 +18,8 @@ entity lxp32_cpu is
         USE_RISCV : boolean := false;
         REG_RAM_STYLE : string := "block";
         ENABLE_TIMER : boolean := true;
-        TIMER_XLEN : natural := 32
+        TIMER_XLEN : natural := 32;
+        BRANCH_PREDICTTOR : boolean := false
     );
     port(
         clk_i: in std_logic;
@@ -122,7 +123,7 @@ signal sstep : std_logic;
 
 begin
 
-g_fetch_lxp32: if not USE_RISCV generate
+g_fetch_simple: if not ( USE_RISCV  or  BRANCH_PREDICTTOR )  generate
 
 fetch_inst: entity work.lxp32_fetch(rtl)
     generic map(
@@ -152,7 +153,7 @@ fetch_inst: entity work.lxp32_fetch(rtl)
 
 end generate;
 
-g_fetch_bonfire: if USE_RISCV generate
+g_fetch_bonfire: if USE_RISCV and BRANCH_PREDICTTOR generate
 
   fetch_inst: entity work.bonfire_fetch(rtl)
       generic map(

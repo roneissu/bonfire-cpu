@@ -11,7 +11,24 @@ addi a0,a0,-1
 sw a0,4(s0)
 bnez a0, loop
 nop
+// Forward branch test
+beqz a0, forward
+li a0, -1
+sw a0,0(s0) // should not happen...
+forward:
+// jalr test and call return test
+la s1, subroutine
+jalr ra, s1
+sw a0,4(s0) // should write #55aaffee
 
-sw a0,0(s0) // write  to monitor result register
+li a0,0
+sw a0,0(s0) // write success to monitor result register
 f0:
 j f0
+
+subroutine:
+li a0, 0x55aaffee
+ret
+
+li a0, -1
+sw a0,0(s0) // should not happen...
