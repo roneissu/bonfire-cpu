@@ -16,17 +16,18 @@
       </db_ref>
    </db_ref_list>
    <zoom_setting>
-      <ZoomStartTime time="114500100fs"></ZoomStartTime>
-      <ZoomEndTime time="268000101fs"></ZoomEndTime>
-      <Cursor1Time time="250900000fs"></Cursor1Time>
+      <ZoomStartTime time="0fs"></ZoomStartTime>
+      <ZoomEndTime time="153900001fs"></ZoomEndTime>
+      <Cursor1Time time="105000000fs"></Cursor1Time>
    </zoom_setting>
    <column_width_setting>
       <NameColumnWidth column_width="219"></NameColumnWidth>
-      <ValueColumnWidth column_width="122"></ValueColumnWidth>
+      <ValueColumnWidth column_width="118"></ValueColumnWidth>
    </column_width_setting>
    <WVObjectSize size="43" />
    <wave_markers>
-      <marker label="" time="105000000" />
+      <marker label="" time="55000000" />
+      <marker label="" time="105400000" />
    </wave_markers>
    <wvobject type="logic" fp_name="/tb_cpu_core/clk_i">
       <obj_property name="ElementShortName">clk_i</obj_property>
@@ -166,10 +167,6 @@
       <obj_property name="ElementShortName">debug_jump_dst_i[31:0]</obj_property>
       <obj_property name="ObjectShortName">debug_jump_dst_i[31:0]</obj_property>
    </wvobject>
-   <wvobject type="other" fp_name="/tb_cpu_core/uut/cpu_inst/g_fetch_bonfire/fetch_inst/fetch_state">
-      <obj_property name="ElementShortName">fetch_state</obj_property>
-      <obj_property name="ObjectShortName">fetch_state</obj_property>
-   </wvobject>
    <wvobject fp_name="divider73" type="divider">
    </wvobject>
    <wvobject type="array" fp_name="/tb_cpu_core/uut/cpu_inst/g_fetch_bonfire/fetch_inst/next_ip_o">
@@ -183,6 +180,10 @@
    <wvobject type="logic" fp_name="/tb_cpu_core/uut/cpu_inst/g_fetch_bonfire/fetch_inst/valid_o">
       <obj_property name="ElementShortName">valid_o</obj_property>
       <obj_property name="ObjectShortName">valid_o</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/tb_cpu_core/uut/cpu_inst/g_fetch_bonfire/fetch_inst/target_match">
+      <obj_property name="ElementShortName">target_match</obj_property>
+      <obj_property name="ObjectShortName">target_match</obj_property>
    </wvobject>
    <wvobject type="logic" fp_name="/tb_cpu_core/uut/cpu_inst/g_fetch_bonfire/fetch_inst/jump_valid_i">
       <obj_property name="ElementShortName">jump_valid_i</obj_property>

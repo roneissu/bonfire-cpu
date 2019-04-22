@@ -77,13 +77,14 @@ signal predict_fail : std_logic;
 signal target_address_buffer : std_logic_vector(fetch_addr'range) := (others=>'0');
 signal target_valid : std_logic := '0';
 signal target_match : std_logic;
+signal wipe_fifo : std_logic := '0';
 
 signal current_addr : std_logic_vector(fetch_addr'range);
 
 signal debug_jump_dst_i : std_logic_vector(31 downto 0);
 
-type t_fetch_state is (s_fetch_next,s_fetch_target,s_target_fetched, s_mispredict);
-signal fetch_state : t_fetch_state := s_fetch_next;
+--type t_fetch_state is (s_fetch_next,s_fetch_target,s_target_fetched, s_mispredict);
+--signal fetch_state : t_fetch_state := s_fetch_next;
 
 signal debug_adr_o : std_logic_vector(31 downto 0);
 
@@ -128,11 +129,12 @@ valid_o<=not (fifo_empty or  predict_fail);
 jump_ready_o<= jump_valid_i and  not ( fifo_empty or predict_fail );
 
 target_match <= '1' when jump_dst_i=target_address_buffer and target_valid='1' else '0';
-predict_success <= '1'  when  fetch_state=s_target_fetched and jump_valid_i='1'
+predict_success <= '1'  when  branch_target_fetched='1' and jump_valid_i='1'
                                and target_match='1' and fifo_empty='0'
                     else '0';
 
-predict_fail <= '1' when target_match='0' and jump_valid_i='1' and fetch_state=s_target_fetched
+predict_fail <= '1' when target_match='0' and target_valid='1' and
+                         jump_valid_i='1' and wipe_fifo='0'
                  else '0';
 
 -- FETCH state machine
@@ -146,61 +148,41 @@ begin
       requested<='0';
       jr<='0';
       suppress_re<='0';
+      wipe_fifo <= '0';
     else
       jr<='0';
       current_addr <= fetch_addr;
       if lli_busy_i='0' then
         requested<=re; --and not (jump_valid_i and not jr);
       end if;
-      case (fetch_state) is
-        when s_fetch_next =>
-           if fetch_branch_target='1' then
-             fetch_addr <= branch_target(31 downto 2);
-             target_address_buffer <= branch_target(31 downto 2);
-             branch_target_fetched <= '1';
-             target_valid <= '1';
-             fetch_state <= s_fetch_target;
-           elsif next_word = '1' then
-             fetch_addr  <= std_logic_vector(unsigned(fetch_addr)+1);
-           end if;
-        when s_fetch_target =>
-           if next_word = '1' then
-             fetch_state <= s_target_fetched;
-             fetch_addr  <= std_logic_vector(unsigned(fetch_addr)+1);
-           end if;
-        when s_target_fetched =>
-           if jump_valid_i='1' and fifo_empty='0' then
-             target_valid <= '0';
-             if target_match='1' then
-               fetch_state <= s_fetch_next;
-             else
-               fetch_addr <= jump_dst_i;
-               fetch_state <= s_fetch_next;
-             end if;
-           end if;
-           if fetch_branch_target='1' then
-             fetch_addr <= branch_target(31 downto 2);
-             target_address_buffer <= branch_target(31 downto 2);
-             branch_target_fetched <= '1';
-             target_valid <= '1';
-             fetch_state <= s_fetch_target;
-           elsif next_word = '1' then
-             fetch_addr  <= std_logic_vector(unsigned(fetch_addr)+1);
-           end if;
-           -- if next_word = '1' then
-           --   fetch_addr  <= std_logic_vector(unsigned(fetch_addr)+1);
-           -- end if;
-         when s_mispredict =>
-            if fifo_empty='0' then
-              fetch_state<=s_fetch_next;
-            end if;
-      end case;
+      -- Set next fetch adr
 
+       if fifo_empty='0' then
+         wipe_fifo <= '0';
+       end if;
+       branch_target_fetched <= '0';
+       if next_word = '1' then
+         if fetch_branch_target='1' then
+            fetch_addr <= branch_target(31 downto 2);
+            target_address_buffer <= branch_target(31 downto 2);
+            branch_target_fetched <= '1';
+            target_valid <= '1';
+         elsif  jump_valid_i='1' and  target_match='0' and wipe_fifo='0' then --misprecdict
+              --report "Branch mispredict" severity note;
+              fetch_addr <= jump_dst_i;
+              wipe_fifo <= '1';
+         else
+           fetch_addr  <= std_logic_vector(unsigned(fetch_addr)+1);
+         end if;
+       end if;
+       if jump_valid_i='1' then
+         target_valid <= '0';
+       end if;
     end if;
   end if;
 end process;
 
-next_word<=(fifo_empty or ready_i) and not lli_busy_i and not fetch_branch_target;
+next_word<=(fifo_empty or ready_i) and not lli_busy_i; -- and not fetch_branch_target;
 stall_re <= (fetch_branch_target and not branch_target_fetched) or predict_fail;
 re<=(fifo_empty or ready_i)  and  not (  suppress_re or stall_re ) ;
 lli_re_o<=re;
