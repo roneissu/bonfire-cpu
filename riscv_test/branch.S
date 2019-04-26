@@ -17,17 +17,21 @@ label1:
 sw a1,4(gp) // ok
 bne t1,t2, label2
 sw a1,8(gp) // ok
+j label2b
 label2:
 sw a2,8(gp) // not ok
+label2b:
 addi t2,t2,1 // t2 now 6
 blt t1,t2,label3
 sw a2,12(gp) // not ok
 label3:
 sw a1,12(gp) // ok
 bge t1,t2,label4
-sw a1,16(gp)
+sw a1,16(gp) // ok
+j label4b
 label4:
-sw a2,16(gp)
+sw a2,16(gp) // not ok
+label4b:
 bge t2,t1, label6
 sw a2,20(gp) // not ok
 label6:

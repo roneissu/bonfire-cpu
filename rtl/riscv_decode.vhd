@@ -31,7 +31,7 @@ use work.riscv_decodeutil.all;
 
 entity riscv_decode is
 generic (
-   BRANCH_PREDICTTOR : boolean
+   BRANCH_PREDICTOR : boolean
 );
 port(
       clk_i: in std_logic;
@@ -39,6 +39,7 @@ port(
 
       word_i: in std_logic_vector(31 downto 0); -- actual instruction to decode
       next_ip_i: in std_logic_vector(29 downto 0); -- ip (PC) of next instruction
+      jump_prediction_i : in std_logic; -- '1': conditional branch is predicted taken, '0' not taken
       valid_i: in std_logic;  -- input valid
       jump_valid_i: in std_logic;
       ready_o: out std_logic;  -- decode stage ready to decode next instruction
@@ -78,6 +79,7 @@ port(
       cmd_mul_high_o : out std_logic; -- TH: Multiplier bits
       cmd_signed_b_o : out std_logic; -- Multiplier operand b signed
       cmd_slt_o : out std_logic; -- TH: RISC-V SLT/SLTU command
+      jump_prediction_o  : out std_logic;
 
 
       -- TH: RISC-V CSR commands
@@ -107,6 +109,9 @@ port(
 end riscv_decode;
 
 architecture rtl of riscv_decode is
+
+attribute keep_hierarchy : string;
+attribute keep_hierarchy of rtl: architecture is "yes";
 
 -- RISCV instruction fields
 signal opcode : t_opcode;
@@ -242,7 +247,7 @@ begin
 
       else
         fencei_o <= '0'; -- clear fencei_o always after one cycle
-        if not BRANCH_PREDICTTOR and  jump_valid_i='1' then
+        if not BRANCH_PREDICTOR and  jump_valid_i='1' then
             -- When exeuction stage exeuctes jump do nothing
             valid_out<='0';
             self_busy<='0';
@@ -275,6 +280,7 @@ begin
                cmd_tret_o <= '0';
                interrupt_o <= '0';
                jump_type_o<="0000";
+               jump_prediction_o<='0';
 
                dst_out<=(others=>'0'); -- defaults to register 0, which is never read
                displacement:= (others=>'0');
@@ -387,6 +393,7 @@ begin
                            op3_o<=next_ip_i&"00";
                            dst_out<="000"&rd;
                            t_valid:='1';
+                           jump_prediction_o<=jump_prediction_i;
 
                        when rv_jalr =>
 
@@ -408,7 +415,9 @@ begin
                            cmd_negate_op2_o<='1'; -- needed by ALU comparator to work correctly
                            t_valid:='1';
                            self_busy<='1';
+                           jump_prediction_o<=jump_prediction_i;
                            state<=ContinueCjmp;
+
 
                        when rv_load =>
 

@@ -43,7 +43,7 @@ END tb_cpu_core;
 
 ARCHITECTURE behavior OF tb_cpu_core IS
 
-constant BRANCH_PREDICTTOR : boolean := false;
+constant BRANCH_PREDICTOR : boolean := true;
 
 --constant TestFile : string :=  "../src/bonfire-cpu_0/ise/tb_bonfire_cpu/compiled_tests/timer_irq.hex";
 --constant TestFile : string :=  "../src/bonfire-cpu_0/riscv_test/timer_irq.hex";
@@ -61,7 +61,7 @@ constant TestFile : string :=  "../src/bonfire-cpu_0/riscv_test/sstep.hex";
         START_ADDR: std_logic_vector(29 downto 0):=(others=>'0');
         USE_RISCV : boolean := false;
         REG_RAM_STYLE : string := "block";
-        BRANCH_PREDICTTOR : boolean := false
+        BRANCH_PREDICTOR : boolean := false
      );
     PORT(
          clk_i : IN  std_logic;
@@ -142,7 +142,7 @@ BEGIN
    generic map (
      USE_RISCV=>true,
      MUL_ARCH=>"spartandsp",
-     BRANCH_PREDICTTOR=>BRANCH_PREDICTTOR
+     BRANCH_PREDICTOR=>BRANCH_PREDICTOR
    )
    PORT MAP (
           clk_i => clk_i,

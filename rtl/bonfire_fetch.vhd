@@ -33,6 +33,7 @@ entity bonfire_fetch is
 
     word_o: out std_logic_vector(31 downto 0);
     next_ip_o: out std_logic_vector(29 downto 0);
+    jump_prediction_o : out std_logic;
     valid_o: out std_logic;
     ready_i: in std_logic;
     fence_i_i : in std_logic;
@@ -44,6 +45,9 @@ entity bonfire_fetch is
 end entity;
 
 architecture rtl of bonfire_fetch is
+
+attribute keep_hierarchy : string;
+attribute keep_hierarchy of rtl: architecture is "yes";
 
 --signal init: std_logic:='1';
 --signal init_cnt: unsigned(7 downto 0):=(others=>'0');
@@ -57,9 +61,9 @@ signal requested: std_logic:='0';
 
 signal fifo_rst: std_logic;
 signal fifo_we: std_logic;
-signal fifo_din: std_logic_vector(61 downto 0);
+signal fifo_din: std_logic_vector(62 downto 0);
 signal fifo_re: std_logic;
-signal fifo_dout: std_logic_vector(61 downto 0);
+signal fifo_dout: std_logic_vector(62 downto 0);
 signal fifo_empty: std_logic;
 signal fifo_full: std_logic;
 
@@ -74,8 +78,8 @@ signal branch_target_fetched : std_logic := '0';
 signal stall_re : std_logic;
 --signal predict_success : std_logic;
 signal predict_fail : std_logic;
-signal target_address_buffer : std_logic_vector(fetch_addr'range) := (others=>'0');
-signal target_valid : std_logic := '0';
+--signal target_address_buffer : std_logic_vector(fetch_addr'range) := (others=>'0');
+--signal target_valid : std_logic := '0';
 signal target_match : std_logic;
 signal wipe_fifo : std_logic := '0';
 
@@ -98,7 +102,7 @@ debug_jump_dst_i <= jump_dst_i&"00";
 branch_target <= std_logic_vector(signed(current_addr&"00")+branch_offset);
 
 
-branch_inspect: process (lli_dat_i,fetch_addr,op)
+branch_inspect: process (lli_dat_i,op,jump_valid_i,branch_target_fetched)
 variable o : xsigned;
 begin
 
@@ -130,18 +134,17 @@ end process;
 
 
 
-valid_o<=not (fifo_empty or  predict_fail);
-jump_ready_o<= jump_valid_i and  not ( fifo_empty or predict_fail );
+valid_o<=not fifo_empty and not predict_fail;
+jump_ready_o<= jump_valid_i and  not (fifo_empty or predict_fail) ;
 
-target_match <= '1' when jump_dst_i=target_address_buffer and target_valid='1' else '0';
+
+--target_match <= '1' when jump_dst_i=target_address_buffer and target_valid='1' else '0';
 -- predict_success <= '1'  when  target_valid='1' and jump_valid_i='1'
 --                                and target_match='1' and fifo_empty='0'
 --                     else '0';
 
-predict_fail <= '1' when ((target_match='0' and target_valid='1' and jump_valid_i='1')
-                           or (target_valid='0' and jump_valid_i='1') )
-                         and wipe_fifo='0' and fifo_empty='0'
-                 else '0';
+predict_fail <= '1' when  jump_valid_i='1' and wipe_fifo='0' and fifo_empty='0'
+                     else '0';
 
 -- FETCH state machine
 
@@ -149,17 +152,18 @@ process (clk_i) is
 begin
   if rising_edge(clk_i) then
     branch_target_fetched<='0';
+    --wipe_fifo <= '0';
+    suppress_re<='0';
     if rst_i='1' then
       fetch_addr<=START_ADDR;
       requested<='0';
       jr<='0';
-      suppress_re<='0';
       wipe_fifo <= '0';
     else
       jr<='0';
       current_addr <= fetch_addr;
       if lli_busy_i='0' then
-        requested<=re; --and not (jump_valid_i and not jr);
+        requested<=re and not fetch_branch_target; --and not (jump_valid_i and not jr);
       end if;
       -- Set next fetch adr
 
@@ -167,30 +171,31 @@ begin
          wipe_fifo <= '0';
        end if;
        branch_target_fetched <= '0';
-       if next_word = '1' then
+       --if next_word = '1' then
          if  jump_valid_i='0' and fetch_branch_target='1' then
             fetch_addr <= branch_target(31 downto 2);
-            target_address_buffer <= branch_target(31 downto 2);
+          --  target_address_buffer <= branch_target(31 downto 2);
             branch_target_fetched <= '1';
-            target_valid <= '1';
-         elsif  jump_valid_i='1' and  target_match='0' and wipe_fifo='0' then --misprecdict
+          --  target_valid <= '1';
+         elsif  jump_valid_i='1' and  wipe_fifo='0' then --misprecdict
               --report "Branch mispredict" severity note;
               fetch_addr <= jump_dst_i;
               wipe_fifo <= '1';
-         else
+              suppress_re<='1';
+         elsif next_word = '1' then
            fetch_addr  <= std_logic_vector(unsigned(fetch_addr)+1);
          end if;
-       end if;
-       if jump_valid_i='1' then
-         target_valid <= '0';
-       end if;
+       --end if;
+       -- if jump_valid_i='1' then
+       --   target_valid <= '0';
+       -- end if;
     end if;
   end if;
 end process;
 
 next_word<=(fifo_empty or ready_i) and not lli_busy_i; -- and not fetch_branch_target;
-stall_re <= (fetch_branch_target and not branch_target_fetched) or predict_fail;
-re<=(fifo_empty or ready_i)  and  not (  suppress_re or stall_re ) ;
+stall_re <= (fetch_branch_target and not branch_target_fetched)  or predict_fail;
+re<=(fifo_empty or ready_i);-- and  not suppress_re; -- or stall_re ) ;
 lli_re_o<=re;
 lli_adr_o<=fetch_addr;
 
@@ -201,14 +206,14 @@ lli_cc_invalidate_o <= fence_i_i; -- currently only pass through
 -- Small instruction buffer
 
 fifo_rst<=  rst_i or predict_fail;
-fifo_we<=requested and not lli_busy_i;
-fifo_din<=fetch_addr&lli_dat_i;
+fifo_we<=requested and not (lli_busy_i or suppress_re);
+fifo_din<= fetch_branch_target&fetch_addr&lli_dat_i;
 fifo_re<=ready_i and not fifo_empty;
 
 
 ubuf_inst: entity work.lxp32_ubuf(rtl)
   generic map(
-    DATA_WIDTH=>62
+    DATA_WIDTH=>fifo_dout'length
   )
   port map(
     clk_i=>clk_i,
@@ -224,8 +229,7 @@ ubuf_inst: entity work.lxp32_ubuf(rtl)
   );
 
 next_ip_o<=fifo_dout(61 downto 32);
-
 word_o<=fifo_dout(31 downto 0) ;
-
+jump_prediction_o <=fifo_dout(62);
 
 end architecture;

@@ -20,7 +20,7 @@ entity lxp32_execute is
       USE_RISCV : boolean := false;
       ENABLE_TIMER : boolean := true;
       TIMER_XLEN : natural := 32;
-      BRANCH_PREDICTTOR : boolean
+      BRANCH_PREDICTOR : boolean
    );
    port(
       clk_i: in std_logic;
@@ -74,6 +74,7 @@ entity lxp32_execute is
 
 
       jump_type_i: in std_logic_vector(3 downto 0);
+      jump_prediction_i : in std_logic; -- '1': conditional branch is predicted taken, '0' not taken
 
       op1_i: in std_logic_vector(31 downto 0);
       op2_i: in std_logic_vector(31 downto 0);
@@ -134,6 +135,7 @@ signal jump_condition: std_logic;
 signal jump_valid: std_logic:='0';
 signal jump_dst, jump_dst_r: std_logic_vector(jump_dst_o'range);
 signal cond_reg : std_logic_vector (2 downto 0);
+signal jump_prediction_fail : std_logic;
 
 -- SLT
 signal slt_we : std_logic:='0';
@@ -349,7 +351,7 @@ begin
    elsif cmd_trap_i = '1' or ex_exception='1' then
      jump_dst<=mtvec;
    else
-     if BRANCH_PREDICTTOR then
+     if BRANCH_PREDICTOR then
        if jump_condition='1' then
           jump_dst<=target_address(31 downto 2);
        else
@@ -362,7 +364,10 @@ begin
 end process;
 
 
-jump_pred: if BRANCH_PREDICTTOR generate
+jump_pred: if BRANCH_PREDICTOR generate
+
+jump_prediction_fail <=  (jump_prediction_i xor jump_condition) or cmd_trap_i;
+
 process (clk_i) is
 begin
    if rising_edge(clk_i) then
@@ -379,7 +384,7 @@ begin
        elsif jump_valid='0' then
             jump_dst_r <= jump_dst; -- latch jump destination
             ex_exception_r <= ex_exception;
-            if (can_execute='1' and cmd_jump_i='1' ) or ex_exception='1' then
+            if (can_execute='1' and cmd_jump_i='1' and jump_prediction_fail='1' ) or ex_exception='1' then
                jump_valid<='1';
                if not USE_RISCV then interrupt_return<=op1_i(0); end if;
             end if;
@@ -388,11 +393,11 @@ begin
    end if;
 end process;
 
-jump_valid_o<=jump_valid or (can_execute and cmd_jump_i);
+jump_valid_o<=jump_valid or (can_execute and cmd_jump_i and jump_prediction_fail);
 
 end generate;
 
-no_jump_pred: if not BRANCH_PREDICTTOR generate
+no_jump_pred: if not BRANCH_PREDICTOR generate
 process (clk_i) is
 begin
    if rising_edge(clk_i) then
@@ -414,7 +419,7 @@ begin
          ex_exception_r<='0';
          interrupt_return<='0';
        end if;
-     end if;   
+     end if;
    end if;
 end process;
 

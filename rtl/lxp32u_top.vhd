@@ -30,7 +30,7 @@ entity lxp32u_top is
 		START_ADDR: std_logic_vector(29 downto 0):=(others=>'0');
 		USE_RISCV : boolean := false;
     REG_RAM_STYLE : string := "block";
-		BRANCH_PREDICTTOR : boolean := false
+		BRANCH_PREDICTOR : boolean := false
 	);
 	port(
 		clk_i: in std_logic;
@@ -66,7 +66,7 @@ cpu_inst: entity work.lxp32_cpu(rtl)
 		START_ADDR=>START_ADDR,
 		USE_RISCV=>USE_RISCV,
     REG_RAM_STYLE=>REG_RAM_STYLE,
-		BRANCH_PREDICTTOR=>BRANCH_PREDICTTOR
+		BRANCH_PREDICTOR=>BRANCH_PREDICTOR
 	)
 	port map(
 		clk_i=>clk_i,

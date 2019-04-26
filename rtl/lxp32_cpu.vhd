@@ -19,7 +19,7 @@ entity lxp32_cpu is
         REG_RAM_STYLE : string := "block";
         ENABLE_TIMER : boolean := true;
         TIMER_XLEN : natural := 32;
-        BRANCH_PREDICTTOR : boolean := false
+        BRANCH_PREDICTOR : boolean := false
     );
     port(
         clk_i: in std_logic;
@@ -52,6 +52,8 @@ signal fetch_next_ip: std_logic_vector(29 downto 0);
 signal fetch_valid: std_logic;
 signal fetch_jump_ready: std_logic;
 signal fetch_fence_i : std_logic;
+
+signal fetch_jump_prediction : std_logic;
 
 signal decode_ready: std_logic;
 signal decode_valid: std_logic;
@@ -90,10 +92,13 @@ signal decode_dst: std_logic_vector(7 downto 0);
 signal decode_csr_x0_o :  STD_LOGIC; -- should be set when rs field is x0
 signal decode_csr_op_o :  STD_LOGIC_VECTOR (1 downto 0); -- lower bits of funct3
 
+signal decode_jump_prediction_o : std_logic;
+
 
 signal execute_ready: std_logic;
 signal execute_jump_valid: std_logic;
 signal execute_jump_dst: std_logic_vector(29 downto 0);
+signal execute_jump_prediction  : std_logic;
 
 
 signal sp_raddr1: std_logic_vector(7 downto 0);
@@ -123,7 +128,7 @@ signal sstep : std_logic;
 
 begin
 
-g_fetch_simple: if  not  BRANCH_PREDICTTOR  generate
+g_fetch_simple: if  not  BRANCH_PREDICTOR  generate
 
 fetch_inst: entity work.lxp32_fetch(rtl)
     generic map(
@@ -149,15 +154,18 @@ fetch_inst: entity work.lxp32_fetch(rtl)
         jump_valid_i=>execute_jump_valid,
         jump_dst_i=>execute_jump_dst,
         jump_ready_o=>fetch_jump_ready
+
     );
+
+    fetch_jump_prediction <= '0';
 
 end generate;
 
-g_fetch_bonfire: if  BRANCH_PREDICTTOR generate
+g_fetch_bonfire: if  BRANCH_PREDICTOR generate
 
   assert USE_RISCV
-    report "BRANCH_PREDICTTOR only supported with USE_RISCV = true "
-    severity failure; 
+    report "BRANCH_PREDICTOR only supported with USE_RISCV = true "
+    severity failure;
 
   fetch_inst: entity work.bonfire_fetch(rtl)
       generic map(
@@ -182,8 +190,11 @@ g_fetch_bonfire: if  BRANCH_PREDICTTOR generate
 
           jump_valid_i=>execute_jump_valid,
           jump_dst_i=>execute_jump_dst,
-          jump_ready_o=>fetch_jump_ready
+          jump_ready_o=>fetch_jump_ready,
+          jump_prediction_o=>fetch_jump_prediction
       );
+
+
 
 end generate;
 
@@ -236,6 +247,8 @@ lxp32decode: if not USE_RISCV generate
 
         jump_type_o=>decode_jump_type,
 
+
+
         op1_o=>decode_op1,
         op2_o=>decode_op2,
         op3_o=>decode_op3,
@@ -254,7 +267,7 @@ end generate;
 riscv_decode: if USE_RISCV generate
 decode_inst: entity work.riscv_decode(rtl)
     generic map (
-     BRANCH_PREDICTTOR=>BRANCH_PREDICTTOR
+     BRANCH_PREDICTOR=>BRANCH_PREDICTOR
     )
     port map(
         clk_i=>clk_i,
@@ -318,6 +331,8 @@ decode_inst: entity work.riscv_decode(rtl)
         sstep_i => sstep,
 
         jump_type_o=>decode_jump_type,
+        jump_prediction_i=>fetch_jump_prediction,
+        jump_prediction_o=>execute_jump_prediction,
 
         op1_o=>decode_op1,
         op2_o=>decode_op2,
@@ -334,7 +349,7 @@ execute_inst: entity work.lxp32_execute(rtl)
         USE_RISCV=>USE_RISCV,
         ENABLE_TIMER=>ENABLE_TIMER,
         TIMER_XLEN=>TIMER_XLEN,
-        BRANCH_PREDICTTOR=>BRANCH_PREDICTTOR
+        BRANCH_PREDICTOR=>BRANCH_PREDICTOR
     )
     port map(
         clk_i=>clk_i,
@@ -376,6 +391,7 @@ execute_inst: entity work.lxp32_execute(rtl)
         sstep_o => sstep,
 
         jump_type_i=>decode_jump_type,
+        jump_prediction_i=>execute_jump_prediction,
 
         op1_i=>decode_op1,
         op2_i=>decode_op2,
