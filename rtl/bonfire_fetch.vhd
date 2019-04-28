@@ -75,12 +75,9 @@ signal branch_offset : xsigned;
 signal branch_target : std_logic_vector(31 downto 0);
 signal fetch_branch_target : std_logic;
 signal branch_target_fetched : std_logic := '0';
-signal stall_re : std_logic;
---signal predict_success : std_logic;
+
 signal predict_fail : std_logic;
---signal target_address_buffer : std_logic_vector(fetch_addr'range) := (others=>'0');
---signal target_valid : std_logic := '0';
-signal target_match : std_logic;
+
 signal wipe_fifo : std_logic := '0';
 
 signal current_addr : std_logic_vector(fetch_addr'range);
@@ -136,12 +133,6 @@ end process;
 
 valid_o<=not fifo_empty and not predict_fail;
 jump_ready_o<= jump_valid_i and  not (fifo_empty or predict_fail) ;
-
-
---target_match <= '1' when jump_dst_i=target_address_buffer and target_valid='1' else '0';
--- predict_success <= '1'  when  target_valid='1' and jump_valid_i='1'
---                                and target_match='1' and fifo_empty='0'
---                     else '0';
 
 predict_fail <= '1' when  jump_valid_i='1' and wipe_fifo='0' -- and fifo_empty='0'
                      else '0';
@@ -199,12 +190,10 @@ begin
 end process;
 
 next_word<=(fifo_empty or ready_i) and not lli_busy_i; -- and not fetch_branch_target;
-stall_re <= (fetch_branch_target and not branch_target_fetched)  or predict_fail;
-re<=(fifo_empty or ready_i) and not stall_re;-- and  not suppress_re; -- or stall_re ) ;
+
+re<=(fifo_empty or ready_i) and not predict_fail;-- and  not suppress_re; -- or stall_re ) ;
 lli_re_o<=re;
 lli_adr_o<=fetch_addr;
-
-
 
 lli_cc_invalidate_o <= fence_i_i; -- currently only pass through
 

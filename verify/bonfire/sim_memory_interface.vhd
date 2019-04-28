@@ -114,27 +114,7 @@ lw: if lli_wait_cycles>0 generate
     end if;
  end process;
 
-  -- process (clk_i) is
-  --
-  -- begin
-  --   if rising_edge(clk_i) then
-  --      if lli_re_i='1' or re_reg<='1' then
-  --         busy <= '1';
-  --         if lwait='0' then
-  --           wait_counter <= lli_wait_cycles-1;
-  --           lwait<='1';
-  --         else
-  --           if wait_counter>0 then
-  --             wait_counter <= wait_counter -1;
-  --           else
-  --             lwait <= '0';
-  --             busy <= '0';
-  --           end if;
-  --         end if;
-  --      end if;
-  --
-  --   end if;
-  -- end process;
+
 end generate;
 
 
@@ -143,7 +123,11 @@ end generate;
   process (clk_i) is
   begin
 	if rising_edge(clk_i) then
-		ack_read<=wbs_cyc_i and wbs_stb_i and not wbs_we_i;
+    if ack_read='1' then
+      ack_read <= '0';
+    else
+		  ack_read<=wbs_cyc_i and wbs_stb_i and not wbs_we_i;
+    end if;
 	end if;
   end process;
 
