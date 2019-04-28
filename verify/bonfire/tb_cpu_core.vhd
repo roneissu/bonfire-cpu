@@ -54,8 +54,8 @@ constant USE_ICACHE : boolean := true;
 
 --constant TestFile : string :=  "../src/bonfire-cpu_0/ise/tb_bonfire_cpu/compiled_tests/timer_irq.hex";
 --constant TestFile : string :=  "../src/bonfire-cpu_0/riscv_test/timer_irq.hex";
-constant TestFile : string :=  "../src/bonfire-cpu_0/riscv_test/loop.hex";
---constant TestFile : string :=  "../src/bonfire-cpu_0/riscv_test/branch.hex";
+--constant TestFile : string :=  "../src/bonfire-cpu_0/riscv_test/loop.hex";
+constant TestFile : string :=  "../src/bonfire-cpu_0/riscv_test/branch.hex";
 --constant TestFile : string :=  "../src/bonfire-cpu_0/riscv_test/sstep.hex";
 --constant TestFile : string :=  "../src/bonfire-cpu_0/riscv_test/fence.hex";
 

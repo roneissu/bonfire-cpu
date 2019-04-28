@@ -9,9 +9,9 @@
 -- Target Devices:
 -- Tool versions:
 -- Description:
---   Bonfire CPU 
+--   Bonfire CPU
 --   (c) 2016,2017 Thomas Hornschuh
---   See license.md for License 
+--   See license.md for License
 --   Implements a direct-mapped Instruction Cache with variable size and line size
 --   Designed as Plug-In Replacement for the orginal "ring-buffer" cache of lxp32
 --
@@ -47,7 +47,7 @@ port(
         clk_i: in std_logic;
         rst_i: in std_logic;
 
-        -- Local Bus to Core 
+        -- Local Bus to Core
         lli_re_i: in std_logic;
         lli_adr_i: in std_logic_vector(29 downto 0);
         lli_dat_o: out std_logic_vector(31 downto 0);
@@ -61,7 +61,7 @@ port(
         wbm_ack_i: in std_logic;
         wbm_adr_o: out std_logic_vector(29 downto 0);
         wbm_dat_i: in std_logic_vector(31 downto 0);
-        
+
         -- Cache Control
         cc_invalidate_i : in std_logic;
         cc_invalidate_complete_o : out std_logic
@@ -135,18 +135,18 @@ begin
   wbm_bte_o<="00";
   read_address<=adr(adr'high downto CL_BITS) & std_logic_vector(read_offset_counter);
   wbm_adr_o<=read_address;
-          
-  adr <=  lli_adr_i;       
+
+  adr <=  lli_adr_i;
 
   tag_value <= unsigned(adr(adr'high downto adr'high-TAG_RAM_BITS+1));
   tag_index <= unsigned(adr(LINE_SELECT_ADR_BITS+CL_BITS-1 downto CL_BITS));
 
   running_invalidation <= '1' when wb_state=run_invalidate else '0';
-  
+
   tag_we <= '1' when  running_invalidation='1' or (wb_state=wb_finish and wbm_ack_i = '1') else '0';
-  
-  
-  
+
+
+
   cc_invalidate_complete_o <= cc_invalidate_complete;
 
   check_hitmiss : process(tag_value,tag_buffer,buffer_index,tag_index,lli_re_i,re_reg,running_invalidation)
@@ -182,11 +182,11 @@ begin
         end if;
      end if;
   end process;
- 
- 
-  -- Tag address multiplexer 
+
+
+  -- Tag address multiplexer
   tag_adr <= update_index when running_invalidation='1'
-             else tag_index; 
+             else tag_index;
 
   proc_tag_ram:process(clk_i)
 
@@ -199,17 +199,17 @@ begin
          if tag_we='1' then
             if running_invalidation='1' then
               wd(wd'high):='0';
-            else  
+            else
               wd(wd'high):='1';
-            end if;  
+            end if;
             wd(TAG_RAM_BITS-1 downto 0):=std_logic_vector(tag_value);
             tag_ram(to_integer(tag_adr))<=wd;
             rd:=wd;
-         else    
-            rd:=tag_ram(to_integer(tag_adr)); 
+         else
+            rd:=tag_ram(to_integer(tag_adr));
          end if;
 
-       
+
         tag_buffer.valid<=rd(rd'high);
         tag_buffer.address<= unsigned(rd(TAG_RAM_BITS-1 downto 0));
         buffer_index<=tag_index;
@@ -224,8 +224,8 @@ begin
   proc_cache_ram: process(clk_i) begin
 
     if rising_edge(clk_i) then
-      -- in case of hit read cache
-      if hit='1' and lli_re_i='1' then
+      -- read cache
+      if lli_re_i='1' then -- hit='1' and
         lli_dat_o <= cache_ram(to_integer(unsigned(adr(CACHE_ADR_BITS-1 downto 0))));
       end if;
       -- read data from Wisbone bus into Cache RAM on ACK
@@ -236,21 +236,21 @@ begin
   end process;
 
 
-   register_invalidate: process(clk_i) 
+   register_invalidate: process(clk_i)
    begin
-   
+
      if rising_edge(clk_i) then
        if rst_i='1' then
          invalidate_requested <= '1'; -- Reset will invalidate cache
-       else 
+       else
          if wb_state = run_invalidate then
-           invalidate_requested <= '0'; 
+           invalidate_requested <= '0';
          elsif cc_invalidate_i='1' then
-           invalidate_requested <= '1'; 
+           invalidate_requested <= '1';
          end if;
-       end if;   
-     end if;       
-          
+       end if;
+     end if;
+
    end process;
 
 
@@ -267,28 +267,28 @@ begin
         -- tag_we<='0';
          cc_invalidate_complete <= '0';
        else
-         
+
          case wb_state is
            when wb_idle =>
              cc_invalidate_complete<='0';
-             
+
              if cc_invalidate_i='1' or invalidate_requested='1' then
                wb_state <= run_invalidate;
                update_index <= to_unsigned(0,update_index'length);
                --tag_we<='1';
-               
+
              elsif miss='1' and hit='0' then
                wb_enable<='1';
-               
+
                read_offset_counter<=to_unsigned(0,read_offset_counter'length);
                -- Special case: Line Size 1...
                if LINE_SIZE=1 then
                  wb_state <= wb_finish;
                  wbm_cti_o<="000";
-               else  
+               else
                  wb_state <= wb_burst;
                  wbm_cti_o<="010";
-               end if;  
+               end if;
              end if;
            when wb_burst =>
              if  wbm_ack_i='1' then
@@ -305,21 +305,20 @@ begin
                 wb_enable<='0';
                 wb_state<=wb_idle;
                -- tag_we<='0';
-              end if;   
+              end if;
           -- when wb_retire=>
             --  wb_state<=wb_idle;
            when run_invalidate =>
               u_next:=update_index+1;
-              update_index <= u_next;    
+              update_index <= u_next;
               if u_next = 0 then
-                 --tag_we<='0'; 
+                 --tag_we<='0';
                  wb_state<=wb_idle;
                  cc_invalidate_complete<='1';
-               end if;   
+               end if;
          end case;
        end if;
      end if;
   end process;
 
 end Behavioral;
-
