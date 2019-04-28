@@ -33,8 +33,8 @@ scope = private
 [fileset code]
 files=ise/tb_bonfire_cpu/compiled_tests/timer_irq.hex
   riscv_test/timer_irq.hex riscv_test/loop.hex riscv_test/branch.hex
-  riscv_test/sstep.hex
-  
+  riscv_test/sstep.hex riscv_test/fence.hex
+
 usage=sim
 scope=private
 

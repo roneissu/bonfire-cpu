@@ -45,11 +45,14 @@ ARCHITECTURE behavior OF tb_cpu_core IS
 
 constant BRANCH_PREDICTOR : boolean := true;
 
+constant LLI_WAIT_CYCLES : natural := 1;
+
 --constant TestFile : string :=  "../src/bonfire-cpu_0/ise/tb_bonfire_cpu/compiled_tests/timer_irq.hex";
 --constant TestFile : string :=  "../src/bonfire-cpu_0/riscv_test/timer_irq.hex";
---constant TestFile : string :=  "../src/bonfire-cpu_0/riscv_test/loop.hex";
+constant TestFile : string :=  "../src/bonfire-cpu_0/riscv_test/loop.hex";
 --constant TestFile : string :=  "../src/bonfire-cpu_0/riscv_test/branch.hex";
-constant TestFile : string :=  "../src/bonfire-cpu_0/riscv_test/sstep.hex";
+--constant TestFile : string :=  "../src/bonfire-cpu_0/riscv_test/sstep.hex";
+--constant TestFile : string :=  "../src/bonfire-cpu_0/riscv_test/fence.hex";
 
     -- Component Declaration for the Unit Under Test (UUT)
 
@@ -201,7 +204,8 @@ BEGIN
         ram_adr_width =>ram_adr_width,
         RamFileName =>TestFile,
         mode=>"H",
-        wbs_adr_high => mem_adr'high
+        wbs_adr_high => mem_adr'high,
+        LLI_WAIT_CYCLES => LLI_WAIT_CYCLES
     )
     PORT MAP(
         clk_i => clk_i,

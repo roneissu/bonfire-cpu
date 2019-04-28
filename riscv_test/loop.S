@@ -3,14 +3,15 @@
 .extern monitor
 _start:
 
-li a0,10 // loop counter
+li a0,3 // loop counter
 la s0, monitor
+li a1,0x5588 // signature
 
 loop:
 addi a0,a0,-1
 sw a0,4(s0)
 bnez a0, loop
-nop
+sw a1,4(s0) // write signature to verify execution of this statement
 
 // Forward branch test
 li a0, -1
