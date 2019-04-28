@@ -175,16 +175,19 @@ begin
       case jstate is
         when jnone =>
           if jump_valid_i='1' then
-            jstate <= jvalid;
+            if lli_busy_i='1' then
+              jstate <= jvalid;
+            else
+              jstate <= jfinish;
+            end if;
           end if;
         when  jvalid =>
-          if re='1' and lli_busy_i='0' then
+          if lli_busy_i='0' then
              jstate <= jfinish;
           end if;
         when jfinish =>
-          if jump_valid_i='0' then
-             jstate <= jnone;
-          end if;
+          jstate <= jnone;
+
       end case;
    end if;
   end if;
@@ -198,7 +201,7 @@ process (clk_i) is
 begin
   if rising_edge(clk_i) then
     --wipe_fifo <= '0';
-    suppress_re<='0';
+    --suppress_re<='0';
     if rst_i='1' then
       fetch_addr<=START_ADDR;
       requested<='0';
@@ -236,7 +239,7 @@ begin
                 --report "Branch mispredict" severity note;
                 fetch_addr <= jump_dst_i;
                 --wipe_fifo <= '1';
-                suppress_re<='1';
+              --  suppress_re<='1';
               elsif  lli_busy_i='0' then
               --  wipe_fifo <= '0';
               end if;
@@ -253,7 +256,7 @@ end process;
 
 next_word<=(fifo_empty or ready_i) and not lli_busy_i; -- and not fetch_branch_target;
 
-re<=(fifo_empty or ready_i) and not predict_fail;-- and  not suppress_re; -- or stall_re ) ;
+re<=(fifo_empty or ready_i) and not ( predict_fail or suppress_re);-- and  not suppress_re; -- or stall_re ) ;
 lli_re_o<=re;
 lli_adr_o<=fetch_addr;
 

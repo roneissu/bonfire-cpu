@@ -48,14 +48,14 @@ constant ram_adr_width : natural := log2.log2(ram_size);
 
 constant BRANCH_PREDICTOR : boolean := true;
 
-constant LLI_WAIT_CYCLES : natural := 1;
+constant LLI_WAIT_CYCLES : natural := 0;
 
 constant USE_ICACHE : boolean := true;
 
 --constant TestFile : string :=  "../src/bonfire-cpu_0/ise/tb_bonfire_cpu/compiled_tests/timer_irq.hex";
---constant TestFile : string :=  "../src/bonfire-cpu_0/riscv_test/timer_irq.hex";
+constant TestFile : string :=  "../src/bonfire-cpu_0/riscv_test/timer_irq.hex";
 --constant TestFile : string :=  "../src/bonfire-cpu_0/riscv_test/loop.hex";
-constant TestFile : string :=  "../src/bonfire-cpu_0/riscv_test/branch.hex";
+--constant TestFile : string :=  "../src/bonfire-cpu_0/riscv_test/branch.hex";
 --constant TestFile : string :=  "../src/bonfire-cpu_0/riscv_test/sstep.hex";
 --constant TestFile : string :=  "../src/bonfire-cpu_0/riscv_test/fence.hex";
 
@@ -190,11 +190,11 @@ BEGIN
 ic : if USE_ICACHE generate
 
   bonfire_dm_icache_i : entity work.bonfire_dm_icache
-  -- generic map (
-  --   LINE_SIZE    => LINE_SIZE,
+  generic map (
+       LINE_SIZE    => 16
   --   CACHE_SIZE   => CACHE_SIZE,
   --   ADDRESS_BITS => ADDRESS_BITS
-  -- )
+  )
   port map (
     clk_i                    => clk_i,
     rst_i                    => rst_i,

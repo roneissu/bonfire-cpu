@@ -104,6 +104,7 @@ attribute ram_style of tag_ram: signal is  "distributed"; -- "block";
 signal cache_ram : t_cache_ram;
 
 signal adr :  std_logic_vector(29 downto 0);
+signal adr_reg : std_logic_vector(29 downto 0);
 
 signal tag_buffer : t_tag_data := ('0',others=>to_unsigned(0,t_tag_value'length)); -- last buffered tag value
 signal buffer_index : unsigned(LINE_SELECT_ADR_BITS-1 downto 0); -- index of last buffered tag value
@@ -127,8 +128,10 @@ signal cc_invalidate_complete : std_logic := '0';
 
 signal tag_we : std_logic; -- :='0'; -- tag RAM Write enable
 
+signal busy : std_logic := '0';
+
 begin
-  lli_busy_o<= not hit and (lli_re_i or re_reg);
+  lli_busy_o<=busy; --not hit and (lli_re_i or re_reg);
 
   wbm_cyc_o<=wb_enable;
   wbm_stb_o<=wb_enable;
@@ -136,7 +139,7 @@ begin
   read_address<=adr(adr'high downto CL_BITS) & std_logic_vector(read_offset_counter);
   wbm_adr_o<=read_address;
 
-  adr <=  lli_adr_i;
+  adr <=  lli_adr_i when busy='0' else adr_reg;
 
   tag_value <= unsigned(adr(adr'high downto adr'high-TAG_RAM_BITS+1));
   tag_index <= unsigned(adr(LINE_SELECT_ADR_BITS+CL_BITS-1 downto CL_BITS));
@@ -175,8 +178,13 @@ begin
 
   process(clk_i) begin
      if rising_edge(clk_i) then
-        if lli_re_i='1' and hit='0' then
+        busy<= not hit and (lli_re_i or re_reg);
+        if lli_re_i='1' and busy='0' then
+          adr_reg<=lli_adr_i;
+        end if;
+        if lli_re_i='1' and hit='0' and re_reg='0' then
           re_reg<='1';
+
         elsif hit='1' then
           re_reg<='0';
         end if;
