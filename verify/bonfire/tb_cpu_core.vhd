@@ -48,13 +48,14 @@ constant ram_adr_width : natural := log2.log2(ram_size);
 
 constant BRANCH_PREDICTOR : boolean := true;
 
-constant LLI_WAIT_CYCLES : natural := 0;
+constant LLI_WAIT_CYCLES : natural := 1;
 
 constant USE_ICACHE : boolean := true;
+constant LINE_SIZE : natural := 8;
 
 --constant TestFile : string :=  "../src/bonfire-cpu_0/ise/tb_bonfire_cpu/compiled_tests/timer_irq.hex";
-constant TestFile : string :=  "../src/bonfire-cpu_0/riscv_test/timer_irq.hex";
---constant TestFile : string :=  "../src/bonfire-cpu_0/riscv_test/loop.hex";
+--constant TestFile : string :=  "../src/bonfire-cpu_0/riscv_test/timer_irq.hex";
+constant TestFile : string :=  "../src/bonfire-cpu_0/riscv_test/loop.hex";
 --constant TestFile : string :=  "../src/bonfire-cpu_0/riscv_test/branch.hex";
 --constant TestFile : string :=  "../src/bonfire-cpu_0/riscv_test/sstep.hex";
 --constant TestFile : string :=  "../src/bonfire-cpu_0/riscv_test/fence.hex";
@@ -154,11 +155,6 @@ constant TestFile : string :=  "../src/bonfire-cpu_0/riscv_test/timer_irq.hex";
    -- Clock period definitions
    constant clk_i_period : time := 10 ns;
 
-
-
-
-
-
 BEGIN
 
     -- Instantiate the Unit Under Test (UUT)
@@ -191,7 +187,7 @@ ic : if USE_ICACHE generate
 
   bonfire_dm_icache_i : entity work.bonfire_dm_icache
   generic map (
-       LINE_SIZE    => 16
+       LINE_SIZE    => LINE_SIZE
   --   CACHE_SIZE   => CACHE_SIZE,
   --   ADDRESS_BITS => ADDRESS_BITS
   )
