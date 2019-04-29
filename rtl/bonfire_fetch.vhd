@@ -49,7 +49,7 @@ architecture rtl of bonfire_fetch is
 attribute keep_hierarchy : string;
 attribute keep_hierarchy of rtl: architecture is "yes";
 
-type t_jstate is (jnone, jvalid, jfinish);
+type t_jstate is (jnone, jwait, jfinish);
 
 signal init: std_logic:='1';
 --signal init_cnt: unsigned(7 downto 0):=(others=>'0');
@@ -61,7 +61,7 @@ signal suppress_re: std_logic:='0';
 signal re: std_logic;
 signal requested: std_logic:='0';
 
-signal busy_r : std_logic := '0';
+
 
 --signal data_valid_r : std_logic :='0';
 
@@ -72,8 +72,6 @@ signal fifo_re: std_logic;
 signal fifo_dout: std_logic_vector(62 downto 0);
 signal fifo_empty: std_logic;
 signal fifo_full: std_logic;
-
-signal jr: std_logic:='0';
 
 
 signal op : t_riscv_op;
@@ -90,8 +88,6 @@ signal current_addr : std_logic_vector(fetch_addr'range);
 
 signal debug_jump_dst_i : std_logic_vector(31 downto 0);
 
---type t_fetch_state is (s_fetch_next,s_fetch_target,s_target_fetched, s_mispredict);
---signal fetch_state : t_fetch_state := s_fetch_next;
 
 signal debug_adr_o : std_logic_vector(31 downto 0);
 
@@ -138,33 +134,18 @@ begin
 end process;
 
 
--- process(clk_i) is
--- begin
---   if rising_edge(clk_i) then
---     if rst_i='1' then
---       data_valid_r <= '0';
---     else
---       if re='1' and lli_busy_i='0' then
---         data_valid_r <= '1';
---       else
---         data_valid_r <= '0';
---       end if;
---     end if;
---   end if;
---
--- end process;
-
-
+-- Jump state engine
 
 valid_o<=not fifo_empty and not predict_fail;
---jump_ready_o<= jump_valid_i and  not (fifo_empty or predict_fail) ;
-
 jump_ready_o <= '1' when jstate=jfinish else '0';
 
-predict_fail <= '1' when  jump_valid_i='1' and wipe_fifo='0' -- and fifo_empty='0'
+predict_fail <= '1' when  jump_valid_i='1' and jstate=jnone -- and fifo_empty='0'
                      else '0';
 
-wipe_fifo <= '1' when jstate=jvalid else '0';
+wipe_fifo <= '1' when (jump_valid_i='1' and jstate=jnone )  or
+                      ( jstate=jwait ) else '0';
+
+suppress_re <= '1' when jstate=jwait else '0';
 
 process (clk_i) is
 begin
@@ -176,12 +157,12 @@ begin
         when jnone =>
           if jump_valid_i='1' then
             if lli_busy_i='1' then
-              jstate <= jvalid;
+              jstate <= jwait;
             else
               jstate <= jfinish;
             end if;
           end if;
-        when  jvalid =>
+        when  jwait =>
           if lli_busy_i='0' then
              jstate <= jfinish;
           end if;
@@ -200,61 +181,42 @@ end process;
 process (clk_i) is
 begin
   if rising_edge(clk_i) then
-    --wipe_fifo <= '0';
-    --suppress_re<='0';
+
     if rst_i='1' then
       fetch_addr<=START_ADDR;
       requested<='0';
-      jr<='0';
-      --wipe_fifo <= '0';
       init<='0';
       branch_target_fetched <= '0';
-      busy_r <= '0';
     else
       init<='1';
-      jr<='0';
-      busy_r <= lli_busy_i;
 
       if lli_busy_i='0' then
         current_addr <= fetch_addr;
 
-        requested<=re and not fetch_branch_target; --and not (jump_valid_i and not jr);
+        requested<=re and not fetch_branch_target;
       end if;
-      -- Set next fetch adr
 
-       --if fifo_empty='0' then
-      --   wipe_fifo <= '0';
-       --end if;
        if re='1' then
          branch_target_fetched <= '0';
        end if;
        if init = '1' then
          if  jump_valid_i='0' and fetch_branch_target='1' then
             fetch_addr <= branch_target(31 downto 2);
-          --  target_address_buffer <= branch_target(31 downto 2);
             branch_target_fetched <= '1';
-          --  target_valid <= '1';
-         elsif  jump_valid_i='1' then --misprecdict
-              if wipe_fifo='0' then
+
+        elsif jump_valid_i='1' and jstate=jnone then --misprecdict
                 --report "Branch mispredict" severity note;
                 fetch_addr <= jump_dst_i;
-                --wipe_fifo <= '1';
-              --  suppress_re<='1';
-              elsif  lli_busy_i='0' then
-              --  wipe_fifo <= '0';
-              end if;
          elsif next_word = '1' then --and branch_target_fetched='0'
            fetch_addr  <= std_logic_vector(unsigned(fetch_addr)+1);
          end if;
        end if;
-       -- if jump_valid_i='1' then
-       --   target_valid <= '0';
-       -- end if;
+
     end if;
   end if;
 end process;
 
-next_word<=(fifo_empty or ready_i) and not lli_busy_i; -- and not fetch_branch_target;
+next_word<=(fifo_empty or ready_i) and not (lli_busy_i or suppress_re);
 
 re<=(fifo_empty or ready_i) and not ( predict_fail or suppress_re);-- and  not suppress_re; -- or stall_re ) ;
 lli_re_o<=re;
