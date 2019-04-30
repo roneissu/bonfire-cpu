@@ -43,22 +43,27 @@ END tb_cpu_core;
 
 ARCHITECTURE behavior OF tb_cpu_core IS
 
-constant ram_size : natural := 4096;
+constant ram_size : natural := 32768;
 constant ram_adr_width : natural := log2.log2(ram_size);
 
-constant BRANCH_PREDICTOR : boolean := true;
+constant BRANCH_PREDICTOR : boolean := false;
 
-constant LLI_WAIT_CYCLES : natural := 1;
+constant LLI_WAIT_CYCLES : natural := 0;
 
-constant USE_ICACHE : boolean := true;
-constant LINE_SIZE : natural := 8;
+constant USE_ICACHE : boolean := false;
+constant LINE_SIZE : natural := 4;
 
 --constant TestFile : string :=  "../src/bonfire-cpu_0/ise/tb_bonfire_cpu/compiled_tests/timer_irq.hex";
 --constant TestFile : string :=  "../src/bonfire-cpu_0/riscv_test/timer_irq.hex";
-constant TestFile : string :=  "../src/bonfire-cpu_0/riscv_test/loop.hex";
+-- constant TestFile : string :=  "../src/bonfire-cpu_0/riscv_test/loop.hex";
 --constant TestFile : string :=  "../src/bonfire-cpu_0/riscv_test/branch.hex";
 --constant TestFile : string :=  "../src/bonfire-cpu_0/riscv_test/sstep.hex";
 --constant TestFile : string :=  "../src/bonfire-cpu_0/riscv_test/fence.hex";
+
+--constant TestFile : string :=  "../src/bonfire-cpu_0/verify/bonfire/compiled_code/dhrystone_bram.hex";
+constant TestFile : string :=  "/home/thomas/development/bonfire/bonfire-software/test/sim_hello.hex";
+
+
 
     -- Component Declaration for the Unit Under Test (UUT)
 
@@ -145,10 +150,22 @@ constant TestFile : string :=  "../src/bonfire-cpu_0/riscv_test/loop.hex";
    signal mon_dat_rd,mon_dat_wr : std_logic_vector(31 downto 0);
    signal mon_adr : std_logic_vector(slave_adr_high downto 2);
 
+-- sim uart Bus
+  signal m2_cyc_o : std_logic;
+  signal m2_stb_o : std_logic;
+  signal m2_we_o  : std_logic;
+  signal m2_sel_o : std_logic_vector(3 downto 0);
+  signal m2_ack_i : std_logic;
+  signal m2_adr_o : std_logic_vector(27 downto 2);
+  signal m2_dat_o : std_logic_vector(31 downto 0);
+  signal m2_dat_i : std_logic_vector(31 downto 0);
+
+
 
 -- Simulation control
    signal finished :  std_logic :='0';
    signal result   :  std_logic_vector(31 downto 0);
+   signal uart_stop : boolean;
    signal tbSimEnded : std_logic := '0'; -- Simulation End Flag
 
 
@@ -316,7 +333,18 @@ end generate;
       m1_dat_o => mon_dat_wr,
       m1_dat_i => mon_dat_rd,
       m1_cti_o => open,
-      m1_bte_o => open
+      m1_bte_o => open,
+
+      m2_cyc_o => m2_cyc_o,
+      m2_stb_o => m2_stb_o,
+      m2_we_o  => m2_we_o,
+      m2_sel_o => m2_sel_o,
+      m2_cti_o => open,
+      m2_bte_o => open,
+      m2_ack_i => m2_ack_i,
+      m2_adr_o => m2_adr_o,
+      m2_dat_o => m2_dat_o,
+      m2_dat_i => m2_dat_i
     );
 
 
@@ -343,6 +371,23 @@ end generate;
     );
 
 
+    sim_uart_i : entity work.sim_uart
+     --generic map (
+
+     --)
+     port map (
+       wb_clk_i => clk_i,
+       wb_rst_i => rst_i,
+       wb_dat_o => m2_dat_i,
+       wb_dat_i => m2_dat_o,
+       wb_adr_i => m2_adr_o(3 downto 2),
+       wb_we_i  => m2_we_o,
+       wb_cyc_i => m2_cyc_o,
+       wb_stb_i => m2_stb_o,
+       wb_ack_o => m2_ack_i,
+       stop_o   => uart_stop
+     );
+
 
     -- Clock
     clk_i <= not clk_i after clk_i_period/2 when TbSimEnded /= '1' else '0';
@@ -352,7 +397,7 @@ end generate;
    begin
 
 
-      wait until finished='1';
+      wait until finished='1' or uart_stop;
       report "Test finished with result "& hex_string(result);
       --severity failure; -- ugly but portable ....
 

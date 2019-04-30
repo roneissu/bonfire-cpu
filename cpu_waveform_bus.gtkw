@@ -1,0 +1,88 @@
+[*]
+[*] GTKWave Analyzer v3.3.66 (w)1999-2015 BSI
+[*] Tue Apr 30 19:31:07 2019
+[*]
+[dumpfile] "/home/thomas/development/fusesoc_build/vivado2018.2.3/bonfire-cpu_0/sim-ghdl/cpu.ghw"
+[dumpfile_mtime] "Tue Apr 30 19:29:11 2019"
+[dumpfile_size] 4277711
+[savefile] "/home/thomas/development/bonfire/bonfire-cpu/cpu_waveform_bus.gtkw"
+[timestart] 468700000
+[size] 1920 1031
+[pos] -1 -1
+*-24.625927 525000000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[treeopen] top.
+[treeopen] top.tb_cpu_core.
+[treeopen] top.tb_cpu_core.inst_sim_bus.
+[treeopen] top.tb_cpu_core.noic.
+[treeopen] top.tb_cpu_core.noic.inst_sim_memory_interface.ram.
+[treeopen] top.tb_cpu_core.noic.inst_sim_memory_interface.ram.ram.
+[treeopen] top.tb_cpu_core.sim_uart_i.
+[treeopen] top.tb_cpu_core.uut.
+[treeopen] top.tb_cpu_core.uut.execute_inst.alu_inst.gen_divider.
+[treeopen] top.tb_cpu_core.uut.execute_inst.alu_inst.gen_divider.divider_inst.
+[treeopen] top.tb_cpu_core.uut.execute_inst.dbus_inst.
+[treeopen] top.tb_cpu_core.uut.g_fetch_simple.fetch_inst.
+[treeopen] top.tb_cpu_core.uut.riscv_decode.
+[treeopen] top.tb_cpu_core.uut.riscv_decode.decode_inst.
+[sst_width] 418
+[signals_width] 242
+[sst_expanded] 1
+[sst_vpaned_height] 530
+@28
+top.tb_cpu_core.sim_uart_i.wb_ack_o
+top.tb_cpu_core.sim_uart_i.wb_stb_i
+@29
+top.tb_cpu_core.sim_uart_i.wb_cyc_i
+@28
+top.tb_cpu_core.sim_uart_i.wb_we_i
+top.tb_cpu_core.sim_uart_i.wb_rst_i
+top.tb_cpu_core.sim_uart_i.wb_clk_i
+top.tb_cpu_core.sim_uart_i.ack
+@200
+-
+@28
+top.tb_cpu_core.dbus_stb_o
+top.tb_cpu_core.dbus_cyc_o
+top.tb_cpu_core.dbus_we_o
+@22
+#{top.tb_cpu_core.dbus_adr_o[31:2]} top.tb_cpu_core.dbus_adr_o[31] top.tb_cpu_core.dbus_adr_o[30] top.tb_cpu_core.dbus_adr_o[29] top.tb_cpu_core.dbus_adr_o[28] top.tb_cpu_core.dbus_adr_o[27] top.tb_cpu_core.dbus_adr_o[26] top.tb_cpu_core.dbus_adr_o[25] top.tb_cpu_core.dbus_adr_o[24] top.tb_cpu_core.dbus_adr_o[23] top.tb_cpu_core.dbus_adr_o[22] top.tb_cpu_core.dbus_adr_o[21] top.tb_cpu_core.dbus_adr_o[20] top.tb_cpu_core.dbus_adr_o[19] top.tb_cpu_core.dbus_adr_o[18] top.tb_cpu_core.dbus_adr_o[17] top.tb_cpu_core.dbus_adr_o[16] top.tb_cpu_core.dbus_adr_o[15] top.tb_cpu_core.dbus_adr_o[14] top.tb_cpu_core.dbus_adr_o[13] top.tb_cpu_core.dbus_adr_o[12] top.tb_cpu_core.dbus_adr_o[11] top.tb_cpu_core.dbus_adr_o[10] top.tb_cpu_core.dbus_adr_o[9] top.tb_cpu_core.dbus_adr_o[8] top.tb_cpu_core.dbus_adr_o[7] top.tb_cpu_core.dbus_adr_o[6] top.tb_cpu_core.dbus_adr_o[5] top.tb_cpu_core.dbus_adr_o[4] top.tb_cpu_core.dbus_adr_o[3] top.tb_cpu_core.dbus_adr_o[2]
+@28
+top.tb_cpu_core.dbus_ack_i
+@22
+#{top.tb_cpu_core.uut.dbus_dat_i[31:0]} top.tb_cpu_core.uut.dbus_dat_i[31] top.tb_cpu_core.uut.dbus_dat_i[30] top.tb_cpu_core.uut.dbus_dat_i[29] top.tb_cpu_core.uut.dbus_dat_i[28] top.tb_cpu_core.uut.dbus_dat_i[27] top.tb_cpu_core.uut.dbus_dat_i[26] top.tb_cpu_core.uut.dbus_dat_i[25] top.tb_cpu_core.uut.dbus_dat_i[24] top.tb_cpu_core.uut.dbus_dat_i[23] top.tb_cpu_core.uut.dbus_dat_i[22] top.tb_cpu_core.uut.dbus_dat_i[21] top.tb_cpu_core.uut.dbus_dat_i[20] top.tb_cpu_core.uut.dbus_dat_i[19] top.tb_cpu_core.uut.dbus_dat_i[18] top.tb_cpu_core.uut.dbus_dat_i[17] top.tb_cpu_core.uut.dbus_dat_i[16] top.tb_cpu_core.uut.dbus_dat_i[15] top.tb_cpu_core.uut.dbus_dat_i[14] top.tb_cpu_core.uut.dbus_dat_i[13] top.tb_cpu_core.uut.dbus_dat_i[12] top.tb_cpu_core.uut.dbus_dat_i[11] top.tb_cpu_core.uut.dbus_dat_i[10] top.tb_cpu_core.uut.dbus_dat_i[9] top.tb_cpu_core.uut.dbus_dat_i[8] top.tb_cpu_core.uut.dbus_dat_i[7] top.tb_cpu_core.uut.dbus_dat_i[6] top.tb_cpu_core.uut.dbus_dat_i[5] top.tb_cpu_core.uut.dbus_dat_i[4] top.tb_cpu_core.uut.dbus_dat_i[3] top.tb_cpu_core.uut.dbus_dat_i[2] top.tb_cpu_core.uut.dbus_dat_i[1] top.tb_cpu_core.uut.dbus_dat_i[0]
+#{top.tb_cpu_core.uut.dbus_dat_o[31:0]} top.tb_cpu_core.uut.dbus_dat_o[31] top.tb_cpu_core.uut.dbus_dat_o[30] top.tb_cpu_core.uut.dbus_dat_o[29] top.tb_cpu_core.uut.dbus_dat_o[28] top.tb_cpu_core.uut.dbus_dat_o[27] top.tb_cpu_core.uut.dbus_dat_o[26] top.tb_cpu_core.uut.dbus_dat_o[25] top.tb_cpu_core.uut.dbus_dat_o[24] top.tb_cpu_core.uut.dbus_dat_o[23] top.tb_cpu_core.uut.dbus_dat_o[22] top.tb_cpu_core.uut.dbus_dat_o[21] top.tb_cpu_core.uut.dbus_dat_o[20] top.tb_cpu_core.uut.dbus_dat_o[19] top.tb_cpu_core.uut.dbus_dat_o[18] top.tb_cpu_core.uut.dbus_dat_o[17] top.tb_cpu_core.uut.dbus_dat_o[16] top.tb_cpu_core.uut.dbus_dat_o[15] top.tb_cpu_core.uut.dbus_dat_o[14] top.tb_cpu_core.uut.dbus_dat_o[13] top.tb_cpu_core.uut.dbus_dat_o[12] top.tb_cpu_core.uut.dbus_dat_o[11] top.tb_cpu_core.uut.dbus_dat_o[10] top.tb_cpu_core.uut.dbus_dat_o[9] top.tb_cpu_core.uut.dbus_dat_o[8] top.tb_cpu_core.uut.dbus_dat_o[7] top.tb_cpu_core.uut.dbus_dat_o[6] top.tb_cpu_core.uut.dbus_dat_o[5] top.tb_cpu_core.uut.dbus_dat_o[4] top.tb_cpu_core.uut.dbus_dat_o[3] top.tb_cpu_core.uut.dbus_dat_o[2] top.tb_cpu_core.uut.dbus_dat_o[1] top.tb_cpu_core.uut.dbus_dat_o[0]
+@200
+-
+@22
+#{top.tb_cpu_core.uut.riscv_decode.decode_inst.word_i[31:0]} top.tb_cpu_core.uut.riscv_decode.decode_inst.word_i[31] top.tb_cpu_core.uut.riscv_decode.decode_inst.word_i[30] top.tb_cpu_core.uut.riscv_decode.decode_inst.word_i[29] top.tb_cpu_core.uut.riscv_decode.decode_inst.word_i[28] top.tb_cpu_core.uut.riscv_decode.decode_inst.word_i[27] top.tb_cpu_core.uut.riscv_decode.decode_inst.word_i[26] top.tb_cpu_core.uut.riscv_decode.decode_inst.word_i[25] top.tb_cpu_core.uut.riscv_decode.decode_inst.word_i[24] top.tb_cpu_core.uut.riscv_decode.decode_inst.word_i[23] top.tb_cpu_core.uut.riscv_decode.decode_inst.word_i[22] top.tb_cpu_core.uut.riscv_decode.decode_inst.word_i[21] top.tb_cpu_core.uut.riscv_decode.decode_inst.word_i[20] top.tb_cpu_core.uut.riscv_decode.decode_inst.word_i[19] top.tb_cpu_core.uut.riscv_decode.decode_inst.word_i[18] top.tb_cpu_core.uut.riscv_decode.decode_inst.word_i[17] top.tb_cpu_core.uut.riscv_decode.decode_inst.word_i[16] top.tb_cpu_core.uut.riscv_decode.decode_inst.word_i[15] top.tb_cpu_core.uut.riscv_decode.decode_inst.word_i[14] top.tb_cpu_core.uut.riscv_decode.decode_inst.word_i[13] top.tb_cpu_core.uut.riscv_decode.decode_inst.word_i[12] top.tb_cpu_core.uut.riscv_decode.decode_inst.word_i[11] top.tb_cpu_core.uut.riscv_decode.decode_inst.word_i[10] top.tb_cpu_core.uut.riscv_decode.decode_inst.word_i[9] top.tb_cpu_core.uut.riscv_decode.decode_inst.word_i[8] top.tb_cpu_core.uut.riscv_decode.decode_inst.word_i[7] top.tb_cpu_core.uut.riscv_decode.decode_inst.word_i[6] top.tb_cpu_core.uut.riscv_decode.decode_inst.word_i[5] top.tb_cpu_core.uut.riscv_decode.decode_inst.word_i[4] top.tb_cpu_core.uut.riscv_decode.decode_inst.word_i[3] top.tb_cpu_core.uut.riscv_decode.decode_inst.word_i[2] top.tb_cpu_core.uut.riscv_decode.decode_inst.word_i[1] top.tb_cpu_core.uut.riscv_decode.decode_inst.word_i[0]
+#{top.tb_cpu_core.uut.riscv_decode.decode_inst.debug_pc[31:0]} top.tb_cpu_core.uut.riscv_decode.decode_inst.debug_pc[31] top.tb_cpu_core.uut.riscv_decode.decode_inst.debug_pc[30] top.tb_cpu_core.uut.riscv_decode.decode_inst.debug_pc[29] top.tb_cpu_core.uut.riscv_decode.decode_inst.debug_pc[28] top.tb_cpu_core.uut.riscv_decode.decode_inst.debug_pc[27] top.tb_cpu_core.uut.riscv_decode.decode_inst.debug_pc[26] top.tb_cpu_core.uut.riscv_decode.decode_inst.debug_pc[25] top.tb_cpu_core.uut.riscv_decode.decode_inst.debug_pc[24] top.tb_cpu_core.uut.riscv_decode.decode_inst.debug_pc[23] top.tb_cpu_core.uut.riscv_decode.decode_inst.debug_pc[22] top.tb_cpu_core.uut.riscv_decode.decode_inst.debug_pc[21] top.tb_cpu_core.uut.riscv_decode.decode_inst.debug_pc[20] top.tb_cpu_core.uut.riscv_decode.decode_inst.debug_pc[19] top.tb_cpu_core.uut.riscv_decode.decode_inst.debug_pc[18] top.tb_cpu_core.uut.riscv_decode.decode_inst.debug_pc[17] top.tb_cpu_core.uut.riscv_decode.decode_inst.debug_pc[16] top.tb_cpu_core.uut.riscv_decode.decode_inst.debug_pc[15] top.tb_cpu_core.uut.riscv_decode.decode_inst.debug_pc[14] top.tb_cpu_core.uut.riscv_decode.decode_inst.debug_pc[13] top.tb_cpu_core.uut.riscv_decode.decode_inst.debug_pc[12] top.tb_cpu_core.uut.riscv_decode.decode_inst.debug_pc[11] top.tb_cpu_core.uut.riscv_decode.decode_inst.debug_pc[10] top.tb_cpu_core.uut.riscv_decode.decode_inst.debug_pc[9] top.tb_cpu_core.uut.riscv_decode.decode_inst.debug_pc[8] top.tb_cpu_core.uut.riscv_decode.decode_inst.debug_pc[7] top.tb_cpu_core.uut.riscv_decode.decode_inst.debug_pc[6] top.tb_cpu_core.uut.riscv_decode.decode_inst.debug_pc[5] top.tb_cpu_core.uut.riscv_decode.decode_inst.debug_pc[4] top.tb_cpu_core.uut.riscv_decode.decode_inst.debug_pc[3] top.tb_cpu_core.uut.riscv_decode.decode_inst.debug_pc[2] top.tb_cpu_core.uut.riscv_decode.decode_inst.debug_pc[1] top.tb_cpu_core.uut.riscv_decode.decode_inst.debug_pc[0]
+@28
+top.tb_cpu_core.uut.riscv_decode.decode_inst.valid_i
+top.tb_cpu_core.uut.riscv_decode.decode_inst.ready_i
+@200
+-Fetch
+@28
+top.tb_cpu_core.uut.g_fetch_simple.fetch_inst.jump_valid_i
+@22
+#{top.tb_cpu_core.uut.g_fetch_simple.fetch_inst.jump_dst_i[29:0]} top.tb_cpu_core.uut.g_fetch_simple.fetch_inst.jump_dst_i[29] top.tb_cpu_core.uut.g_fetch_simple.fetch_inst.jump_dst_i[28] top.tb_cpu_core.uut.g_fetch_simple.fetch_inst.jump_dst_i[27] top.tb_cpu_core.uut.g_fetch_simple.fetch_inst.jump_dst_i[26] top.tb_cpu_core.uut.g_fetch_simple.fetch_inst.jump_dst_i[25] top.tb_cpu_core.uut.g_fetch_simple.fetch_inst.jump_dst_i[24] top.tb_cpu_core.uut.g_fetch_simple.fetch_inst.jump_dst_i[23] top.tb_cpu_core.uut.g_fetch_simple.fetch_inst.jump_dst_i[22] top.tb_cpu_core.uut.g_fetch_simple.fetch_inst.jump_dst_i[21] top.tb_cpu_core.uut.g_fetch_simple.fetch_inst.jump_dst_i[20] top.tb_cpu_core.uut.g_fetch_simple.fetch_inst.jump_dst_i[19] top.tb_cpu_core.uut.g_fetch_simple.fetch_inst.jump_dst_i[18] top.tb_cpu_core.uut.g_fetch_simple.fetch_inst.jump_dst_i[17] top.tb_cpu_core.uut.g_fetch_simple.fetch_inst.jump_dst_i[16] top.tb_cpu_core.uut.g_fetch_simple.fetch_inst.jump_dst_i[15] top.tb_cpu_core.uut.g_fetch_simple.fetch_inst.jump_dst_i[14] top.tb_cpu_core.uut.g_fetch_simple.fetch_inst.jump_dst_i[13] top.tb_cpu_core.uut.g_fetch_simple.fetch_inst.jump_dst_i[12] top.tb_cpu_core.uut.g_fetch_simple.fetch_inst.jump_dst_i[11] top.tb_cpu_core.uut.g_fetch_simple.fetch_inst.jump_dst_i[10] top.tb_cpu_core.uut.g_fetch_simple.fetch_inst.jump_dst_i[9] top.tb_cpu_core.uut.g_fetch_simple.fetch_inst.jump_dst_i[8] top.tb_cpu_core.uut.g_fetch_simple.fetch_inst.jump_dst_i[7] top.tb_cpu_core.uut.g_fetch_simple.fetch_inst.jump_dst_i[6] top.tb_cpu_core.uut.g_fetch_simple.fetch_inst.jump_dst_i[5] top.tb_cpu_core.uut.g_fetch_simple.fetch_inst.jump_dst_i[4] top.tb_cpu_core.uut.g_fetch_simple.fetch_inst.jump_dst_i[3] top.tb_cpu_core.uut.g_fetch_simple.fetch_inst.jump_dst_i[2] top.tb_cpu_core.uut.g_fetch_simple.fetch_inst.jump_dst_i[1] top.tb_cpu_core.uut.g_fetch_simple.fetch_inst.jump_dst_i[0]
+@28
+top.tb_cpu_core.uut.g_fetch_simple.fetch_inst.jump_ready_o
+top.tb_cpu_core.uut.g_fetch_simple.fetch_inst.lli_re_o
+top.tb_cpu_core.uut.g_fetch_simple.fetch_inst.lli_busy_i
+@22
+#{top.tb_cpu_core.uut.g_fetch_simple.fetch_inst.lli_adr_o[29:0]} top.tb_cpu_core.uut.g_fetch_simple.fetch_inst.lli_adr_o[29] top.tb_cpu_core.uut.g_fetch_simple.fetch_inst.lli_adr_o[28] top.tb_cpu_core.uut.g_fetch_simple.fetch_inst.lli_adr_o[27] top.tb_cpu_core.uut.g_fetch_simple.fetch_inst.lli_adr_o[26] top.tb_cpu_core.uut.g_fetch_simple.fetch_inst.lli_adr_o[25] top.tb_cpu_core.uut.g_fetch_simple.fetch_inst.lli_adr_o[24] top.tb_cpu_core.uut.g_fetch_simple.fetch_inst.lli_adr_o[23] top.tb_cpu_core.uut.g_fetch_simple.fetch_inst.lli_adr_o[22] top.tb_cpu_core.uut.g_fetch_simple.fetch_inst.lli_adr_o[21] top.tb_cpu_core.uut.g_fetch_simple.fetch_inst.lli_adr_o[20] top.tb_cpu_core.uut.g_fetch_simple.fetch_inst.lli_adr_o[19] top.tb_cpu_core.uut.g_fetch_simple.fetch_inst.lli_adr_o[18] top.tb_cpu_core.uut.g_fetch_simple.fetch_inst.lli_adr_o[17] top.tb_cpu_core.uut.g_fetch_simple.fetch_inst.lli_adr_o[16] top.tb_cpu_core.uut.g_fetch_simple.fetch_inst.lli_adr_o[15] top.tb_cpu_core.uut.g_fetch_simple.fetch_inst.lli_adr_o[14] top.tb_cpu_core.uut.g_fetch_simple.fetch_inst.lli_adr_o[13] top.tb_cpu_core.uut.g_fetch_simple.fetch_inst.lli_adr_o[12] top.tb_cpu_core.uut.g_fetch_simple.fetch_inst.lli_adr_o[11] top.tb_cpu_core.uut.g_fetch_simple.fetch_inst.lli_adr_o[10] top.tb_cpu_core.uut.g_fetch_simple.fetch_inst.lli_adr_o[9] top.tb_cpu_core.uut.g_fetch_simple.fetch_inst.lli_adr_o[8] top.tb_cpu_core.uut.g_fetch_simple.fetch_inst.lli_adr_o[7] top.tb_cpu_core.uut.g_fetch_simple.fetch_inst.lli_adr_o[6] top.tb_cpu_core.uut.g_fetch_simple.fetch_inst.lli_adr_o[5] top.tb_cpu_core.uut.g_fetch_simple.fetch_inst.lli_adr_o[4] top.tb_cpu_core.uut.g_fetch_simple.fetch_inst.lli_adr_o[3] top.tb_cpu_core.uut.g_fetch_simple.fetch_inst.lli_adr_o[2] top.tb_cpu_core.uut.g_fetch_simple.fetch_inst.lli_adr_o[1] top.tb_cpu_core.uut.g_fetch_simple.fetch_inst.lli_adr_o[0]
+#{top.tb_cpu_core.uut.g_fetch_simple.fetch_inst.lli_dat_i[31:0]} top.tb_cpu_core.uut.g_fetch_simple.fetch_inst.lli_dat_i[31] top.tb_cpu_core.uut.g_fetch_simple.fetch_inst.lli_dat_i[30] top.tb_cpu_core.uut.g_fetch_simple.fetch_inst.lli_dat_i[29] top.tb_cpu_core.uut.g_fetch_simple.fetch_inst.lli_dat_i[28] top.tb_cpu_core.uut.g_fetch_simple.fetch_inst.lli_dat_i[27] top.tb_cpu_core.uut.g_fetch_simple.fetch_inst.lli_dat_i[26] top.tb_cpu_core.uut.g_fetch_simple.fetch_inst.lli_dat_i[25] top.tb_cpu_core.uut.g_fetch_simple.fetch_inst.lli_dat_i[24] top.tb_cpu_core.uut.g_fetch_simple.fetch_inst.lli_dat_i[23] top.tb_cpu_core.uut.g_fetch_simple.fetch_inst.lli_dat_i[22] top.tb_cpu_core.uut.g_fetch_simple.fetch_inst.lli_dat_i[21] top.tb_cpu_core.uut.g_fetch_simple.fetch_inst.lli_dat_i[20] top.tb_cpu_core.uut.g_fetch_simple.fetch_inst.lli_dat_i[19] top.tb_cpu_core.uut.g_fetch_simple.fetch_inst.lli_dat_i[18] top.tb_cpu_core.uut.g_fetch_simple.fetch_inst.lli_dat_i[17] top.tb_cpu_core.uut.g_fetch_simple.fetch_inst.lli_dat_i[16] top.tb_cpu_core.uut.g_fetch_simple.fetch_inst.lli_dat_i[15] top.tb_cpu_core.uut.g_fetch_simple.fetch_inst.lli_dat_i[14] top.tb_cpu_core.uut.g_fetch_simple.fetch_inst.lli_dat_i[13] top.tb_cpu_core.uut.g_fetch_simple.fetch_inst.lli_dat_i[12] top.tb_cpu_core.uut.g_fetch_simple.fetch_inst.lli_dat_i[11] top.tb_cpu_core.uut.g_fetch_simple.fetch_inst.lli_dat_i[10] top.tb_cpu_core.uut.g_fetch_simple.fetch_inst.lli_dat_i[9] top.tb_cpu_core.uut.g_fetch_simple.fetch_inst.lli_dat_i[8] top.tb_cpu_core.uut.g_fetch_simple.fetch_inst.lli_dat_i[7] top.tb_cpu_core.uut.g_fetch_simple.fetch_inst.lli_dat_i[6] top.tb_cpu_core.uut.g_fetch_simple.fetch_inst.lli_dat_i[5] top.tb_cpu_core.uut.g_fetch_simple.fetch_inst.lli_dat_i[4] top.tb_cpu_core.uut.g_fetch_simple.fetch_inst.lli_dat_i[3] top.tb_cpu_core.uut.g_fetch_simple.fetch_inst.lli_dat_i[2] top.tb_cpu_core.uut.g_fetch_simple.fetch_inst.lli_dat_i[1] top.tb_cpu_core.uut.g_fetch_simple.fetch_inst.lli_dat_i[0]
+@28
+top.tb_cpu_core.uut.g_fetch_simple.fetch_inst.fifo_empty
+top.tb_cpu_core.uut.g_fetch_simple.fetch_inst.fifo_full
+top.tb_cpu_core.uut.riscv_decode.decode_inst.cmd_div_mod_o
+top.tb_cpu_core.uut.riscv_decode.decode_inst.cmd_div_o
+top.tb_cpu_core.uut.execute_inst.ex_exception
+top.tb_cpu_core.uut.riscv_decode.decode_inst.cmd_trap_o
+@200
+-Monitor
+@28
+top.tb_cpu_core.inst_monitor.wbs_cyc_i
+top.tb_cpu_core.inst_monitor.wbs_stb_i
+[pattern_trace] 1
+[pattern_trace] 0

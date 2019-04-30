@@ -26,6 +26,7 @@ files=verify/std_logic_textio/std_logic_textio.vhd
     verify/bonfire/sim_bus.vhd verify/bonfire/sim_MainMemory.vhd verify/bonfire/sim_memory_interface.vhd
     verify/bonfire/sim_burst_memory_interface.vhd
     verify/lxp32/src/tb/monitor.vhd
+    verify/bonfire/sim_uart.vhd
     verify/bonfire/tb_cpu_core.vhd
 file_type=vhdlSource
 usage=sim
@@ -35,6 +36,7 @@ scope = private
 files=ise/tb_bonfire_cpu/compiled_tests/timer_irq.hex
   riscv_test/timer_irq.hex riscv_test/loop.hex riscv_test/branch.hex
   riscv_test/sstep.hex riscv_test/fence.hex
+  verify/bonfire/compiled_code/dhrystone_bram.hex
 
 usage=sim
 scope=private
