@@ -257,7 +257,8 @@ cpu_inst: entity work.lxp32_cpu(rtl)
    icache_inst:  entity work.bonfire_dm_icache
    generic map(
          LINE_SIZE=>CACHE_LINE_SIZE_WORDS,
-         CACHE_SIZE=>CACHE_SIZE_WORDS
+         CACHE_SIZE=>CACHE_SIZE_WORDS,
+         FIX_BUSY=>true
       )
       port map(
          clk_i=>clk_i,

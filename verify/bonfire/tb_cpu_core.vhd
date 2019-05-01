@@ -46,12 +46,12 @@ ARCHITECTURE behavior OF tb_cpu_core IS
 constant ram_size : natural := 32768;
 constant ram_adr_width : natural := log2.log2(ram_size);
 
-constant BRANCH_PREDICTOR : boolean := false;
+constant BRANCH_PREDICTOR : boolean := true;
 
 constant LLI_WAIT_CYCLES : natural := 0;
 
-constant USE_ICACHE : boolean := false;
-constant LINE_SIZE : natural := 4;
+constant USE_ICACHE : boolean := true;
+constant LINE_SIZE : natural := 8;
 
 --constant TestFile : string :=  "../src/bonfire-cpu_0/ise/tb_bonfire_cpu/compiled_tests/timer_irq.hex";
 --constant TestFile : string :=  "../src/bonfire-cpu_0/riscv_test/timer_irq.hex";
@@ -61,7 +61,8 @@ constant LINE_SIZE : natural := 4;
 --constant TestFile : string :=  "../src/bonfire-cpu_0/riscv_test/fence.hex";
 
 --constant TestFile : string :=  "../src/bonfire-cpu_0/verify/bonfire/compiled_code/dhrystone_bram.hex";
-constant TestFile : string :=  "/home/thomas/development/bonfire/bonfire-software/test/sim_hello.hex";
+--constant TestFile : string :=  "/home/thomas/development/bonfire/bonfire-software/test/sim_hello.hex";
+constant TestFile : string :=  "/home/thomas/development/bonfire/bonfire-software/dhrystone/dhrystone_bram.hex";
 
 
 
@@ -204,7 +205,8 @@ ic : if USE_ICACHE generate
 
   bonfire_dm_icache_i : entity work.bonfire_dm_icache
   generic map (
-       LINE_SIZE    => LINE_SIZE
+       LINE_SIZE    => LINE_SIZE,
+       FIX_BUSY => true
   --   CACHE_SIZE   => CACHE_SIZE,
   --   ADDRESS_BITS => ADDRESS_BITS
   )

@@ -531,6 +531,10 @@ begin
 
                    if t_valid='0' or not_implemented='1' then
                      -- illegal opcode
+                     -- synthesis translate_off
+                      report "Illegal opcode encountered "
+                          severity error;
+                     -- synthesis translate_on
                      cmd_jump_o<='1';
                      interrupt_o <= '0';
                      trap_cause_o<=X"2";

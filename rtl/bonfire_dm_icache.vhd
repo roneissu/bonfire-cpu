@@ -41,7 +41,8 @@ entity bonfire_dm_icache is
 generic (
   LINE_SIZE : natural :=8; -- Line size in 32 Bit words
   CACHE_SIZE : natural :=2048; -- Cache Size in 32 Bit words
-  ADDRESS_BITS : natural := 30  -- Number of bits of chacheable address range
+  ADDRESS_BITS : natural := 30;  -- Number of bits of chacheable address range
+  FIX_BUSY : boolean := false -- Fix lli_busy handling to be specification conform
 );
 port(
         clk_i: in std_logic;
@@ -131,15 +132,13 @@ signal tag_we : std_logic; -- :='0'; -- tag RAM Write enable
 signal busy : std_logic := '0';
 
 begin
-  lli_busy_o<=busy; --not hit and (lli_re_i or re_reg);
+
 
   wbm_cyc_o<=wb_enable;
   wbm_stb_o<=wb_enable;
   wbm_bte_o<="00";
   read_address<=adr(adr'high downto CL_BITS) & std_logic_vector(read_offset_counter);
   wbm_adr_o<=read_address;
-
-  adr <=  lli_adr_i when busy='0' else adr_reg;
 
   tag_value <= unsigned(adr(adr'high downto adr'high-TAG_RAM_BITS+1));
   tag_index <= unsigned(adr(LINE_SELECT_ADR_BITS+CL_BITS-1 downto CL_BITS));
@@ -148,9 +147,8 @@ begin
 
   tag_we <= '1' when  running_invalidation='1' or (wb_state=wb_finish and wbm_ack_i = '1') else '0';
 
-
-
   cc_invalidate_complete_o <= cc_invalidate_complete;
+
 
   check_hitmiss : process(tag_value,tag_buffer,buffer_index,tag_index,lli_re_i,re_reg,running_invalidation)
   variable index_match,tag_match : boolean;
@@ -176,20 +174,51 @@ begin
   end process;
 
 
+
+fx_busy : if FIX_BUSY  generate
+
+  lli_busy_o<=busy;
+  adr <=  lli_adr_i when busy='0' else adr_reg;
+
   process(clk_i) begin
      if rising_edge(clk_i) then
-        busy<= not hit and (lli_re_i or re_reg);
-        if lli_re_i='1' and busy='0' then
-          adr_reg<=lli_adr_i;
-        end if;
-        if lli_re_i='1' and hit='0' and re_reg='0' then
-          re_reg<='1';
+       if rst_i='1' then
+         re_reg <= '0';
+         busy <= '0';
+        else
+          busy<= not hit and (lli_re_i or re_reg);
+          if lli_re_i='1' and busy='0' then
+            adr_reg<=lli_adr_i;
+          end if;
+          if lli_re_i='1' and hit='0' and re_reg='0' then
+            re_reg<='1';
 
+          elsif hit='1' then
+            re_reg<='0';
+          end if;
+       end if;
+     end if;
+  end process;
+
+end generate;
+
+old_busy: if not FIX_BUSY generate
+
+  lli_busy_o<= not hit and (lli_re_i or re_reg);
+  adr <=  lli_adr_i;
+
+  process(clk_i) begin
+     if rising_edge(clk_i) then
+        if lli_re_i='1' and hit='0' then
+          re_reg<='1';
         elsif hit='1' then
           re_reg<='0';
         end if;
      end if;
   end process;
+
+end generate;
+
 
 
   -- Tag address multiplexer
@@ -233,7 +262,7 @@ begin
 
     if rising_edge(clk_i) then
       -- read cache
-      if lli_re_i='1' then -- hit='1' and
+      if (lli_re_i='1' or re_reg='1' ) and (FIX_BUSY or hit='1') then -- hit='1' and
         lli_dat_o <= cache_ram(to_integer(unsigned(adr(CACHE_ADR_BITS-1 downto 0))));
       end if;
       -- read data from Wisbone bus into Cache RAM on ACK
