@@ -204,6 +204,7 @@ signal result_regaddr: std_logic_vector(7 downto 0);
 signal dst_reg: std_logic_vector(7 downto 0);
 
 -- Signals related to interrupt handling
+signal interrupt_ack : std_logic; -- Bonfire interrupt acknowledge
 
 signal interrupt_return: std_logic:='0';
 
@@ -536,6 +537,8 @@ riscv_cu: if USE_RISCV  generate
 
    csr_tret_exec <= cmd_tret_i and can_execute;
 
+   interrupt_ack <= interrupt_i and can_execute;
+
    csr_inst: entity work.riscv_control_unit
    GENERIC MAP (
 
@@ -565,10 +568,8 @@ riscv_cu: if USE_RISCV  generate
       adr_i => adr_reg,
       cmd_tret_i => csr_tret_exec,
 
-
-		timer_irq_in => timer_irq,
-
-		interrupt_ack_i =>interrupt_i,
+		  timer_irq_in => timer_irq,
+		  interrupt_ack_i =>interrupt_ack,
 
       ext_irq_in => ext_irq_in,
       interrupt_exec_o => riscv_interrupt_exec_o

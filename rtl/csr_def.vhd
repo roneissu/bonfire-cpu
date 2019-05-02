@@ -1,6 +1,6 @@
---   Bonfire CPU 
+--   Bonfire CPU
 --   (c) 2016,2017 Thomas Hornschuh
---   See license.md for License 
+--   See license.md for License
 
 library IEEE;
 use IEEE.STD_LOGIC_1164.all;
@@ -38,7 +38,7 @@ constant CAUSE_ILLEGAL_INSTRUCTION : natural := 2;
 constant CAUSE_BREAKPOINT : natural := 3;
 constant CAUSE_MISALIGNED_LOAD : natural := 4;
 constant CAUSE_MISALIGNED_STORE : natural := 6;
-constant CAUSE_MACHINE_ECALL : natural := 11; 
+constant CAUSE_MACHINE_ECALL : natural := 11;
 
 constant IRQ_CODE_MSOFTWARE : natural := 3;
 constant IRQ_CODE_MTIMER : natural := 7;
@@ -72,30 +72,30 @@ constant a_mcycle  : t_csr_adr := x"B00";
 constant a_mcycleh : t_csr_adr := x"B80";
 
 -- non standard registers
-constant m_bonfire_csr : t_csr_adr :=x"7C0"; 
+constant m_bonfire_csr : t_csr_adr :=x"7C0";
 
--- Version 1.20
+-- Version 1.30
 constant major_version : natural := 1;
-constant minor_version : natural := 20;
+constant minor_version : natural := 30;
 constant impvers : std_logic_vector(31 downto 0) := std_logic_vector(to_unsigned(major_version,16)) &
                                                     std_logic_vector(to_unsigned(minor_version,16));
 
 -- Interrupts
 
-subtype t_lirq_flags is std_logic_vector(15 downto 0); 
+subtype t_lirq_flags is std_logic_vector(15 downto 0);
 
 type t_irq_enable is record
    msie,mtie : std_logic;
    meie : std_logic;
    lie : t_lirq_flags;
-end record;   
+end record;
 
 constant c_enable_init : t_irq_enable :=('0','0','0',(others=>'0'));
-   
-type t_irq_pending is record   
+
+type t_irq_pending is record
    msip,mtip : std_logic;
    meip : std_logic;
-   lip : t_lirq_flags; 
+   lip : t_lirq_flags;
 end record;
 
 constant c_pending_init : t_irq_pending :=('0','0','0',(others=>'0'));
@@ -134,7 +134,7 @@ begin
     misa(12):='1';
   end if;
   return misa;
-end;    
+end;
 
 function get_mstatus(pie : std_logic; ie : std_logic) return t_csr_word is
 variable s : t_csr_word := (others=>'0');
@@ -142,7 +142,7 @@ begin
   s(12 downto 11) := "11"; -- MPP previous privilege level, always "machine" currently
   s(7) := pie;
   s(3) := ie;
-  
+
   return s;
 
 end;
@@ -179,7 +179,7 @@ variable s : t_csr_word := (others=>'0');
 begin
   s(0):=b_csr.sstep;
   return s;
-  
+
 end;
 
 procedure set_mip(csr: in t_csr_word;signal ir : out t_irq_pending) is
@@ -197,12 +197,12 @@ begin
   ir.meie <= csr(11);
   ir.lie <= csr(31 downto 16);
 end;
-    
+
 procedure set_bonfire_csr(csr: in t_csr_word;signal b_csr : out t_bonfire_csr) is
 begin
   b_csr.sstep <= csr(0);
 
-end;    
+end;
 
 function cause_csr(is_irq: std_logic;cause:t_mcause) return t_csr_word is
 variable r: t_csr_word;

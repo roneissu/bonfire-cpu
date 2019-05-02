@@ -4,8 +4,10 @@
 
 -- The Bonfire Processor Project, (c) 2016,2017 Thomas Hornschuh
 
---  GPIO Interface compatible with SiFive FE310-G000 GPIO
---  See chapter 17. of the SiFive FE310-G000 Manual
+--  Simulation UART, compatible with zpuino UART, tx only
+--  does write all tx output to a file and to std outputs
+--  The status register will always state TX ready, RX not ready
+--  Therefore the UART appears much faster than a real UART for the code running on the simulation 
 
 
 -- License: See LICENSE or LICENSE.txt File in git project root.
@@ -24,7 +26,7 @@ entity sim_uart is
 generic (
   SEND_LOG_NAME : string := "send.log";
   stop_mark : std_logic_vector(7 downto 0) := X"1A"; -- Stop marker byte
-  status : std_logic_vector(31 downto 0) :=  X"00000002"; -- TX ready, RX not ready
+  --status : std_logic_vector(31 downto 0) :=  X"00000002"; -- TX ready, RX not ready
   maxIObit : natural :=3;
   minIObit : natural :=2
 );
@@ -51,7 +53,11 @@ architecture testbench of  sim_uart  is
 
   signal ack : std_logic;
 
-  --constant status : std_logic_vector(31 downto 0) :=  X"00000001";
+  -- Register addresses
+  constant data_reg : std_logic_vector(wb_adr_i'range ) := (others=>'0');
+  constant status_reg : std_logic_vector(wb_adr_i'range ) := std_logic_vector(to_unsigned(1,wb_adr_i'length));
+
+  constant status : std_logic_vector(31 downto 0) :=  X"00000002"; -- TX ready, RX not ready
 
 begin
 
@@ -61,7 +67,7 @@ begin
 
 
   -- Simulated "Status" register
-  wb_dat_o <= status when ack='1' and wb_we_i='0' and wb_adr_i(minIObit)='1' else (others=>'-');
+  wb_dat_o <= status when ack='1' and wb_we_i='0' and wb_adr_i=status_reg else (others=>'-');
 
 
   tx: process
@@ -77,7 +83,7 @@ begin
        byte:=(others=>'U');
        while byte/=stop_mark loop
          wait until rising_edge(wb_clk_i);
-         if  ack='1' and wb_adr_i(minIObit)='0' then
+         if  ack='1' and wb_adr_i=data_reg then
             byte := wb_dat_i(byte'range);
             write_charbyte(s_file,byte);
             write_charbyte(output,byte);
