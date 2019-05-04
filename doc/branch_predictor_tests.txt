@@ -96,3 +96,6 @@ branch with predictor:
 ../src/bonfire-cpu_0/verify/lxp32/src/tb/monitor.vhd:69:32:@525ns:(report note): Monitor: value 0x00000001 written to address 0x00000000
 ../src/bonfire-cpu_0/verify/bonfire/tb_cpu_core.vhd:253:7:@525ns:(report note): Test finished with result 00000001
 
+
+
+

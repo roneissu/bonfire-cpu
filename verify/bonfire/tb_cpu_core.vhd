@@ -60,9 +60,9 @@ constant LINE_SIZE : natural := 8;
 --constant TestFile : string :=  "../src/bonfire-cpu_0/riscv_test/sstep.hex";
 --constant TestFile : string :=  "../src/bonfire-cpu_0/riscv_test/fence.hex";
 
---constant TestFile : string :=  "../src/bonfire-cpu_0/verify/bonfire/compiled_code/dhrystone_bram.hex";
---constant TestFile : string :=  "/home/thomas/development/bonfire/bonfire-software/test/sim_hello.hex";
-constant TestFile : string :=  "/home/thomas/development/bonfire/bonfire-software/dhrystone/dhrystone_bram.hex";
+constant TestFile : string :=  "../src/bonfire-cpu_0/verify/bonfire/compiled_code/dhrystone_bram.hex";
+
+--constant TestFile : string :=  "/home/thomas/development/bonfire/bonfire-software/dhrystone/dhrystone_bram.hex";
 
 
 

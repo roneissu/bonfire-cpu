@@ -15,11 +15,12 @@ csrw mtvec,a1
 
 jal set_timer
 
-li a3, 5 // iteration counter
+li a3, 50 // iteration counter
 li a1,MIP_MTIP
 csrs mie, a1 // Enable timer interrupt
 csrsi mstatus,MSTATUS_MIE
 loop:
+sw a3,8(s0)
 ecall // a software trap, interrupts are disabled during the trap
 j loop // just wait....
 
@@ -35,7 +36,7 @@ sw t4,4(s0) // write mcause to monitor port
 bgtz t4, sw_trap
 
 jal set_timer
-addi a3,a3,-1 // finish program after 5 timer events
+addi a3,a3,-1 // iteration counter
 beqz a3, finish
 mret // return from interrupt
 
