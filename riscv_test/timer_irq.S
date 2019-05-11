@@ -15,7 +15,7 @@ csrw mtvec,a1
 
 jal set_timer
 
-li a3, 50 // iteration counter
+li a3, 5 // iteration counter
 li a1,MIP_MTIP
 csrs mie, a1 // Enable timer interrupt
 csrsi mstatus,MSTATUS_MIE

@@ -92,9 +92,6 @@ signal decode_dst: std_logic_vector(7 downto 0);
 signal decode_csr_x0_o :  STD_LOGIC; -- should be set when rs field is x0
 signal decode_csr_op_o :  STD_LOGIC_VECTOR (1 downto 0); -- lower bits of funct3
 
-signal decode_jump_prediction_o : std_logic;
-
-
 signal execute_ready: std_logic;
 signal execute_jump_valid: std_logic;
 signal execute_jump_dst: std_logic_vector(29 downto 0);

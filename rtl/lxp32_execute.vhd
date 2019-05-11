@@ -208,6 +208,11 @@ signal interrupt_ack : std_logic; -- Bonfire interrupt acknowledge
 
 signal interrupt_return: std_logic:='0';
 
+-- synthesis translate_off
+signal sim_branch_counter : natural := 0;
+signal sim_mispredict_counter   : natural := 0;
+-- synthesis translate_on
+
 begin
 
 assert (USE_RISCV and (MUL_ARCH="spartandsp" or MUL_ARCH="none"))
@@ -390,11 +395,24 @@ begin
                if not USE_RISCV then interrupt_return<=op1_i(0); end if;
             end if;
         end if;
-       end if;
+      end if;
+      -- synthesis translate_off
+      -- Simulation Branch statstics
+      if cmd_jump_i='1' and cmd_cmp_i='1'  and can_execute='1' and jump_valid='0' then
+        sim_branch_counter<=sim_branch_counter+1;
+        if jump_prediction_fail='1' then
+          sim_mispredict_counter<=sim_mispredict_counter+1;
+        end if;
+      end if;
+      -- synthesis translate_on
    end if;
 end process;
 
 jump_valid_o<=jump_valid or (can_execute and cmd_jump_i and jump_prediction_fail);
+
+
+
+
 
 end generate;
 

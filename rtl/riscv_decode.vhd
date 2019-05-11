@@ -259,9 +259,9 @@ begin
                cmd_loadop3_o<='0';
                cmd_signed_o<='0';
                cmd_dbus_o<='0';
-               cmd_dbus_store_o<='0';
-               cmd_dbus_byte_o<='0';
-               cmd_dbus_hword_o<='0'; -- TH
+               cmd_dbus_store_o<='-';
+               cmd_dbus_byte_o<='-';
+               cmd_dbus_hword_o<='-'; -- TH
                cmd_addsub_o<='0';
                cmd_negate_op2_o<='0';
                cmd_mul_o<='0';
@@ -278,9 +278,11 @@ begin
                cmd_csr_o <= '0';
                cmd_trap_o <= '0';
                cmd_tret_o <= '0';
+               trap_cause_o <= (others=>'-');
                interrupt_o <= '0';
-               jump_type_o<="0000";
-               jump_prediction_o<='0';
+               --jump_type_o<="0000";
+               jump_type_o <= (others=>'-');
+               jump_prediction_o <= '-';
 
                dst_out<=(others=>'0'); -- defaults to register 0, which is never read
                displacement:= (others=>'0');
@@ -292,11 +294,11 @@ begin
                   -- single step trap propagation pipeline
                   trap_on_current<= trap_on_next;
                   trap_on_next <= '0';
+                  jump_prediction_o<=jump_prediction_i;
 
                   if interrupt_valid_i='1' then
                     t_valid:='1';
                     interrupt_o<='1';
-                    --trap_cause_o<=X"4"; -- TODO: adapt cause based on interrupt source
                     cmd_trap_o <= '1';
                     cmd_jump_o <= '1';
                     -- Clear pending single steps in case of an interrupt
@@ -386,14 +388,18 @@ begin
                           t_valid:='1';
 
                        when rv_jal =>
-                           rd1_select<=Imm;
-                           rd1_direct<=std_logic_vector(signed(current_ip&"00")+get_UJ_immediate(word_i));
-                           cmd_jump_o<='1';
+                           -- A jal is always predicted right. So no need to trigger
+                           -- the jump logic in the execution stage 
+                           if not BRANCH_PREDICTOR then
+                             rd1_select<=Imm;
+                             rd1_direct<=std_logic_vector(signed(current_ip&"00")+get_UJ_immediate(word_i));
+                             cmd_jump_o<='1';
+                           end if;
                            cmd_loadop3_o<='1';
                            op3_o<=next_ip_i&"00";
                            dst_out<="000"&rd;
                            t_valid:='1';
-                           jump_prediction_o<=jump_prediction_i;
+                           --jump_prediction_o<=jump_prediction_i;
 
                        when rv_jalr =>
 
@@ -415,16 +421,18 @@ begin
                            cmd_negate_op2_o<='1'; -- needed by ALU comparator to work correctly
                            t_valid:='1';
                            self_busy<='1';
-                           jump_prediction_o<=jump_prediction_i;
+                           --jump_prediction_o<=jump_prediction_i;
                            state<=ContinueCjmp;
-
 
                        when rv_load =>
 
                            rd1_select<=Reg;
                            displacement:=get_I_displacement(word_i);
                            cmd_dbus_o<='1';
+                           cmd_dbus_store_o<='0';
                            dst_out<="000"&rd;
+                           cmd_dbus_byte_o<='0';
+                           cmd_dbus_hword_o<='0';
                            if funct3(1 downto 0)="00" then -- Byte access
                              cmd_dbus_byte_o<='1';
                            elsif funct3(1 downto 0)="01" then --  16 BIT (H) access
@@ -440,6 +448,8 @@ begin
                            rd2_select<=Reg;
                            cmd_dbus_o<='1';
                            cmd_dbus_store_o<='1';
+                           cmd_dbus_byte_o<='0';
+                           cmd_dbus_hword_o<='0';
                            if funct3(1 downto 0)="00" then -- Byte access
                              cmd_dbus_byte_o<='1';
                            elsif funct3(1 downto 0)="01" then --  16 BIT (H) access
@@ -448,7 +458,7 @@ begin
                            t_valid:='1';
                       when rv_lui|rv_auipc =>
                            -- we will use the ALU to calculate the result
-                           -- this saves an adder and time
+                           -- this saves an adder
                            U_immed:=get_U_immediate(word_i);
                            rd2_select<=Imm;
                            rd2_direct<=std_logic_vector(U_immed);

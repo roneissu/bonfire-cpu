@@ -89,13 +89,19 @@ signal current_addr : std_logic_vector(fetch_addr'range);
 signal debug_jump_dst_i : std_logic_vector(31 downto 0);
 
 
-signal debug_adr_o : std_logic_vector(31 downto 0);
+
 
 signal jstate : t_jstate := jnone;
 
+-- synthesis translate_off
+signal debug_adr_o : std_logic_vector(31 downto 0);
+-- synthesis translate_on
+
 begin
 
+-- synthesis translate_off
 debug_adr_o <= fetch_addr&"00";
+-- synthesis translate_on
 
 op <= decode_op(lli_dat_i(6 downto 2)) when fifo_we='1' else rv_invalid;
 debug_jump_dst_i <= jump_dst_i&"00";
@@ -192,7 +198,6 @@ begin
 
       if lli_busy_i='0' then
         current_addr <= fetch_addr;
-
         requested<=re and not fetch_branch_target;
       end if;
 
@@ -203,12 +208,11 @@ begin
          if  jump_valid_i='0' and fetch_branch_target='1' then
             fetch_addr <= branch_target(31 downto 2);
             branch_target_fetched <= '1';
-
-        elsif jump_valid_i='1' and jstate=jnone then --misprecdict
-                --report "Branch mispredict" severity note;
-                fetch_addr <= jump_dst_i;
+         elsif jump_valid_i='1' and jstate=jnone then --misprecdict
+           --report "Branch mispredict" severity note;
+            fetch_addr <= jump_dst_i;
          elsif next_word = '1' then --and branch_target_fetched='0'
-           fetch_addr  <= std_logic_vector(unsigned(fetch_addr)+1);
+            fetch_addr  <= std_logic_vector(unsigned(fetch_addr)+1);
          end if;
        end if;
 
