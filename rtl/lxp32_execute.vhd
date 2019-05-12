@@ -208,6 +208,9 @@ signal interrupt_ack : std_logic; -- Bonfire interrupt acknowledge
 
 signal interrupt_return: std_logic:='0';
 
+signal instret_cnt : unsigned(63 downto 0) := (others=>'0');
+signal instret_o : std_logic_vector(instret_cnt'range);
+
 -- synthesis translate_off
 signal sim_branch_counter : natural := 0;
 signal sim_mispredict_counter   : natural := 0;
@@ -540,6 +543,8 @@ riscv_cu: if USE_RISCV  generate
                  X"2" when csr_exception='1'
                  else  trap_cause_i;
 
+    instret_o <= std_logic_vector(instret_cnt);
+
    process(clk_i) begin
 
      if rising_edge(clk_i) then
@@ -564,17 +569,19 @@ riscv_cu: if USE_RISCV  generate
       MUL_ARCH => MUL_ARCH
    )
    PORT MAP(
-        op1_i => op1_i,
-        wdata_o => csr_result,
-        we_o => csr_we ,
-        csr_exception =>csr_exception ,
-        csr_adr => displacement_i,
-        ce_i => csr_ce,
-        busy_o => csr_busy,
-        csr_x0_i => csr_x0_i,
-        csr_op_i => csr_op_i,
-        clk_i => clk_i ,
-        rst_i => rst_i,
+      op1_i => op1_i,
+      wdata_o => csr_result,
+      we_o => csr_we ,
+      csr_exception =>csr_exception ,
+      csr_adr => displacement_i,
+      ce_i => csr_ce,
+      busy_o => csr_busy,
+      csr_x0_i => csr_x0_i,
+      csr_op_i => csr_op_i,
+      clk_i => clk_i ,
+      rst_i => rst_i,
+
+      minstret_i => instret_o,
 
       mtvec_o => mtvec,
       mepc_o  => mepc,
@@ -595,7 +602,17 @@ riscv_cu: if USE_RISCV  generate
 
 end generate;
 
-
+-- Instruction counter
+process (clk_i) is
+begin
+   if rising_edge(clk_i) then
+      if rst_i='1' then
+        instret_cnt <= (others=>'0');
+      elsif can_execute='1' then
+        instret_cnt <= instret_cnt + 1;
+      end if;
+   end if;
+end process;
 
 
 -- Result multiplexer
@@ -611,8 +628,6 @@ end generate;
 result_valid<=(alu_we or loadop3_we or dbus_we or slt_we or csr_we);-- and not (ex_exception or ex_exception_r);
 
 -- Write destination register
-
-
 process (clk_i) is
 begin
    if rising_edge(clk_i) then

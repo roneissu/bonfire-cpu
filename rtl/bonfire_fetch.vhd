@@ -157,7 +157,7 @@ process (clk_i) is
 begin
   if rising_edge(clk_i) then
     if rst_i='1' then
-      ---
+      jstate <= jnone;
     else
       case jstate is
         when jnone =>

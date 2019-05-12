@@ -35,7 +35,8 @@ scope = private
 [fileset code]
 files=ise/tb_bonfire_cpu/compiled_tests/timer_irq.hex
   riscv_test/timer_irq.hex riscv_test/loop.hex riscv_test/branch.hex
-  riscv_test/sstep.hex riscv_test/fence.hex
+  riscv_test/sstep.hex riscv_test/fence.hex riscv_test/mult.hex
+  riscv_test/loadsave.hex riscv_test/csr.hex
   verify/bonfire/compiled_code/dhrystone_bram.hex
 
 usage=sim
@@ -49,4 +50,4 @@ toplevel = tb_cpu_core
 toplevel = tb_cpu_core
 
 [ghdl]
-;run_options = --wave=cpu.ghw --stop-time=5000ns
+run_options = --wave=cpu.ghw --stop-time=7000ns

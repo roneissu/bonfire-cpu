@@ -23,6 +23,10 @@ la s1, subroutine
 jalr ra, s1
 sw a0,4(s0) // should write #55aaffee
 
+
+j double
+
+success:
 li a0,0
 sw a0,0(s0) // write success to monitor result register
 f0:
@@ -32,5 +36,13 @@ subroutine:
 li a0, 0x55aaffee
 ret
 
+fail:
 li a0, -1
 sw a0,0(s0) // should not happen...
+
+// Double branch tests
+double:
+bne a0,a0, fail
+beq a0,a0, success
+
+j fail

@@ -389,7 +389,7 @@ begin
 
                        when rv_jal =>
                            -- A jal is always predicted right. So no need to trigger
-                           -- the jump logic in the execution stage 
+                           -- the jump logic in the execution stage
                            if not BRANCH_PREDICTOR then
                              rd1_select<=Imm;
                              rd1_direct<=std_logic_vector(signed(current_ip&"00")+get_UJ_immediate(word_i));
@@ -535,9 +535,9 @@ begin
                         not_implemented:='1';
                     end case;
 
-                  else
+                   else
                      not_implemented:='1';
-                  end if;
+                   end if;
 
                    if t_valid='0' or not_implemented='1' then
                      -- illegal opcode
@@ -549,14 +549,14 @@ begin
                      interrupt_o <= '0';
                      trap_cause_o<=X"2";
                      cmd_trap_o <= '1';
-                     valid_out<='1';
-                   else
-                     valid_out<=t_valid;
                    end if;
+                   valid_out<='1';
                    -- the epc_o register is always set
                    -- In case of an exception downstream the pipeline this register can be copied
                    -- to the CSR register.
                    epc_o <= std_logic_vector(current_ip);
+               else
+                 valid_out<='0';
                end if; -- if valid_i='1'
             when ContinueCjmp =>
                rd1_select<=Imm;

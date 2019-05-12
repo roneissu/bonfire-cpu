@@ -16,6 +16,7 @@ constant m_roprefix : t_csr_adrprefix :=x"F";
 subtype t_csr_adr  is std_logic_vector(11 downto 0);
 subtype t_csr_adr8 is std_logic_vector(7 downto 0);
 subtype t_csr_word is std_logic_vector(31 downto 0);
+subtype t_csr_adr4 is std_logic_vector(3 downto 0);
 subtype t_mcause is std_logic_vector(4 downto 0);
 
 -- Exception causes
@@ -53,6 +54,7 @@ constant edeleg : t_csr_adr8 := x"02";
 constant ideleg : t_csr_adr8 := x"03";
 constant a_ie   : t_csr_adr8 := x"04";
 constant tvec : t_csr_adr8 :=   x"05";
+constant counteren : t_csr_adr8 :=   x"06";
 
 --Read only Machine Information Registers
 constant vendorid : t_csr_adr8 :=  X"11";
@@ -64,19 +66,20 @@ constant hartid  :  t_csr_adr8 :=  X"14";
 constant scratch : t_csr_adr8 :=   x"40";
 constant epc: t_csr_adr8 :=        x"41";
 constant cause : t_csr_adr8 :=     x"42";
-constant badaddr : t_csr_adr8 :=   x"43";
+constant tval  : t_csr_adr8 :=     x"43";
 constant a_ip : t_csr_adr8 :=      x"44";
 
+--Couunters
 -- Cycle counter
 constant a_mcycle  : t_csr_adr := x"B00";
-constant a_mcycleh : t_csr_adr := x"B80";
+constant a_minstret : t_csr_adr := x"B02";
 
 -- non standard registers
 constant m_bonfire_csr : t_csr_adr :=x"7C0";
 
 -- Version 1.30
 constant major_version : natural := 1;
-constant minor_version : natural := 30;
+constant minor_version : natural := 31;
 constant impvers : std_logic_vector(31 downto 0) := std_logic_vector(to_unsigned(major_version,16)) &
                                                     std_logic_vector(to_unsigned(minor_version,16));
 
@@ -106,6 +109,10 @@ type t_bonfire_csr is record
 
 end record;
 
+function csr_group(adr : std_logic_vector) return t_csr_adr4;
+function csr_item(adr : std_logic_vector) return t_csr_adr4;
+function csr_mode(adr : std_logic_vector) return t_csr_adr4;
+
 
 
 function get_misa(divider_en:boolean;mul_arch:string) return t_csr_word;
@@ -125,6 +132,24 @@ procedure set_bonfire_csr(csr: in t_csr_word;signal b_csr : out t_bonfire_csr);
 end csr_def;
 
 package body csr_def is
+
+function csr_group(adr : std_logic_vector) return t_csr_adr4 is
+begin
+  return adr(7 downto 4);
+end;
+
+
+function csr_item(adr : std_logic_vector) return t_csr_adr4 is
+begin
+  return adr(3 downto 0);
+end;
+
+function csr_mode(adr : std_logic_vector) return t_csr_adr4 is
+begin
+  return adr(11 downto 8);
+end;
+
+
 
 function get_misa(divider_en:boolean;mul_arch:string) return t_csr_word is
 variable misa : t_csr_word := "0100" & X"0000000";

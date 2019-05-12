@@ -50,17 +50,20 @@ constant BRANCH_PREDICTOR : boolean := true;
 
 constant LLI_WAIT_CYCLES : natural := 0;
 
-constant USE_ICACHE : boolean := true;
-constant LINE_SIZE : natural := 8;
+constant USE_ICACHE : boolean := false;
+constant LINE_SIZE : natural := 16;
 
 --constant TestFile : string :=  "../src/bonfire-cpu_0/ise/tb_bonfire_cpu/compiled_tests/timer_irq.hex";
 --constant TestFile : string :=  "../src/bonfire-cpu_0/riscv_test/timer_irq.hex";
--- constant TestFile : string :=  "../src/bonfire-cpu_0/riscv_test/loop.hex";
+--constant TestFile : string :=  "../src/bonfire-cpu_0/riscv_test/loop.hex";
+--constant TestFile : string :=  "../src/bonfire-cpu_0/riscv_test/mult.hex";
 --constant TestFile : string :=  "../src/bonfire-cpu_0/riscv_test/branch.hex";
 --constant TestFile : string :=  "../src/bonfire-cpu_0/riscv_test/sstep.hex";
 --constant TestFile : string :=  "../src/bonfire-cpu_0/riscv_test/fence.hex";
+--constant TestFile : string :=  "../src/bonfire-cpu_0/riscv_test/loadsave.hex";
+constant TestFile : string :=  "../src/bonfire-cpu_0/riscv_test/csr.hex";
 
-constant TestFile : string :=  "../src/bonfire-cpu_0/verify/bonfire/compiled_code/dhrystone_bram.hex";
+--constant TestFile : string :=  "../src/bonfire-cpu_0/verify/bonfire/compiled_code/dhrystone_bram.hex";
 
 --constant TestFile : string :=  "/home/thomas/development/bonfire/bonfire-software/dhrystone/dhrystone_bram.hex";
 

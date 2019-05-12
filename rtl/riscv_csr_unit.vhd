@@ -54,8 +54,11 @@ entity riscv_control_unit is
            busy_o : out STD_LOGIC;
            csr_x0_i : in STD_LOGIC; -- should be set when rs field is x0
            csr_op_i : in  STD_LOGIC_VECTOR (1 downto 0);
-           -- export CSR registers
 
+           -- import csr registers
+           minstret_i : std_logic_vector(63 downto 0);
+
+           -- export CSR registers
            mtvec_o : out std_logic_vector(31 downto 2);
            mepc_o  : out std_logic_vector(31 downto 2);
 
@@ -82,7 +85,12 @@ architecture Behavioral of riscv_control_unit is
 
 signal csr_in, csr_out : STD_LOGIC_VECTOR (31 downto 0); -- Signals for CSR "ALU"
 signal csr_offset : std_logic_vector(7 downto 0); -- lower 8 Bits of CSR address
-signal csr_t1 : STD_LOGIC_VECTOR (31 downto 0);
+--signal csr_t1 : STD_LOGIC_VECTOR (31 downto 0);
+
+signal csr_grp0 : STD_LOGIC_VECTOR (31 downto 0);
+signal csr_grp4 : STD_LOGIC_VECTOR (31 downto 0);
+signal csr_grpb : STD_LOGIC_VECTOR (31 downto 0);
+signal csr_grpf : STD_LOGIC_VECTOR (31 downto 0);
 
 signal busy : std_logic := '0';
 signal we : std_logic :='0';
@@ -132,29 +140,43 @@ sstep_o <= m_bonfire.sstep;
 
 csr_offset <= csr_adr(7 downto 0);
 
---csr select mux
-with csr_offset select
-   csr_t1 <= get_mstatus(mpie,mie) when status,
-             get_misa(DIVIDER_EN,MUL_ARCH) when isa,
-             mtvec&"00" when tvec,
-             mscratch   when scratch,
-             cause_csr(mcause_31,mcause)  when cause,
-             mbadaddr when badaddr,
-             mepc&"00" when epc,
-             impvers when impid,
-             get_mie(irq_enable) when a_ie,
-             get_mip(irq_pending) when a_ip,
 
-             (others=>'0') when others;
+
+csr_grp0 <=   get_mstatus(mpie,mie) when csr_item(status)=csr_item(csr_adr) else
+              get_misa(DIVIDER_EN,MUL_ARCH) when csr_item(isa)=csr_item(csr_adr) else
+              mtvec&"00" when csr_item(tvec)=csr_item(csr_adr) else
+              get_mie(irq_enable) when csr_item(a_ie)=csr_item(csr_adr) else
+              (others=>'0');
+
+
+csr_grp4 <=   mscratch   when csr_item(scratch)=csr_item(csr_adr) else
+               cause_csr(mcause_31,mcause)  when csr_item(cause)=csr_item(csr_adr) else
+               mbadaddr when csr_item(tval)=csr_item(csr_adr) else
+               mepc&"00" when csr_item(epc)=csr_item(csr_adr) else
+               get_mip(irq_pending) when csr_item(a_ip)=csr_item(csr_adr) else
+               (others=>'0');
+
+
+csr_grpb <=
+          mcycle(31 downto 0) when  csr_offset = X"0" & csr_item(a_mcycle) else
+          mcycle(63 downto 32) when csr_offset =  X"8" & csr_item(a_mcycle)  else
+          minstret_i(31 downto 0) when  csr_offset = X"0" & csr_item(a_minstret) else
+          minstret_i(63 downto 32) when csr_offset =  X"8" & csr_item(a_minstret)  else
+          (others=>'X'); -- don't care
+
+
+csr_in <= csr_grp0 when csr_group(csr_adr)=X"0" and csr_mode(csr_adr)=m_stdprefix else
+          csr_grp4 when csr_group(csr_adr)=X"4" and csr_mode(csr_adr)=m_stdprefix else
+          csr_grpb when csr_mode(csr_adr)=X"B" else
+          get_bonfire_csr(m_bonfire) when csr_adr = m_bonfire_csr else
+          impvers when  csr_offset=impid and csr_mode(csr_adr)=m_roprefix else
+          (others=>'0') when  csr_mode(csr_adr)=m_roprefix else
+          (others=>'X'); -- don't care
 
 
 gen_mcycle: if MCYCLE_EN generate
 
-csr_in <= csr_t1 when csr_adr(11 downto 8)=m_stdprefix or csr_adr(11 downto 8) = m_roprefix else
-          mcycle(31 downto 0) when  csr_adr = a_mcycle else
-          mcycle(63 downto 32) when csr_adr = a_mcycleh else
-          get_bonfire_csr(m_bonfire) when csr_adr = m_bonfire_csr else
-          (others=>'X'); -- don't care
+
 
 Inst_counter_64Bit: entity work.counter_64Bit PORT MAP(
     clk_i => clk_i ,
@@ -163,13 +185,6 @@ Inst_counter_64Bit: entity work.counter_64Bit PORT MAP(
   );
 
 end generate;
-
-gen_no_mcycle: if not MCYCLE_EN generate
-
-  csr_in <= csr_t1;
-
-end generate;
-
 
 
 csr_alu: process(op1_i,csr_in,csr_op_i)
@@ -273,7 +288,7 @@ begin
               when cause =>
                  mcause <= csr_out(mcause'range);
                  mcause_31 <= csr_out(31);
-              when badaddr =>
+              when tval =>
                  mbadaddr <= csr_out;
               when a_ie =>
                 set_mie(csr_out,irq_enable);
@@ -282,8 +297,10 @@ begin
               when others=>
                  l_exception:='1';
             end case;
-          elsif MCYCLE_EN and (csr_adr = a_mcycle or csr_adr = a_mcycleh ) then -- cycle counter read
-            l_exception:='0';
+          elsif csr_mode(csr_adr)=X"B"   and
+               (csr_item(csr_adr)=csr_item(a_mcycle) or  csr_item(csr_adr)=csr_item(a_minstret)) and
+               (csr_group(csr_adr)=X"0" or csr_group(csr_adr)=X"8") then -- counter read
+                l_exception:='0';
           elsif csr_adr(11 downto 8) = m_roprefix then
                case csr_adr(7 downto 0) is
                  when vendorid|marchid|impid|hartid => l_exception:='0';
@@ -311,4 +328,3 @@ end process;
 
 
 end Behavioral;
-
