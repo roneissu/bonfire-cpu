@@ -39,6 +39,11 @@ use work.common_pkg.all;
 --use std.env.all;
 
 ENTITY tb_cpu_core IS
+  generic (
+    TestFile : string;
+    signature_file : string := "" -- RISCV compliance signature output 
+
+  );
 END tb_cpu_core;
 
 ARCHITECTURE behavior OF tb_cpu_core IS
@@ -61,7 +66,7 @@ constant LINE_SIZE : natural := 16;
 --constant TestFile : string :=  "../src/bonfire-cpu_0/riscv_test/sstep.hex";
 --constant TestFile : string :=  "../src/bonfire-cpu_0/riscv_test/fence.hex";
 --constant TestFile : string :=  "../src/bonfire-cpu_0/riscv_test/loadsave.hex";
-constant TestFile : string :=  "../src/bonfire-cpu_0/riscv_test/csr.hex";
+--constant TestFile : string :=  "../src/bonfire-cpu_0/riscv_test/csr.hex";
 
 --constant TestFile : string :=  "../src/bonfire-cpu_0/verify/bonfire/compiled_code/dhrystone_bram.hex";
 
