@@ -102,6 +102,7 @@ result_o<=result;
 
 process (clk_i) is
 variable temp_adr : std_logic_vector(31 downto 0);
+variable csr : string(1 to 10);
 begin
 	if rising_edge(clk_i) then
 		if rst_i='1' then
@@ -116,16 +117,27 @@ begin
 				severity failure;
 
 			if VERBOSE and wbs_adr_i /= c_signature_port_adr then
-				report "Monitor: value "&
-					"0x"&hstr(wbs_dat_i)&
-					" written to address "&
-					"0x"&hstr(temp_adr);
+				if temp_adr(15 downto 8)=X"10" then -- RISC-V Excpetion output area
+				  case temp_adr(3 downto 2) is
+					   when  "00" => csr := "mcause:   ";
+						 when  "01" => csr := "mepc:     ";
+						 when  "10" => csr := "mbadaddr: ";
+						 when  "11" => csr := "mstatus:  ";
+						 when others => csr := hstr_lc(wbs_adr_i) & " ";
+				  end case;
+					report  csr & " value: " & hstr_lc(wbs_dat_i);
+				else
+				  report "Monitor: value "&
+					  "0x"&hstr(wbs_dat_i)&
+					  " written to address "&
+					  "0x"&hstr(temp_adr);
+			  end if;
 			end if;
 
 			if unsigned(wbs_adr_i)=to_unsigned(0,wbs_adr_i'length) then
 				result<=wbs_dat_i;
 				finished<='1';
-			
+
 				if VERBOSE and counter > 0 then
 					  report  str(counter) & " words written to: " & signature_file;
 				end if;
