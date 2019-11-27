@@ -41,7 +41,7 @@ use work.common_pkg.all;
 ENTITY tb_cpu_core IS
   generic (
     TestFile : string;
-    signature_file : string := "" -- RISCV compliance signature output 
+    signature_file : string := "" -- RISCV compliance signature output
 
   );
 END tb_cpu_core;
@@ -363,7 +363,10 @@ end generate;
 
     Inst_monitor:  entity work.monitor
     generic map(
-      VERBOSE=>true
+      VERBOSE=>true,
+      signature_file=>signature_file,
+      ENABLE_SIG_DUMP=>TRUE
+
     )
     PORT MAP(
         clk_i => clk_i,
@@ -408,9 +411,8 @@ end generate;
 
 
       wait until finished='1' or uart_stop;
-      report "Test finished with result "& hex_string(result);
-      --severity failure; -- ugly but portable ....
-
+      report "Test finished with result "& hex_string(result) severity note;
+      --severity failure; -- ugly but portable ....  
       tbSimEnded <= '1'; -- End Simulation
 
    end process;

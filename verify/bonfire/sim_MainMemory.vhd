@@ -29,22 +29,22 @@ use work.std_logic_textio.all;
 
 entity sim_MainMemory is
     generic (RamFileName : string := "meminit.ram";
-	          mode : string := "B";
+              mode : string := "B";
               ADDR_WIDTH: integer;
               SIZE : integer;
               EnableSecondPort : boolean := true -- enable inference of the second port
             );
-    Port ( DBOut : out  STD_LOGIC_VECTOR (31 downto 0);
-           DBIn : in  STD_LOGIC_VECTOR (31 downto 0);
-           AdrBus : in  STD_LOGIC_VECTOR (ADDR_WIDTH-1 downto 0);
-           ENA : in  STD_LOGIC;
-           WREN : in  STD_LOGIC_VECTOR (3 downto 0);
-              CLK : in  STD_LOGIC;
-	   -- Second Port ( read only)
-		  CLKB : in STD_LOGIC;
-		  ENB : in STD_LOGIC;
-		  AdrBusB : in  STD_LOGIC_VECTOR (ADDR_WIDTH-1 downto 0);
-		  DBOutB : out  STD_LOGIC_VECTOR (31 downto 0)
+      Port ( DBOut : out  STD_LOGIC_VECTOR (31 downto 0);
+             DBIn : in  STD_LOGIC_VECTOR (31 downto 0);
+             AdrBus : in  STD_LOGIC_VECTOR (ADDR_WIDTH-1 downto 0);
+             ENA : in  STD_LOGIC;
+             WREN : in  STD_LOGIC_VECTOR (3 downto 0);
+             CLK : in  STD_LOGIC;
+        	   -- Second Port ( read only)
+        		 CLKB : in STD_LOGIC;
+        		 ENB : in STD_LOGIC;
+        		 AdrBusB : in  STD_LOGIC_VECTOR (ADDR_WIDTH-1 downto 0);
+        		 DBOutB : out  STD_LOGIC_VECTOR (31 downto 0)
 
               );
 end sim_MainMemory;
@@ -78,9 +78,9 @@ begin
   for I in tRam'range loop
     if not endfile(RamFile) then
       readline (RamFile, RamFileLine);
-		if mode="H" then
-		   hread (RamFileLine, word); -- alternative: HEX read
-		else
+      if mode="H" then
+        hread (RamFileLine, word); -- alternative: HEX read
+      else
          read(RamFileLine,word);  -- Binary read
       end if;
       r(I) := word;

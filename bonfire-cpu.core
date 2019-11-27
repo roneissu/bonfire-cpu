@@ -25,7 +25,7 @@ files=verify/std_logic_textio/std_logic_textio.vhd
     verify/common_pkg/common_pkg.vhd verify/common_pkg/common_pkg_body.vhd
     verify/bonfire/sim_bus.vhd verify/bonfire/sim_MainMemory.vhd verify/bonfire/sim_memory_interface.vhd
     verify/bonfire/sim_burst_memory_interface.vhd
-    verify/lxp32/src/tb/monitor.vhd
+    verify/bonfire/monitor.vhd
     verify/bonfire/sim_uart.vhd
     verify/bonfire/tb_cpu_core.vhd
 file_type=vhdlSource
