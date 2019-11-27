@@ -12,6 +12,8 @@ library ieee;
 use ieee.std_logic_1164.all;
 use IEEE.NUMERIC_STD.ALL;
 
+use work.txt_util.all;
+
 entity lxp32_execute is
    generic(
       DBUS_RMW: boolean;
@@ -133,9 +135,10 @@ signal loadop3_we: std_logic;
 
 signal jump_condition: std_logic;
 signal jump_valid: std_logic:='0';
-signal jump_dst, jump_dst_r: std_logic_vector(jump_dst_o'range);
+signal jump_dst, jump_dst_r: std_logic_vector(31 downto 0);
 signal cond_reg : std_logic_vector (2 downto 0);
 signal jump_prediction_fail : std_logic;
+signal jump_misalign : std_logic := '0';
 
 -- SLT
 signal slt_we : std_logic:='0';
@@ -225,7 +228,7 @@ assert (USE_RISCV and (MUL_ARCH="spartandsp" or MUL_ARCH="none"))
   severity failure;
 
 
-ex_exception <= dbus_misalign or csr_exception;
+ex_exception <= dbus_misalign or csr_exception or jump_misalign;
 
 
 --CSR export to decode stage
@@ -357,18 +360,18 @@ process(target_address,mtvec,mepc,cmd_tret_i,cmd_trap_i,ex_exception,
         jump_condition,epc_i)
 begin
    if cmd_tret_i = '1' then
-     jump_dst<=mepc;
+     jump_dst<=mepc & "00";
    elsif cmd_trap_i = '1' or ex_exception='1' then
-     jump_dst<=mtvec;
+     jump_dst<=mtvec & "00";
    else
      if BRANCH_PREDICTOR then
        if jump_condition='1' then
-          jump_dst<=target_address(31 downto 2);
+          jump_dst<=target_address;
        else
-          jump_dst<=std_logic_vector(signed(epc_i) + 1);
+          jump_dst<=std_logic_vector(signed(epc_i) + 1) & "00";
        end if;
      else
-       jump_dst<=target_address(31 downto 2);
+       jump_dst<=target_address;
      end if;
    end if;
 end process;
@@ -386,7 +389,9 @@ begin
          interrupt_return<='0';
          jump_dst_r<=(others=>'-');
          ex_exception_r<='0';
+         jump_misalign <= '0';
       else
+
         if jump_ready_i='1' then
          jump_valid<='0';
          ex_exception_r<='0';
@@ -395,7 +400,18 @@ begin
             jump_dst_r <= jump_dst; -- latch jump destination
             ex_exception_r <= ex_exception;
             if (can_execute='1' and cmd_jump_i='1' and jump_prediction_fail='1' ) or ex_exception='1' then
-               jump_valid<='1';
+               if ex_exception='0' and cmd_trap_i='0' and cmd_tret_i='0' and jump_dst(1 downto 0)/="00"  then
+                -- Raise jump_misalign instead of jump_valid in case there is a "true" jump instruction
+                -- which is misaligned
+                jump_misalign <= '1';
+                -- synthesis translate_off
+                   report "Jump destination misalignment in execute stage:" & hstr(jump_dst)
+                   severity warning;
+                -- synthesis translate_on
+               else
+                 jump_valid<='1';
+                 jump_misalign <= '0';
+               end if;
                if not USE_RISCV then interrupt_return<=op1_i(0); end if;
             end if;
         end if;
@@ -429,12 +445,26 @@ begin
          interrupt_return<='0';
          jump_dst_r<=(others=>'-');
          ex_exception_r<='0';
+         jump_misalign <= '0';
       else
+       jump_misalign <= '0';
        if jump_valid='0' then
             jump_dst_r <= jump_dst; -- latch jump destination
             ex_exception_r <= ex_exception;
             if (can_execute='1' and cmd_jump_i='1' and jump_condition='1' ) or ex_exception='1' then
-               jump_valid<='1';
+               if ex_exception='0' and cmd_trap_i='0' and cmd_tret_i='0' and jump_dst(1 downto 0)/="00"  then
+                 -- Raise jump_misalign instead of jump_valid in case there is a "true" jump instruction
+                 -- which is misaligned
+                 jump_misalign <= '1';
+                 -- synthesis translate_off
+                    report "Jump destination misalignment in execute stage:" & hstr(jump_dst)
+                    severity warning;
+                 -- synthesis translate_on
+               else
+                 jump_valid<='1';
+
+              end if;
+
                if not USE_RISCV then interrupt_return<=op1_i(0); end if;
             end if;
        elsif jump_ready_i='1' then
@@ -453,7 +483,7 @@ end generate;
 
 
 
-jump_dst_o<=jump_dst_r when jump_valid='1' else jump_dst;
+jump_dst_o<=jump_dst_r(31 downto 2) when jump_valid='1' else jump_dst(31 downto 2);
 
 
 interrupt_return_o<=interrupt_return;
@@ -541,7 +571,8 @@ riscv_cu: if USE_RISCV  generate
 
    trap_cause <= X"4" when dbus_misalign='1' and store_reg='0' else
                  X"6" when dbus_misalign='1' and store_reg='1' else
-                 X"2" when csr_exception='1'
+                 X"2" when csr_exception='1' else
+                 X"0" when jump_misalign='1'
                  else  trap_cause_i;
 
     instret_o <= std_logic_vector(instret_cnt);
