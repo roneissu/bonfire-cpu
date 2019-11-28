@@ -14,6 +14,8 @@ use IEEE.NUMERIC_STD.ALL;
 
 use work.txt_util.all;
 
+use work.riscv_decodeutil.all;
+
 entity lxp32_execute is
    generic(
       DBUS_RMW: boolean;
@@ -77,6 +79,7 @@ entity lxp32_execute is
 
       jump_type_i: in std_logic_vector(3 downto 0);
       jump_prediction_i : in std_logic; -- '1': conditional branch is predicted taken, '0' not taken
+      jump_misalign_i : in t_jump_misalign;
 
       op1_i: in std_logic_vector(31 downto 0);
       op2_i: in std_logic_vector(31 downto 0);
@@ -138,7 +141,9 @@ signal jump_valid: std_logic:='0';
 signal jump_dst, jump_dst_r: std_logic_vector(31 downto 0);
 signal cond_reg : std_logic_vector (2 downto 0);
 signal jump_prediction_fail : std_logic;
-signal jump_misalign : std_logic := '0';
+signal jump_misalign : std_logic;
+signal jump_misalign_r : std_logic := '0';
+
 
 -- SLT
 signal slt_we : std_logic:='0';
@@ -228,7 +233,7 @@ assert (USE_RISCV and (MUL_ARCH="spartandsp" or MUL_ARCH="none"))
   severity failure;
 
 
-ex_exception <= dbus_misalign or csr_exception or jump_misalign;
+ex_exception <= dbus_misalign or csr_exception or jump_misalign_r;
 
 
 --CSR export to decode stage
@@ -381,6 +386,18 @@ jump_pred: if BRANCH_PREDICTOR generate
 
 jump_prediction_fail <=  (jump_prediction_i xor jump_condition) or cmd_trap_i;
 
+end generate;
+
+no_jump_pred: if not BRANCH_PREDICTOR generate
+   jump_prediction_fail <= jump_condition;
+end generate;
+
+
+jump_misalign <= '1' when  jump_misalign_i = jma_force or
+                           (jump_misalign_i = jma_check and jump_condition='1' and jump_dst(1 downto 0)/="00" ) or
+                           (jump_misalign_i = jma_ignore_lsb and jump_dst(1)='1' )
+                     else '0';
+
 process (clk_i) is
 begin
    if rising_edge(clk_i) then
@@ -389,30 +406,27 @@ begin
          interrupt_return<='0';
          jump_dst_r<=(others=>'-');
          ex_exception_r<='0';
-         jump_misalign <= '0';
+         jump_misalign_r <= '0';
       else
 
         if jump_ready_i='1' then
-         jump_valid<='0';
-         ex_exception_r<='0';
-         interrupt_return<='0';
+          jump_valid<='0';
+          ex_exception_r<='0';
+          interrupt_return<='0';
        elsif jump_valid='0' then
             jump_dst_r <= jump_dst; -- latch jump destination
             ex_exception_r <= ex_exception;
-            if (can_execute='1' and cmd_jump_i='1' and jump_prediction_fail='1' ) or ex_exception='1' then
-               if ex_exception='0' and cmd_trap_i='0' and cmd_tret_i='0' and jump_dst(1 downto 0)/="00"  then
-                -- Raise jump_misalign instead of jump_valid in case there is a "true" jump instruction
-                -- which is misaligned
-                jump_misalign <= '1';
-                -- synthesis translate_off
-                   report "Jump destination misalignment in execute stage:" & hstr(jump_dst)
-                   severity warning;
-                -- synthesis translate_on
-               else
-                 jump_valid<='1';
-                 jump_misalign <= '0';
-               end if;
-               if not USE_RISCV then interrupt_return<=op1_i(0); end if;
+            if (can_execute='1' and cmd_jump_i='1') or ex_exception='1' then
+                if not USE_RISCV then interrupt_return<=op1_i(0); end if;
+                if jump_misalign='1'  then
+                  -- synthesis translate_off
+                  report "Jump destination misalignment in execute stage:" & hstr(jump_dst)
+                  severity warning;
+                  -- synthesis translate_on
+                else
+                  jump_valid<=jump_prediction_fail;
+                end if;
+                jump_misalign_r <= jump_misalign;
             end if;
         end if;
       end if;
@@ -428,61 +442,7 @@ begin
    end if;
 end process;
 
-jump_valid_o<=jump_valid or (can_execute and cmd_jump_i and jump_prediction_fail);
-
-
-
-
-
-end generate;
-
-no_jump_pred: if not BRANCH_PREDICTOR generate
-process (clk_i) is
-begin
-   if rising_edge(clk_i) then
-      if rst_i='1' then
-         jump_valid<='0';
-         interrupt_return<='0';
-         jump_dst_r<=(others=>'-');
-         ex_exception_r<='0';
-         jump_misalign <= '0';
-      else
-       jump_misalign <= '0';
-       if jump_valid='0' then
-            jump_dst_r <= jump_dst; -- latch jump destination
-            ex_exception_r <= ex_exception;
-            if (can_execute='1' and cmd_jump_i='1' and jump_condition='1' ) or ex_exception='1' then
-               if ex_exception='0' and cmd_trap_i='0' and cmd_tret_i='0' and jump_dst(1 downto 0)/="00"  then
-                 -- Raise jump_misalign instead of jump_valid in case there is a "true" jump instruction
-                 -- which is misaligned
-                 jump_misalign <= '1';
-                 -- synthesis translate_off
-                    report "Jump destination misalignment in execute stage:" & hstr(jump_dst)
-                    severity warning;
-                 -- synthesis translate_on
-               else
-                 jump_valid<='1';
-
-              end if;
-
-               if not USE_RISCV then interrupt_return<=op1_i(0); end if;
-            end if;
-       elsif jump_ready_i='1' then
-         jump_valid<='0';
-         ex_exception_r<='0';
-         interrupt_return<='0';
-       end if;
-     end if;
-   end if;
-end process;
-
-jump_valid_o<=jump_valid or (can_execute and cmd_jump_i and jump_condition);
-
-end generate;
-
-
-
-
+jump_valid_o<=jump_valid or (can_execute and cmd_jump_i and jump_prediction_fail and not jump_misalign);
 jump_dst_o<=jump_dst_r(31 downto 2) when jump_valid='1' else jump_dst(31 downto 2);
 
 
@@ -572,7 +532,7 @@ riscv_cu: if USE_RISCV  generate
    trap_cause <= X"4" when dbus_misalign='1' and store_reg='0' else
                  X"6" when dbus_misalign='1' and store_reg='1' else
                  X"2" when csr_exception='1' else
-                 X"0" when jump_misalign='1'
+                 X"0" when jump_misalign_r='1'
                  else  trap_cause_i;
 
     instret_o <= std_logic_vector(instret_cnt);
@@ -583,6 +543,9 @@ riscv_cu: if USE_RISCV  generate
         if can_execute='1' then
            epc_reg <= epc_i;
            adr_reg <= target_address;
+           if jump_misalign_r='1' then
+             adr_reg(0)<='0';
+           end if;
            store_reg <= cmd_dbus_store_i;
          end if;
      end if;

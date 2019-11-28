@@ -80,6 +80,7 @@ port(
       cmd_signed_b_o : out std_logic; -- Multiplier operand b signed
       cmd_slt_o : out std_logic; -- TH: RISC-V SLT/SLTU command
       jump_prediction_o  : out std_logic;
+      jump_misalign_o : out t_jump_misalign;
 
 
       -- TH: RISC-V CSR commands
@@ -285,6 +286,7 @@ begin
                jump_prediction_o <= '-';
 
                dst_out<=(others=>'0'); -- defaults to register 0, which is never read
+               jump_misalign_o <= jma_ignore;
                displacement:= (others=>'0');
                t_valid := '0';
                not_implemented:='0';
@@ -394,6 +396,7 @@ begin
                              rd1_select<=Imm;
                              rd1_direct<=std_logic_vector(signed(current_ip&"00")+get_UJ_immediate(word_i));
                              cmd_jump_o<='1';
+                             jump_misalign_o <= jma_check;
                            end if;
                            cmd_loadop3_o<='1';
                            op3_o<=next_ip_i&"00";
@@ -405,6 +408,7 @@ begin
 
                            rd1_select<=Reg;
                            cmd_jump_o<='1';
+                           jump_misalign_o<=jma_ignore_lsb; -- RISC-V ISA explicitly defines to ignore misalinged JALR
                            cmd_loadop3_o<='1';
                            op3_o<=next_ip_i&"00";
                            dst_out<="000"&rd;
@@ -563,6 +567,7 @@ begin
                rd1_direct<=branch_target;
                valid_out<='1';
                cmd_jump_o<='1';
+               jump_misalign_o<=jma_check;
                self_busy<='0';
                state<=Regular;
             when Halt =>

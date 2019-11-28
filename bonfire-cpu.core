@@ -57,6 +57,15 @@ description=Filename for RISC-V compliance test signature
 paramtype=vlogparam
 scope=public
 
+#Parameter datatype. Legal values are bool, file, int, str. file is same as str, but prefixed with the current directory that FuseSoC runs from
+[parameter BRANCH_PREDICTOR]
+datatype=str
+default=false
+description=Branch Predictor enable/disable
+#paramtype=generic
+paramtype=vlogparam
+scope=public
+
 
 [xsim]
 ;xsim_options = --debug all
@@ -67,4 +76,4 @@ toplevel = tb_cpu_core
 
 [ghdl]
 ;run_options = --wave=cpu.ghw --stop-time=7000ns
-run_options =  --stop-time=100000ns
+run_options =  --stop-time=100000ns --wave=cpu.ghw

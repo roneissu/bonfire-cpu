@@ -41,7 +41,11 @@ use work.common_pkg.all;
 ENTITY tb_cpu_core IS
   generic (
     TestFile : string;
-    signature_file : string := "" -- RISCV compliance signature output
+    signature_file : string := ""; -- RISCV compliance signature output
+    BRANCH_PREDICTOR : boolean := true;
+    LLI_WAIT_CYCLES : natural := 0;
+    USE_ICACHE : boolean := false;
+    LINE_SIZE : natural := 16
 
   );
 END tb_cpu_core;
@@ -51,12 +55,7 @@ ARCHITECTURE behavior OF tb_cpu_core IS
 constant ram_size : natural := 32768;
 constant ram_adr_width : natural := log2.log2(ram_size);
 
-constant BRANCH_PREDICTOR : boolean := true;
 
-constant LLI_WAIT_CYCLES : natural := 0;
-
-constant USE_ICACHE : boolean := false;
-constant LINE_SIZE : natural := 16;
 
 --constant TestFile : string :=  "../src/bonfire-cpu_0/ise/tb_bonfire_cpu/compiled_tests/timer_irq.hex";
 --constant TestFile : string :=  "../src/bonfire-cpu_0/riscv_test/timer_irq.hex";
@@ -412,7 +411,7 @@ end generate;
 
       wait until finished='1' or uart_stop;
       report "Test finished with result "& hex_string(result) severity note;
-      --severity failure; -- ugly but portable ....  
+      --severity failure; -- ugly but portable ....
       tbSimEnded <= '1'; -- End Simulation
 
    end process;

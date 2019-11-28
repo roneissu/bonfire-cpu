@@ -79,6 +79,7 @@ signal branch_offset : xsigned;
 signal branch_target : std_logic_vector(31 downto 0);
 signal fetch_branch_target : std_logic;
 signal branch_target_fetched : std_logic := '0';
+signal misalign : std_logic; -- Branch_offset is misaligned
 
 signal predict_fail : std_logic;
 
@@ -107,6 +108,7 @@ op <= decode_op(lli_dat_i(6 downto 2)) when fifo_we='1' else rv_invalid;
 debug_jump_dst_i <= jump_dst_i&"00";
 
 branch_target <= std_logic_vector(signed(current_addr&"00")+branch_offset);
+misalign <=  branch_offset(0) or branch_offset (1);
 
 
 branch_inspect: process (lli_dat_i,op,jump_valid_i,branch_target_fetched)

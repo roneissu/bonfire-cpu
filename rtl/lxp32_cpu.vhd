@@ -9,6 +9,8 @@
 library ieee;
 use ieee.std_logic_1164.all;
 
+use work.riscv_decodeutil;
+
 entity lxp32_cpu is
     generic(
         DBUS_RMW: boolean;
@@ -83,6 +85,7 @@ signal decode_cmd_trap :  STD_LOGIC; -- TH: Execute trap
 signal decode_cmd_tret :  STD_LOGIC; -- TH: return from trap
 
 signal decode_jump_type: std_logic_vector(3 downto 0);
+signal decode_jump_misalign : riscv_decodeutil.t_jump_misalign;
 
 signal decode_op1: std_logic_vector(31 downto 0);
 signal decode_op2: std_logic_vector(31 downto 0);
@@ -330,6 +333,7 @@ decode_inst: entity work.riscv_decode(rtl)
         jump_type_o=>decode_jump_type,
         jump_prediction_i=>fetch_jump_prediction,
         jump_prediction_o=>execute_jump_prediction,
+        jump_misalign_o => decode_jump_misalign,
 
         op1_o=>decode_op1,
         op2_o=>decode_op2,
@@ -389,6 +393,7 @@ execute_inst: entity work.lxp32_execute(rtl)
 
         jump_type_i=>decode_jump_type,
         jump_prediction_i=>execute_jump_prediction,
+        jump_misalign_i=>decode_jump_misalign,
 
         op1_i=>decode_op1,
         op2_i=>decode_op2,
