@@ -79,7 +79,7 @@ constant m_bonfire_csr : t_csr_adr :=x"7C0";
 
 -- Version 1.30
 constant major_version : natural := 1;
-constant minor_version : natural := 31;
+constant minor_version : natural := 32;
 constant impvers : std_logic_vector(31 downto 0) := std_logic_vector(to_unsigned(major_version,16)) &
                                                     std_logic_vector(to_unsigned(minor_version,16));
 

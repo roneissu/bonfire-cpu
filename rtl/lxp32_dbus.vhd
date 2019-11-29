@@ -30,7 +30,8 @@ entity lxp32_dbus is
    generic(
       RMW: boolean;
       ENABLE_LOCALMAP : boolean := false;
-      LOCAL_PREFIX : unsigned(31 downto 16) :=X"FFFF"
+      LOCAL_PREFIX : unsigned(31 downto 16) :=X"FFFF";
+      STRICT_MISALIN_TRAP : boolean := true -- True: Trap also half word access to address offset 1
 
    );
    port(
@@ -172,19 +173,25 @@ begin
                elsif cmd_dbus_hword_i='1' then
                  byte_mode<='0';
                  hword_mode<='1';
-                 -- synthesis translate_off
-                  assert addr_i(1 downto 0) /= "11"
-                     report "Misaligned half word granular access on data bus"
-                     severity warning;
-                  -- synthesis translate_on
                   case addr_i(1 downto 0) is
                     when "00" => sel<="0011";
-                    when "01" => sel<="0110";
+                    when "01" =>
+                                 if STRICT_MISALIN_TRAP then
+                                   misalign_t := '1';
+                                   sel <= "0000";
+                                 else
+                                    sel<="0110";
+                                 end if;
                     when "10" => sel<="1100";
                     when "11" => sel<="0000";
                                  misalign_t := '1';
                     when others =>
                   end case;
+                  -- synthesis translate_off
+                   assert misalign_t = '0'
+                      report "Misaligned half word granular access on data bus"
+                      severity warning;
+                   -- synthesis translate_on
                else -- word mode
                   byte_mode<='0';
                   hword_mode<='0';
