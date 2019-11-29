@@ -75,5 +75,5 @@ toplevel = tb_cpu_core
 toplevel = tb_cpu_core
 
 [ghdl]
-;run_options = --wave=cpu.ghw --stop-time=7000ns
-run_options =  --stop-time=100000ns --wave=cpu.ghw
+;run_options = --wave=cpu.ghw --stop-time=15000ns
+run_options =  --stop-time=100000ns

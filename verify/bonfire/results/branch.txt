@@ -1,0 +1,9 @@
+../src/bonfire-cpu_0/rtl/riscv_regfile.vhd:124:14:@5ns:(assertion error): Metavalue for we_i
+../src/bonfire-cpu_0/verify/bonfire/monitor.vhd:130:34:@155ns:(report note): Monitor: value 0x00000001 written to address 0x00000004
+../src/bonfire-cpu_0/verify/bonfire/monitor.vhd:130:34:@195ns:(report note): Monitor: value 0x00000001 written to address 0x00000008
+../src/bonfire-cpu_0/verify/bonfire/monitor.vhd:130:34:@285ns:(report note): Monitor: value 0x00000001 written to address 0x0000000C
+../src/bonfire-cpu_0/verify/bonfire/monitor.vhd:130:34:@325ns:(report note): Monitor: value 0x00000001 written to address 0x00000010
+../src/bonfire-cpu_0/verify/bonfire/monitor.vhd:130:34:@405ns:(report note): Monitor: value 0x00000001 written to address 0x00000014
+../src/bonfire-cpu_0/verify/bonfire/monitor.vhd:130:34:@485ns:(report note): Monitor: value 0x00000001 written to address 0x00000018
+../src/bonfire-cpu_0/verify/bonfire/monitor.vhd:130:34:@525ns:(report note): Monitor: value 0x00000001 written to address 0x00000000
+../src/bonfire-cpu_0/verify/bonfire/tb_cpu_core.vhd:414:7:@525ns:(report note): Test finished with result 00000001

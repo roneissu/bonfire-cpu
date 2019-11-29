@@ -248,8 +248,8 @@ begin
 
       else
         fencei_o <= '0'; -- clear fencei_o always after one cycle
-        if not BRANCH_PREDICTOR and  jump_valid_i='1' then
-            -- When exeuction stage exeuctes jump do nothing
+        if  jump_valid_i='1' then 
+            -- On jump execution scrap decode output
             valid_out<='0';
             self_busy<='0';
             state<=Regular;
@@ -408,7 +408,7 @@ begin
 
                            rd1_select<=Reg;
                            cmd_jump_o<='1';
-                           jump_misalign_o<=jma_ignore_lsb; -- RISC-V ISA explicitly defines to ignore misalinged JALR
+                           jump_misalign_o<=jma_check;
                            cmd_loadop3_o<='1';
                            op3_o<=next_ip_i&"00";
                            dst_out<="000"&rd;

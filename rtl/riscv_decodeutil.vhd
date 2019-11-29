@@ -57,7 +57,7 @@ subtype xsigned is signed(XLEN-1 downto 0);
 subtype t_displacement is std_logic_vector(11 downto 0);
 
 -- How to deal with jump misalignment in exec stage
-type t_jump_misalign is ( jma_ignore,jma_force,jma_check,jma_ignore_lsb );
+type t_jump_misalign is ( jma_ignore,jma_force,jma_check );
 
 
 function get_I_immediate(signal instr: in xword) return xsigned;

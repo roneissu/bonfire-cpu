@@ -138,7 +138,7 @@ signal loadop3_we: std_logic;
 
 signal jump_condition: std_logic;
 signal jump_valid: std_logic:='0';
-signal jump_dst, jump_dst_r: std_logic_vector(31 downto 0);
+signal jump_dst, jump_dst_r: std_logic_vector(31 downto 1);
 signal cond_reg : std_logic_vector (2 downto 0);
 signal jump_prediction_fail : std_logic;
 signal jump_misalign : std_logic;
@@ -365,18 +365,18 @@ process(target_address,mtvec,mepc,cmd_tret_i,cmd_trap_i,ex_exception,
         jump_condition,epc_i)
 begin
    if cmd_tret_i = '1' then
-     jump_dst<=mepc & "00";
+     jump_dst<=mepc & "0";
    elsif cmd_trap_i = '1' or ex_exception='1' then
-     jump_dst<=mtvec & "00";
+     jump_dst<=mtvec & "0";
    else
      if BRANCH_PREDICTOR then
        if jump_condition='1' then
-          jump_dst<=target_address;
+          jump_dst<=target_address(jump_dst'range);
        else
-          jump_dst<=std_logic_vector(signed(epc_i) + 1) & "00";
+          jump_dst<=std_logic_vector(signed(epc_i) + 1) & "0";
        end if;
      else
-       jump_dst<=target_address;
+       jump_dst<=target_address(jump_dst'range);
      end if;
    end if;
 end process;
@@ -394,11 +394,11 @@ end generate;
 
 
 jump_misalign <= '1' when  jump_misalign_i = jma_force or
-                           (jump_misalign_i = jma_check and jump_condition='1' and jump_dst(1 downto 0)/="00" ) or
-                           (jump_misalign_i = jma_ignore_lsb and jump_dst(1)='1' )
+                           (jump_misalign_i = jma_check and jump_condition='1' and jump_dst(1)='1' )
                      else '0';
 
 process (clk_i) is
+variable temp : std_logic_vector(31 downto 0);
 begin
    if rising_edge(clk_i) then
       if rst_i='1' then
@@ -420,7 +420,8 @@ begin
                 if not USE_RISCV then interrupt_return<=op1_i(0); end if;
                 if jump_misalign='1'  then
                   -- synthesis translate_off
-                  report "Jump destination misalignment in execute stage:" & hstr(jump_dst)
+                  temp := jump_dst & '0';
+                  report "Jump destination misalignment in execute stage:" & hstr(temp)
                   severity warning;
                   -- synthesis translate_on
                 else
@@ -543,7 +544,7 @@ riscv_cu: if USE_RISCV  generate
         if can_execute='1' then
            epc_reg <= epc_i;
            adr_reg <= target_address;
-           if jump_misalign_r='1' then
+           if jump_misalign='1' then
              adr_reg(0)<='0';
            end if;
            store_reg <= cmd_dbus_store_i;
