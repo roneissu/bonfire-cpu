@@ -416,7 +416,10 @@ begin
        elsif jump_valid='0' then
             jump_dst_r <= jump_dst; -- latch jump destination
             ex_exception_r <= ex_exception;
-            if (can_execute='1' and cmd_jump_i='1') or ex_exception='1' then
+            if ex_exception='1' then
+               jump_valid<='1';
+               jump_misalign_r <= jump_misalign;
+            elsif can_execute='1' and cmd_jump_i='1' then
                 if not USE_RISCV then interrupt_return<=op1_i(0); end if;
                 if jump_misalign='1'  then
                   -- synthesis translate_off

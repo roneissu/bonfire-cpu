@@ -66,6 +66,14 @@ description=Branch Predictor enable/disable
 paramtype=vlogparam
 scope=public
 
+[parameter USE_ICACHE]
+datatype=str
+default=false
+description=Simulate an instruction cache
+#paramtype=generic
+paramtype=vlogparam
+usage=sim
+
 
 [xsim]
 ;xsim_options = --debug all

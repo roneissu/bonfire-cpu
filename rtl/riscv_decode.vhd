@@ -248,7 +248,7 @@ begin
 
       else
         fencei_o <= '0'; -- clear fencei_o always after one cycle
-        if  jump_valid_i='1' then 
+        if  jump_valid_i='1' then
             -- On jump execution scrap decode output
             valid_out<='0';
             self_busy<='0';
@@ -390,13 +390,25 @@ begin
                           t_valid:='1';
 
                        when rv_jal =>
-                           -- A jal is always predicted right. So no need to trigger
-                           -- the jump logic in the execution stage
+
                            if not BRANCH_PREDICTOR then
                              rd1_select<=Imm;
                              rd1_direct<=std_logic_vector(signed(current_ip&"00")+get_UJ_immediate(word_i));
                              cmd_jump_o<='1';
                              jump_misalign_o <= jma_check;
+                           else -- with Branch Predictor
+                              -- A jal is always predicted right. So no need to trigger
+                              -- the jump logic in the execution stage exepct when
+                              -- there is a misalinged jump
+                              if get_UJ_immediate(word_i)(1)='1' then
+                                -- synthesis translate_off
+                                report "decode: Misaligned JAL instruction detected" severity warning;
+                                 -- synthesis translate_on
+                                rd1_select<=Imm;
+                                rd1_direct<=std_logic_vector(signed(current_ip&"00")+get_UJ_immediate(word_i));
+                                jump_misalign_o <= jma_force;
+                                cmd_jump_o<='1';
+                              end if;
                            end if;
                            cmd_loadop3_o<='1';
                            op3_o<=next_ip_i&"00";

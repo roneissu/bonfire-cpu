@@ -79,7 +79,7 @@ signal branch_offset : xsigned;
 signal branch_target : std_logic_vector(31 downto 0);
 signal fetch_branch_target : std_logic;
 signal branch_target_fetched : std_logic := '0';
-signal misalign : std_logic; -- Branch_offset is misaligned
+
 
 signal predict_fail : std_logic;
 
@@ -108,7 +108,6 @@ op <= decode_op(lli_dat_i(6 downto 2)) when fifo_we='1' else rv_invalid;
 debug_jump_dst_i <= jump_dst_i&"00";
 
 branch_target <= std_logic_vector(signed(current_addr&"00")+branch_offset);
-misalign <=  branch_offset(0) or branch_offset (1);
 
 
 branch_inspect: process (lli_dat_i,op,jump_valid_i,branch_target_fetched)
@@ -123,9 +122,9 @@ begin
       if op = rv_jal  then
         o  := get_UJ_immediate(lli_dat_i);
 
-        --if not (o = 0) then
+         if o(1)='0' then -- no misalignment
           fetch_branch_target <= '1';
-        --end if;
+         end if;
         branch_offset <= o;
       elsif op = rv_branch then
          o := get_SB_immediate(lli_dat_i);
@@ -211,7 +210,7 @@ begin
             fetch_addr <= branch_target(31 downto 2);
             branch_target_fetched <= '1';
          elsif jump_valid_i='1' and jstate=jnone then --misprecdict
-           --report "Branch mispredict" severity note;
+            --report "Branch mispredict" severity note;
             fetch_addr <= jump_dst_i;
          elsif next_word = '1' then --and branch_target_fetched='0'
             fetch_addr  <= std_logic_vector(unsigned(fetch_addr)+1);
