@@ -143,7 +143,8 @@ end process;
 
 -- Jump state engine
 
-valid_o<=not fifo_empty and not predict_fail;
+-- TH 01.12.19: Dependency to predict_fail not needed here.
+valid_o<=not fifo_empty; -- and not predict_fail;
 jump_ready_o <= '1' when jstate=jfinish else '0';
 
 predict_fail <= '1' when  jump_valid_i='1' and jstate=jnone -- and fifo_empty='0'
@@ -223,7 +224,8 @@ end process;
 
 next_word<=(fifo_empty or ready_i) and not (lli_busy_i or suppress_re);
 
-re<=(fifo_empty or ready_i) and not ( predict_fail or suppress_re);-- and  not suppress_re; -- or stall_re ) ;
+
+re<=(fifo_empty or ready_i) and not ( predict_fail or suppress_re);
 lli_re_o<=re;
 lli_adr_o<=fetch_addr;
 
