@@ -12,6 +12,7 @@
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
+--use work.txt_util.all;
 
 entity lxp32_divider is
 	port(
@@ -61,11 +62,16 @@ signal remainder_corrector: unsigned(31 downto 0);
 signal remainder_corrector_1: std_logic;
 signal remainder_pos: unsigned(31 downto 0);
 signal result_pos: unsigned(31 downto 0);
+signal op2_zero : std_logic;
+
+--signal debug_op2_zero : boolean;
 
 begin
 
 compl_inv<=op1_i(31) and signed_i when ce_i='1' else inv_res;
 compl_mux<=op1_i when ce_i='1' else std_logic_vector(result_pos);
+
+op2_zero <= '1' when unsigned(op2_i) = 0 else '0';
 
 compl_op1_inst: entity work.lxp32_compl(rtl)
 	port map(
@@ -89,7 +95,7 @@ begin
 				if rem_i='1' then
 					inv_res<=op1_i(31) and signed_i;
 				else
-					inv_res<=(op1_i(31) xor op2_i(31)) and signed_i;
+					inv_res<=(op1_i(31) xor op2_i(31)) and signed_i and not op2_zero;
 				end if;
 			end if;
 		end if;
@@ -123,12 +129,15 @@ begin
 			else
 				ceo<='0';
 			end if;
-			
+
 			if ce_i='1' then
+				--Print("Div: " & hstr(op1_i) & " / " & hstr (op2_i) & " signed: " & str(signed_i));
+				--debug_op2_zero <= unsigned(op2_i) = 0;
 				divisor(31 downto 0)<=unsigned(op2_i);
 				divisor(32)<=op2_i(31) and signed_i;
+
 			end if;
-			
+
 			if fsm_ce='1' then
 				dividend<=unsigned(compl_out(30 downto 0)&"0");
 				partial_remainder<=to_unsigned(0,32)&compl_out(31);
@@ -161,6 +170,13 @@ begin
 		remainder_corrector_1<=divisor(32) and not sum_positive;
 		remainder_pos<=partial_remainder(32 downto 1)+remainder_corrector+
 			(to_unsigned(0,31)&remainder_corrector_1);
+
+	-- Debug output
+	  -- if ceo='1' then
+	  -- 	print("Result: " & hstr(compl_out));
+		-- 	assert not ( debug_op2_zero and compl_out/=x"FFFFFFFF" )
+		-- 	  report "Divsion by zero wrong result" severity warning;
+  	-- end if;
 	end if;
 end process;
 

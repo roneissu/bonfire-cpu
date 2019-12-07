@@ -150,8 +150,7 @@ jump_ready_o <= '1' when jstate=jfinish else '0';
 predict_fail <= '1' when  jump_valid_i='1' and jstate=jnone -- and fifo_empty='0'
                      else '0';
 
-wipe_fifo <= '1' when (jump_valid_i='1' and jstate=jnone )  or
-                      ( jstate=jwait ) else '0';
+wipe_fifo <= '1' when predict_fail='1' or ( jstate=jwait ) else '0';
 
 suppress_re <= '1' when jstate=jwait else '0';
 
@@ -233,7 +232,7 @@ lli_cc_invalidate_o <= fence_i_i; -- currently only pass through
 
 -- Small instruction buffer
 
-fifo_rst<=  rst_i or predict_fail or wipe_fifo;
+fifo_rst<=  rst_i or wipe_fifo;
 fifo_we<=requested and not lli_busy_i;
 fifo_din<= fetch_branch_target&fetch_addr&lli_dat_i;
 fifo_re<=ready_i and not fifo_empty;
