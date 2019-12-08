@@ -71,6 +71,9 @@ end entity;
 
 architecture rtl of lxp32_dbus is
 
+--attribute keep_hierarchy : string;
+--attribute keep_hierarchy of rtl : architecture is "yes";
+
 subtype txword is  std_logic_vector(31 downto 0);
 
 signal strobe: std_logic:='0';
@@ -151,14 +154,6 @@ begin
                adr_reg<=addr_i;
                dbus_dat_o <= dbus_align(addr_i(1 downto 0),wdata_i);
 
-               -- New TH: Support for processor local wishbone bus
-               -- if ENABLE_LOCALMAP and unsigned(addr_i(LOCAL_PREFIX'high downto LOCAL_PREFIX'low))=LOCAL_PREFIX then
-               --    l_local_adr_en:='1';
-               -- else
-               --    l_local_adr_en:='0';
-               -- end if;
-               -- local_adr_en <= l_local_adr_en;
-
                if cmd_dbus_byte_i='1' then
                  byte_mode<='1';
                  hword_mode<='0';
@@ -176,12 +171,12 @@ begin
                   case addr_i(1 downto 0) is
                     when "00" => sel<="0011";
                     when "01" =>
-                                 if STRICT_MISALIN_TRAP then
-                                   misalign_t := '1';
-                                   sel <= "0000";
-                                 else
-                                    sel<="0110";
-                                 end if;
+                       if STRICT_MISALIN_TRAP then
+                         misalign_t := '1';
+                         sel <= "0000";
+                       else
+                          sel<="0110";
+                       end if;
                     when "10" => sel<="1100";
                     when "11" => sel<="0000";
                                  misalign_t := '1';
@@ -221,11 +216,7 @@ begin
                if misalign_t = '0' then
                  strobe<='1'; -- only start bus cylce when no misalignment
                  cyc <= '1';
-                 -- if l_local_adr_en='1' then
-                 --   local_cyc <= '1';
-                 -- else
-                 --    dbus_cyc <= '1';
-                 -- end if;
+
                end if;
             end if;
          else
@@ -329,7 +320,12 @@ begin
   elsif hword_mode='1' then
     case adr_reg(1 downto 0) is
       when "00" => hword:=dbus_rdata(15 downto 0);
-      when "01" => hword:=dbus_rdata(23 downto 8);
+      when "01" =>
+        if STRICT_MISALIN_TRAP then
+            hword:=dbus_rdata(23 downto 8);
+         else
+            hword:= (others => 'X');
+         end if;
       when "10" => hword:=dbus_rdata(31 downto 16);
       when others => hword:=(others => 'X');
     end case;

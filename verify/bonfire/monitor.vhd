@@ -6,6 +6,11 @@
 -- Copyright (c) 2016 by Alex I. Kuznetsov
 --
 -- Provide means for a test platform to interact with the testbench.
+--
+--
+-- The Bonfire Processor Project, (c) 2016,2017,2018 Thomas Hornschuh
+--
+-- License: See LICENSE or LICENSE.txt File in git project root.
 ---------------------------------------------------------------------
 
 library ieee;

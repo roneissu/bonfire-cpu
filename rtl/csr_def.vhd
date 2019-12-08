@@ -1,5 +1,5 @@
 --   Bonfire CPU
---   (c) 2016,2017 Thomas Hornschuh
+--   (c) 2016-2019 Thomas Hornschuh
 --   See license.md for License
 
 library IEEE;
@@ -7,6 +7,10 @@ use IEEE.STD_LOGIC_1164.all;
 use IEEE.NUMERIC_STD.ALL;
 
 package csr_def is
+
+-- Version: 1.40
+constant major_version : natural := 1;
+constant minor_version : natural := 40;
 
 subtype t_csr_adrprefix is std_logic_vector(3 downto 0);
 constant m_stdprefix : t_csr_adrprefix := x"3";
@@ -77,9 +81,7 @@ constant a_minstret : t_csr_adr := x"B02";
 -- non standard registers
 constant m_bonfire_csr : t_csr_adr :=x"7C0";
 
--- Version 1.30
-constant major_version : natural := 1;
-constant minor_version : natural := 32;
+
 constant impvers : std_logic_vector(31 downto 0) := std_logic_vector(to_unsigned(major_version,16)) &
                                                     std_logic_vector(to_unsigned(minor_version,16));
 

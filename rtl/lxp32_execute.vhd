@@ -6,6 +6,7 @@
 -- Copyright (c) 2016 by Alex I. Kuznetsov
 --
 -- The third stage of the LXP32 pipeline.
+-- TH: Various changes to support RISC-V architecture
 ---------------------------------------------------------------------
 
 library ieee;
@@ -114,6 +115,10 @@ entity lxp32_execute is
 end entity;
 
 architecture rtl of lxp32_execute is
+
+--  attribute keep_hierarchy : string;
+--  attribute keep_hierarchy of rtl : architecture is "yes";
+
 
 -- Pipeline control signals
 

@@ -55,24 +55,6 @@ ARCHITECTURE behavior OF tb_cpu_core IS
 constant ram_size : natural := 32768;
 constant ram_adr_width : natural := log2.log2(ram_size);
 
-
-
---constant TestFile : string :=  "../src/bonfire-cpu_0/ise/tb_bonfire_cpu/compiled_tests/timer_irq.hex";
---constant TestFile : string :=  "../src/bonfire-cpu_0/riscv_test/timer_irq.hex";
---constant TestFile : string :=  "../src/bonfire-cpu_0/riscv_test/loop.hex";
---constant TestFile : string :=  "../src/bonfire-cpu_0/riscv_test/mult.hex";
---constant TestFile : string :=  "../src/bonfire-cpu_0/riscv_test/branch.hex";
---constant TestFile : string :=  "../src/bonfire-cpu_0/riscv_test/sstep.hex";
---constant TestFile : string :=  "../src/bonfire-cpu_0/riscv_test/fence.hex";
---constant TestFile : string :=  "../src/bonfire-cpu_0/riscv_test/loadsave.hex";
---constant TestFile : string :=  "../src/bonfire-cpu_0/riscv_test/csr.hex";
-
---constant TestFile : string :=  "../src/bonfire-cpu_0/verify/bonfire/compiled_code/dhrystone_bram.hex";
-
---constant TestFile : string :=  "/home/thomas/development/bonfire/bonfire-software/dhrystone/dhrystone_bram.hex";
-
-
-
     -- Component Declaration for the Unit Under Test (UUT)
 
     component lxp32_cpu

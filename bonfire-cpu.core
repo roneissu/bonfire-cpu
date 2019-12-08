@@ -33,18 +33,15 @@ usage=sim
 scope = private
 
 [fileset code]
-files=ise/tb_bonfire_cpu/compiled_tests/timer_irq.hex
-  riscv_test/timer_irq.hex riscv_test/loop.hex riscv_test/branch.hex
-  riscv_test/sstep.hex riscv_test/fence.hex riscv_test/mult.hex
-  riscv_test/loadsave.hex riscv_test/csr.hex
-  verify/bonfire/compiled_code/dhrystone_bram.hex
+files=verify/bonfire/compiled_code/dhrystone_bram.hex[copyto=../compiled_code/dhrystone_bram.hex]
 usage=sim
 scope=private
 
 
 [parameter TestFile]
 datatype=file
-default="../src/bonfire-cpu_0/riscv_test/csr.hex"
+#default=../src/bonfire-cpu_0/verify/bonfire/compiled_code/dhrystone_bram.hex
+default=../compiled_code/dhrystone_bram.hex
 description=Initial boot RAM contents (in hex)
 paramtype=vlogparam
 scope=public
@@ -84,4 +81,4 @@ toplevel = tb_cpu_core
 
 [ghdl]
 ;run_options = --wave=cpu.ghw --stop-time=15000ns
-run_options =  --stop-time=100000ns
+;run_options =  --stop-time=100000ns

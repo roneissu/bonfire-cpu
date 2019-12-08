@@ -7,3 +7,11 @@
 ../src/bonfire-cpu_0/verify/bonfire/monitor.vhd:130:34:@485ns:(report note): Monitor: value 0x00000001 written to address 0x00000018
 ../src/bonfire-cpu_0/verify/bonfire/monitor.vhd:130:34:@525ns:(report note): Monitor: value 0x00000001 written to address 0x00000000
 ../src/bonfire-cpu_0/verify/bonfire/tb_cpu_core.vhd:414:7:@525ns:(report note): Test finished with result 00000001
+
+
+
+../src/bonfire-cpu_0/verify/bonfire/monitor.vhd:130:34:@354445ns:(report note): Monitor: value 0x00000001 written to address 0x00000004
+../src/bonfire-cpu_0/verify/bonfire/monitor.vhd:130:34:@1139585ns:(report note): Monitor: value 0x00000002 written to address 0x00000004
+
+../src/bonfire-cpu_0/verify/bonfire/monitor.vhd:130:34:@347355ns:(report note): Monitor: value 0x00000001 written to address 0x00000004
+../src/bonfire-cpu_0/verify/bonfire/monitor.vhd:130:34:@1076555ns:(report note): Monitor: value 0x00000002 written to address 0x00000004
