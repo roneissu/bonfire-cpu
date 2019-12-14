@@ -54,7 +54,7 @@ port(
       sp_raddr2_o: out std_logic_vector(7 downto 0);
       sp_rdata2_i: in std_logic_vector(31 downto 0);
 
-      displacement_o : out std_logic_vector(11 downto 0); --TH Pass Load/Store displacement to execute stage
+      displacement_o : out std_logic_vector(20 downto 0); --TH Pass Load/Store/jump/branch displacement to execute stage
 
       ready_i: in std_logic; -- ready signal from execute stage
       valid_o: out std_logic; -- output status valid
@@ -120,7 +120,8 @@ signal rd, rs1, rs2 : std_logic_vector(4 downto 0);
 signal funct3 : t_funct3;
 signal funct7 : std_logic_vector(6 downto 0);
 
-signal current_ip: unsigned(next_ip_i'range);
+signal current_ip, current_ip_r: unsigned(next_ip_i'range);
+
 
 -- Signals related to pipeline control
 
@@ -161,6 +162,8 @@ signal state: DecoderState:=Regular;
 -- will be optimized away in synthesis
 signal debug_pc : unsigned(31 downto 0);
 
+signal displacement_out : std_logic_vector(displacement_o'range);
+
 begin
 
 
@@ -187,17 +190,24 @@ begin
    current_ip<=unsigned(next_ip_i)-1;
    debug_pc <= current_ip & "00";
 
+   epc_o <= std_logic_vector(current_ip_r);
+
+
 -- Control outputs
    valid_o<=valid_out;
    dst_o<=dst_out;
    ready_o<=not busy;
    interrupt_ready_o<=interrupt_ready;
 
+-- other mappings
+
+   displacement_o <= displacement_out;
+
 
 process (clk_i) is
 variable branch_target : std_logic_vector(31 downto 0);
 variable U_immed : xsigned;
-variable displacement : t_displacement;
+variable displacement : std_logic_vector(20 downto 0);
 variable t_valid : std_logic;
 variable trap : std_logic;
 variable not_implemented : std_logic;
@@ -393,19 +403,22 @@ begin
 
                            if not BRANCH_PREDICTOR then
                              rd1_select<=Imm;
-                             rd1_direct<=std_logic_vector(signed(current_ip&"00")+get_UJ_immediate(word_i));
+                             rd1_direct<=std_logic_vector(signed(current_ip&"00"));
+                             displacement:= fill_in(get_UJ_immediate(word_i),displacement'length);
                              cmd_jump_o<='1';
                              jump_misalign_o <= jma_check;
                            else -- with Branch Predictor
                               -- A jal is always predicted right. So no need to trigger
                               -- the jump logic in the execution stage exepct when
                               -- there is a misalinged jump
-                              if get_UJ_immediate(word_i)(1)='1' then
+                              displacement:= fill_in(get_UJ_immediate(word_i),displacement'length);
+                              if displacement(1)='1' then
                                 -- synthesis translate_off
                                 report "decode: Misaligned JAL instruction detected" severity warning;
                                  -- synthesis translate_on
                                 rd1_select<=Imm;
-                                rd1_direct<=std_logic_vector(signed(current_ip&"00")+get_UJ_immediate(word_i));
+                                rd1_direct<=std_logic_vector(signed(current_ip&"00"));
+
                                 jump_misalign_o <= jma_force;
                                 cmd_jump_o<='1';
                               end if;
@@ -424,12 +437,13 @@ begin
                            cmd_loadop3_o<='1';
                            op3_o<=next_ip_i&"00";
                            dst_out<="000"&rd;
-                           displacement:=get_I_displacement(word_i);
+                           displacement:= to_d21(get_I_displacement(word_i));
                            t_valid:='1';
 
                        when rv_branch =>
 
-                           branch_target:=std_logic_vector(signed(current_ip&"00")+get_SB_immediate(word_i));
+                           displacement:=fill_in(get_SB_immediate(word_i),displacement'length);
+                           --branch_target:=std_logic_vector(signed(current_ip&"00")+get_SB_immediate(word_i));
                            rd1_select<=Reg;
                            rd2_select<=Reg;
                            jump_type_o<="0"&funct3; -- "reuse" lxp jump_type for the funct3 field, see generated coding in lxp32_execute
@@ -443,7 +457,7 @@ begin
                        when rv_load =>
 
                            rd1_select<=Reg;
-                           displacement:=get_I_displacement(word_i);
+                           displacement:=to_d21(get_I_displacement(word_i));
                            cmd_dbus_o<='1';
                            cmd_dbus_store_o<='0';
                            dst_out<="000"&rd;
@@ -460,7 +474,7 @@ begin
                       when rv_store =>
 
                            rd1_select<=Reg;
-                           displacement:=get_S_displacement(word_i);
+                           displacement:=to_d21(get_S_displacement(word_i));
                            rd2_select<=Reg;
                            cmd_dbus_o<='1';
                            cmd_dbus_store_o<='1';
@@ -522,7 +536,8 @@ begin
                               else
                                 csr_x0_o <= '0';
                               end if;
-                              displacement:=word_i(31 downto 20); -- CSR address
+                              displacement:=(others=>'0');
+                              displacement(11 downto 0):=word_i(31 downto 20); -- CSR address
                               if funct3(2)='1' then
                                 rd1_select<=Imm;
                                 rd1_direct<=std_logic_vector(resize(unsigned(word_i(19 downto 15)),rd1_direct'length));
@@ -567,16 +582,14 @@ begin
                      cmd_trap_o <= '1';
                    end if;
                    valid_out<='1';
-                   -- the epc_o register is always set
-                   -- In case of an exception downstream the pipeline this register can be copied
-                   -- to the CSR register.
-                   epc_o <= std_logic_vector(current_ip);
+                   current_ip_r <= current_ip;
                else
                  valid_out<='0';
                end if; -- if valid_i='1'
             when ContinueCjmp =>
                rd1_select<=Imm;
-               rd1_direct<=branch_target;
+               rd1_direct<=std_logic_vector(signed(current_ip_r&"00"));
+               displacement:=displacement_out;
                valid_out<='1';
                cmd_jump_o<='1';
                jump_misalign_o<=jma_check;
@@ -590,7 +603,7 @@ begin
            end case;
         end if;
       end if;
-      displacement_o<=displacement;
+      displacement_out<=displacement;
     end if;
 end process;
 

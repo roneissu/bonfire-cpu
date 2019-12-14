@@ -109,7 +109,7 @@ signal sp_waddr: std_logic_vector(7 downto 0);
 signal sp_we: std_logic;
 signal sp_wdata: std_logic_vector(31 downto 0);
 
-signal displacement : std_logic_vector(11 downto 0):= (others=>'0');
+signal displacement : std_logic_vector(20 downto 0);
 
 signal interrupt_valid: std_logic;
 signal interrupt_vector: std_logic_vector(2 downto 0);

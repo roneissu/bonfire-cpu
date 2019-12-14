@@ -55,6 +55,10 @@ constant XLEN : natural := 32;
 subtype xword is  std_logic_vector(XLEN-1 downto 0);
 subtype xsigned is signed(XLEN-1 downto 0);
 subtype t_displacement is std_logic_vector(11 downto 0);
+subtype t_uj_immediate is std_logic_vector(20 downto 1);
+subtype t_displacement21 is std_logic_vector(20 downto 0);
+subtype t_SB_immediate is std_logic_vector(12 downto 1);
+
 
 -- How to deal with jump misalignment in exec stage
 type t_jump_misalign is ( jma_ignore,jma_force,jma_check );
@@ -66,11 +70,16 @@ function get_U_immediate(signal instr: in xword) return xsigned;
 function get_J_immediate(signal instr: in xword) return xsigned;
 function get_S_immediate(signal instr: in xword) return xsigned;
 function get_S_displacement(signal instr: in xword) return t_displacement;
-function get_SB_immediate(signal instr: in xword) return xsigned;
+function get_SB_immediate(signal instr: in xword) return t_SB_immediate;
 
-function get_UJ_immediate(signal instr: in xword) return xsigned;
+function get_UJ_immediate(signal instr: in xword) return t_uj_immediate;
 
 function decode_op(signal opcode : in t_opcode) return t_riscv_op;
+
+function to_d21(x: std_logic_vector) return t_displacement21;
+
+-- "Fills" an input vector into an output vector of range (len-1 downto 0)
+function fill_in(x: std_logic_vector; len:natural) return std_logic_vector;
 
 end riscv_decodeutil;
 
@@ -128,23 +137,29 @@ begin
 end;
 
 
-function get_SB_immediate(signal instr: in xword) return xsigned is
-variable temp : xsigned;
-variable t2 : signed(12 downto 0);
+function get_SB_immediate(signal instr: in xword) return t_SB_immediate is
+
 begin
-  t2 := signed(instr(31) & instr(7) & instr(30 downto 25)&instr(11 downto 8) & '0');
-  temp := resize(t2,XLEN);
-  return temp;
+  return instr(31) & instr(7) & instr(30 downto 25)&instr(11 downto 8);
 end;
 
-function get_UJ_immediate(signal instr: in xword) return xsigned is
-variable temp : xsigned;
-variable t2 : signed(20 downto 0);
+function get_UJ_immediate(signal instr: in xword) return t_uj_immediate is
 begin
-  t2 := signed(instr(31) & instr(19 downto 12) & instr(20) & instr(30 downto 21) & '0');
-  temp := resize(t2,XLEN);
-  return temp;
+  return instr(31) & instr(19 downto 12) & instr(20) & instr(30 downto 21);
+end;
 
+function to_d21(x: std_logic_vector) return t_displacement21 is
+variable temp : signed(20 downto 0);
+begin
+  temp := resize(signed(x),temp'length);
+  return std_logic_vector(temp);
+end;
+
+function fill_in(x: std_logic_vector; len:natural) return std_logic_vector is
+variable temp : std_logic_vector(len-1 downto 0) := (others=>'0');
+begin
+  temp(x'range) := x;
+  return temp;  
 end;
 
 function decode_op(signal opcode : in t_opcode) return t_riscv_op is

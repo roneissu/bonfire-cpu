@@ -51,6 +51,8 @@ attribute keep_hierarchy of rtl: architecture is "yes";
 
 type t_jstate is (jnone, jwait, jfinish);
 
+subtype t_branch_offset is signed(20 downto 1);
+
 signal init: std_logic:='1';
 --signal init_cnt: unsigned(7 downto 0):=(others=>'0');
 
@@ -75,8 +77,8 @@ signal fifo_full: std_logic;
 
 
 signal op : t_riscv_op;
-signal branch_offset : xsigned;
-signal branch_target : std_logic_vector(31 downto 0);
+signal branch_offset : t_branch_offset;
+signal branch_target : std_logic_vector(fetch_addr'range);
 signal fetch_branch_target : std_logic;
 signal branch_target_fetched : std_logic := '0';
 
@@ -87,7 +89,7 @@ signal wipe_fifo : std_logic := '0';
 
 signal current_addr : std_logic_vector(fetch_addr'range);
 
-signal debug_jump_dst_i : std_logic_vector(31 downto 0);
+signal debug_jump_dst_i,debug_branch_target : std_logic_vector(31 downto 0);
 
 
 
@@ -102,16 +104,18 @@ begin
 
 -- synthesis translate_off
 debug_adr_o <= fetch_addr&"00";
+debug_jump_dst_i <= jump_dst_i&"00";
+debug_branch_target <= branch_target&"00";
 -- synthesis translate_on
 
 op <= decode_op(lli_dat_i(6 downto 2)) when fifo_we='1' else rv_invalid;
-debug_jump_dst_i <= jump_dst_i&"00";
 
-branch_target <= std_logic_vector(signed(current_addr&"00")+branch_offset);
+
+branch_target <= std_logic_vector(signed(current_addr)+branch_offset(branch_offset'high downto 2));
 
 
 branch_inspect: process (lli_dat_i,op,jump_valid_i,branch_target_fetched)
-variable o : xsigned;
+variable ofs : t_branch_offset;
 begin
 
   branch_offset <= (others => '-');
@@ -120,20 +124,20 @@ begin
   if jump_valid_i='0' then -- and only predict when no active jump request
     if branch_target_fetched = '0' then
       if op = rv_jal  then
-        o  := get_UJ_immediate(lli_dat_i);
+        ofs  := resize(signed(get_UJ_immediate(lli_dat_i)),ofs'length);
 
-         if o(1)='0' then -- no misalignment
+         if ofs(1)='0' then -- no misalignment
           fetch_branch_target <= '1';
          end if;
-        branch_offset <= o;
+        branch_offset <= ofs;
       elsif op = rv_branch then
-         o := get_SB_immediate(lli_dat_i);
+         ofs := resize(signed(get_SB_immediate(lli_dat_i)),ofs'length);
         -- From RISCV ISA Spec:
         --Software should also assume that backward branches will be predicted
         --taken and forward branches as not taken.
-        if o(o'high)='1' then
+        if ofs(ofs'high)='1' then
           fetch_branch_target <= '1';
-          branch_offset <= o;
+          branch_offset <= ofs;
         end if;
       end if;
     end if;
@@ -207,7 +211,7 @@ begin
        end if;
        if init = '1' then
          if  jump_valid_i='0' and fetch_branch_target='1' then
-            fetch_addr <= branch_target(31 downto 2);
+            fetch_addr <= branch_target;
             branch_target_fetched <= '1';
          elsif jump_valid_i='1' and jstate=jnone then --misprecdict
             --report "Branch mispredict" severity note;

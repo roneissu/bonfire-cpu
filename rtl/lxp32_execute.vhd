@@ -91,7 +91,7 @@ entity lxp32_execute is
       sp_we_o: out std_logic;
       sp_wdata_o: out std_logic_vector(31 downto 0);
 
-      displacement_i : in std_logic_vector(11 downto 0);
+      displacement_i : in std_logic_vector(20 downto 0);
 
       valid_i: in std_logic;
       ready_o: out std_logic;
@@ -577,7 +577,7 @@ riscv_cu: if USE_RISCV  generate
       wdata_o => csr_result,
       we_o => csr_we ,
       csr_exception =>csr_exception ,
-      csr_adr => displacement_i,
+      csr_adr => displacement_i(11 downto 0),
       ce_i => csr_ce,
       busy_o => csr_busy,
       csr_x0_i => csr_x0_i,
