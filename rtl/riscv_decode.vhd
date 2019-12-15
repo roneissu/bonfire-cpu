@@ -164,12 +164,13 @@ signal debug_pc : unsigned(31 downto 0);
 
 signal displacement_out : std_logic_vector(displacement_o'range);
 
+signal optype : t_riscv_op;
+
 begin
-
-
 
  -- extract instruction fields
    opcode<=word_i(6 downto 2);
+   optype<=decode_op(opcode);
    rd<=word_i(11 downto 7);
    funct3<=word_i(14 downto 12);
    rs1<=word_i(19 downto 15);
@@ -211,7 +212,7 @@ variable displacement : std_logic_vector(20 downto 0);
 variable t_valid : std_logic;
 variable trap : std_logic;
 variable not_implemented : std_logic;
-variable optype : t_riscv_op;
+
 begin
    if rising_edge(clk_i) then
       if rst_i='1' then
@@ -322,7 +323,6 @@ begin
                     trap_cause_o <= X"3";
                     t_valid:='1';
                   elsif word_i(1 downto 0) = "11" then -- all RV32IM instructions have the lower bits set to 11
-                    optype:=decode_op(opcode);
                     case optype is
 
                        when rv_imm|rv_op =>
@@ -437,7 +437,7 @@ begin
                            cmd_loadop3_o<='1';
                            op3_o<=next_ip_i&"00";
                            dst_out<="000"&rd;
-                           displacement:= to_d21(get_I_displacement(word_i));
+                           displacement:= fill_in(get_I_displacement(word_i),displacement'length);
                            t_valid:='1';
 
                        when rv_branch =>
@@ -457,7 +457,7 @@ begin
                        when rv_load =>
 
                            rd1_select<=Reg;
-                           displacement:=to_d21(get_I_displacement(word_i));
+                           displacement:=fill_in(get_I_displacement(word_i),displacement'length);
                            cmd_dbus_o<='1';
                            cmd_dbus_store_o<='0';
                            dst_out<="000"&rd;
@@ -474,7 +474,7 @@ begin
                       when rv_store =>
 
                            rd1_select<=Reg;
-                           displacement:=to_d21(get_S_displacement(word_i));
+                           displacement:=fill_in(get_S_displacement(word_i),displacement'length);
                            rd2_select<=Reg;
                            cmd_dbus_o<='1';
                            cmd_dbus_store_o<='1';

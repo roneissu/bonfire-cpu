@@ -76,7 +76,6 @@ function get_UJ_immediate(signal instr: in xword) return t_uj_immediate;
 
 function decode_op(signal opcode : in t_opcode) return t_riscv_op;
 
-function to_d21(x: std_logic_vector) return t_displacement21;
 
 -- "Fills" an input vector into an output vector of range (len-1 downto 0)
 function fill_in(x: std_logic_vector; len:natural) return std_logic_vector;
@@ -148,18 +147,16 @@ begin
   return instr(31) & instr(19 downto 12) & instr(20) & instr(30 downto 21);
 end;
 
-function to_d21(x: std_logic_vector) return t_displacement21 is
-variable temp : signed(20 downto 0);
-begin
-  temp := resize(signed(x),temp'length);
-  return std_logic_vector(temp);
-end;
 
 function fill_in(x: std_logic_vector; len:natural) return std_logic_vector is
 variable temp : std_logic_vector(len-1 downto 0) := (others=>'0');
 begin
   temp(x'range) := x;
-  return temp;  
+  -- sign extend x into temp
+  for i in temp'high downto x'high+1 loop
+    temp(i) := x(x'high);
+  end loop;
+  return temp;
 end;
 
 function decode_op(signal opcode : in t_opcode) return t_riscv_op is
