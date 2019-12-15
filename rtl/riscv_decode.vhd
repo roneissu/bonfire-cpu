@@ -268,7 +268,7 @@ begin
         --     self_busy<='0';
         --     state<=Regular;
         --elsif downstream_busy='0' then
-        if downstream_busy='0' then
+        if downstream_busy='0'  then
           case state is
             when Regular =>
                cmd_loadop3_o<='0';
@@ -451,10 +451,10 @@ begin
                            cmd_cmp_o<='1';
                            cmd_negate_op2_o<='1'; -- needed by ALU comparator to work correctly
                            t_valid:='1';
-                           self_busy<='1';
-                           --jump_prediction_o<=jump_prediction_i;
-                           state<=ContinueCjmp;
-
+                           if valid_i='1' then
+                             self_busy<='1';
+                             state<=ContinueCjmp;
+                           end if;
                        when rv_load =>
 
                            rd1_select<=Reg;
@@ -574,15 +574,17 @@ begin
                    if (t_valid='0' or not_implemented='1') and valid_i='1' then
                      -- illegal opcode
                      -- synthesis translate_off
-                      report "Illegal opcode encountered "
+                      if jump_valid_i='0' then
+                        report "Illegal opcode encountered "
                           severity error;
+                      end if;       
                      -- synthesis translate_on
                      cmd_jump_o<='1';
                      interrupt_o <= '0';
                      trap_cause_o<=X"2";
                      cmd_trap_o <= '1';
                    end if;
-                   valid_out := '1';
+                   valid_out := valid_i;
                    current_ip_r <= current_ip;
                -- else
                --   valid_out<='0';
@@ -604,7 +606,7 @@ begin
            end case;
            -- Finally assert valid_o only if all conditions are met
            --valid_out_r <= valid_out and valid_i and not jump_valid_i;
-           if jump_valid_i='0' and valid_i='1' and valid_out='1' then
+           if jump_valid_i='0' and valid_out='1' then
                valid_out_r<='1';
                 -- single step trap propagation pipeline
                trap_on_current<= trap_on_next;
