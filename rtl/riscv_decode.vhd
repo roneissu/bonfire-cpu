@@ -307,11 +307,7 @@ begin
                trap:='0';
 
                --if valid_i='1' then
-                  if jump_valid_i='0' then
-                  -- single step trap propagation pipeline
-                      trap_on_current<= trap_on_next;
-                      trap_on_next <= '0';
-                  end if;     
+
                   jump_prediction_o<=jump_prediction_i;
 
                   if interrupt_valid_i='1' then
@@ -607,7 +603,15 @@ begin
                end if;
            end case;
            -- Finally assert valid_o only if all conditions are met
-           valid_out_r <= valid_out and valid_i and not jump_valid_i;
+           --valid_out_r <= valid_out and valid_i and not jump_valid_i;
+           if jump_valid_i='0' and valid_i='1' and valid_out='1' then
+               valid_out_r<='1';
+                -- single step trap propagation pipeline
+               trap_on_current<= trap_on_next;
+               trap_on_next <= '0';
+           else
+             valid_out_r<='0';
+           end if;
          end if;
       end if; -- reset
       displacement_out<=displacement;
