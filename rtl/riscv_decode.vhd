@@ -128,7 +128,7 @@ signal current_ip, current_ip_r: unsigned(next_ip_i'range);
 signal downstream_busy: std_logic;
 signal self_busy: std_logic:='0';
 signal busy: std_logic;
-signal valid_out: std_logic:='0';
+signal valid_out_r: std_logic:='0';
 
 -- Signals related to interrupt handling
 
@@ -184,7 +184,7 @@ begin
 
 -- Pipeline control
 
-   downstream_busy<=valid_out and not ready_i;
+   downstream_busy<=valid_out_r and not ready_i;
    busy<=downstream_busy or self_busy;
 
  -- Instruction pointer
@@ -195,7 +195,7 @@ begin
 
 
 -- Control outputs
-   valid_o<=valid_out;
+   valid_o<=valid_out_r;
    dst_o<=dst_out;
    ready_o<=not busy;
    interrupt_ready_o<=interrupt_ready;
@@ -209,14 +209,16 @@ process (clk_i) is
 variable branch_target : std_logic_vector(31 downto 0);
 variable U_immed : xsigned;
 variable displacement : std_logic_vector(20 downto 0);
-variable t_valid : std_logic;
+variable t_valid, valid_out : std_logic;
 variable trap : std_logic;
 variable not_implemented : std_logic;
 
+
 begin
    if rising_edge(clk_i) then
+
       if rst_i='1' then
-         valid_out<='0';
+         valid_out_r<='0';
          self_busy<='0';
          state<=Regular;
          interrupt_ready<='0';
@@ -258,14 +260,15 @@ begin
          trap_on_current <= '0';
 
       else
+        valid_out:='0';
         fencei_o <= '0'; -- clear fencei_o always after one cycle
-        if  jump_valid_i='1' then
-            -- On jump execution scrap decode output
-            valid_out<='0';
-            self_busy<='0';
-            state<=Regular;
-        elsif downstream_busy='0' then
-        --if downstream_busy='0' then
+        -- if  jump_valid_i='1' then
+        --     -- On jump execution scrap decode output
+        --     valid_out<='0';
+        --     self_busy<='0';
+        --     state<=Regular;
+        --elsif downstream_busy='0' then
+        if downstream_busy='0' then
           case state is
             when Regular =>
                cmd_loadop3_o<='0';
@@ -303,10 +306,12 @@ begin
                not_implemented:='0';
                trap:='0';
 
-               if valid_i='1' then
+               --if valid_i='1' then
+                  if jump_valid_i='0' then
                   -- single step trap propagation pipeline
-                  trap_on_current<= trap_on_next;
-                  trap_on_next <= '0';
+                      trap_on_current<= trap_on_next;
+                      trap_on_next <= '0';
+                  end if;     
                   jump_prediction_o<=jump_prediction_i;
 
                   if interrupt_valid_i='1' then
@@ -570,7 +575,7 @@ begin
                      not_implemented:='1';
                    end if;
 
-                   if t_valid='0' or not_implemented='1' then
+                   if (t_valid='0' or not_implemented='1') and valid_i='1' then
                      -- illegal opcode
                      -- synthesis translate_off
                       report "Illegal opcode encountered "
@@ -581,16 +586,16 @@ begin
                      trap_cause_o<=X"2";
                      cmd_trap_o <= '1';
                    end if;
-                   valid_out<='1';
+                   valid_out := '1';
                    current_ip_r <= current_ip;
-               else
-                 valid_out<='0';
-               end if; -- if valid_i='1'
+               -- else
+               --   valid_out<='0';
+               -- end if; -- if valid_i='1'
             when ContinueCjmp =>
                rd1_select<=Imm;
                rd1_direct<=std_logic_vector(signed(current_ip_r&"00"));
                displacement:=displacement_out;
-               valid_out<='1';
+               valid_out:='1';
                cmd_jump_o<='1';
                jump_misalign_o<=jma_check;
                self_busy<='0';
@@ -601,10 +606,12 @@ begin
                   state<=Regular;
                end if;
            end case;
-        end if;
-      end if;
+           -- Finally assert valid_o only if all conditions are met
+           valid_out_r <= valid_out and valid_i and not jump_valid_i;
+         end if;
+      end if; -- reset
       displacement_out<=displacement;
-    end if;
+    end if; -- Clock
 end process;
 
 
