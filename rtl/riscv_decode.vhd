@@ -317,10 +317,11 @@ begin
                     -- Clear pending single steps in case of an interrupt
                     trap_on_next <= '0';
                     trap_on_current <= '0';
-                  elsif trap_on_current='1' then -- execute Single step trap
+                  elsif trap_on_current='1' and valid_i='1' then -- execute Single step trap
                     cmd_trap_o <= '1';
                     cmd_jump_o <= '1';
                     trap_cause_o <= X"3";
+                    trap_on_current<='0';
                     t_valid:='1';
                   elsif word_i(1 downto 0) = "11" then -- all RV32IM instructions have the lower bits set to 11
                     case optype is
@@ -607,9 +608,11 @@ begin
            --valid_out_r <= valid_out and valid_i and not jump_valid_i;
            if jump_valid_i='0' and valid_out='1' then
                valid_out_r<='1';
-                -- single step trap propagation pipeline
-               trap_on_current<= trap_on_next;
-               trap_on_next <= '0';
+               -- single step trap propagation pipeline
+              if  trap_on_next='1' then
+                trap_on_current<='1';
+                trap_on_next <= '0';
+              end if;
            else
              valid_out_r<='0';
            end if;

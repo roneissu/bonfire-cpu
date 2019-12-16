@@ -1,0 +1,15 @@
+../../src/ieee/numeric_std-body.v93:1710:7:@0ms:(assertion warning): NUMERIC_STD."=": metavalue detected, returning FALSE
+../../src/ieee/numeric_std-body.v93:1613:7:@0ms:(assertion warning): NUMERIC_STD."=": metavalue detected, returning FALSE
+../src/bonfire-cpu_0/rtl/riscv_regfile.vhd:124:14:@5ns:(assertion error): Metavalue for we_i
+../src/bonfire-cpu_0/verify/bonfire/monitor.vhd:135:11:@265ns:(report note): Monitor: value 0x00000020 written to address 0x00000004
+../src/bonfire-cpu_0/verify/bonfire/monitor.vhd:135:11:@515ns:(report note): Monitor: value 0x00000024 written to address 0x00000004
+../src/bonfire-cpu_0/verify/bonfire/monitor.vhd:135:11:@775ns:(report note): Monitor: value 0x00000020 written to address 0x00000004
+../src/bonfire-cpu_0/verify/bonfire/monitor.vhd:135:11:@1025ns:(report note): Monitor: value 0x00000024 written to address 0x00000004
+../src/bonfire-cpu_0/verify/bonfire/monitor.vhd:135:11:@1285ns:(report note): Monitor: value 0x00000020 written to address 0x00000004
+../src/bonfire-cpu_0/verify/bonfire/monitor.vhd:135:11:@1535ns:(report note): Monitor: value 0x00000024 written to address 0x00000004
+../src/bonfire-cpu_0/verify/bonfire/monitor.vhd:135:11:@1795ns:(report note): Monitor: value 0x00000020 written to address 0x00000004
+../src/bonfire-cpu_0/verify/bonfire/monitor.vhd:135:11:@2045ns:(report note): Monitor: value 0x00000024 written to address 0x00000004
+../src/bonfire-cpu_0/verify/bonfire/monitor.vhd:135:11:@2305ns:(report note): Monitor: value 0x00000020 written to address 0x00000004
+../src/bonfire-cpu_0/verify/bonfire/monitor.vhd:135:11:@2555ns:(report note): Monitor: value 0x00000024 written to address 0x00000004
+../src/bonfire-cpu_0/verify/bonfire/monitor.vhd:135:11:@2595ns:(report note): Monitor: value 0x00000000 written to address 0x00000000
+../src/bonfire-cpu_0/verify/bonfire/tb_cpu_core.vhd:395:7:@2595ns:(report note): Test finished with result 00000000
