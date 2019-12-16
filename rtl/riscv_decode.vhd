@@ -304,291 +304,285 @@ begin
                t_valid := '0';
                not_implemented:='0';
                trap:='0';
+               jump_prediction_o<=jump_prediction_i;
 
-               --if valid_i='1' then
+              if interrupt_valid_i='1' then
+                  t_valid:='1';
+                  interrupt_o<='1';
+                  cmd_trap_o <= '1';
+                  cmd_jump_o <= '1';
+                  -- Clear pending single steps in case of an interrupt
+                  trap_on_next <= '0';
+                  trap_on_current <= '0';
+              elsif trap_on_current='1' and valid_i='1' then -- execute Single step trap
+                  cmd_trap_o <= '1';
+                  cmd_jump_o <= '1';
+                  trap_cause_o <= X"3";
+                  trap_on_current<='0';
+                  t_valid:='1';
+              elsif word_i(1 downto 0) = "11" then -- all RV32IM instructions have the lower bits set to 11
+                  case optype is
 
-                  jump_prediction_o<=jump_prediction_i;
+                     when rv_imm|rv_op =>
 
-                  if interrupt_valid_i='1' then
-                    t_valid:='1';
-                    interrupt_o<='1';
-                    cmd_trap_o <= '1';
-                    cmd_jump_o <= '1';
-                    -- Clear pending single steps in case of an interrupt
-                    trap_on_next <= '0';
-                    trap_on_current <= '0';
-                  elsif trap_on_current='1' and valid_i='1' then -- execute Single step trap
-                    cmd_trap_o <= '1';
-                    cmd_jump_o <= '1';
-                    trap_cause_o <= X"3";
-                    trap_on_current<='0';
-                    t_valid:='1';
-                  elsif word_i(1 downto 0) = "11" then -- all RV32IM instructions have the lower bits set to 11
-                    case optype is
+                        rd1_select<=Reg;
+                        dst_out<="000"&rd;
+                        if opcode(5)='1' then -- OP_OP...
+                          rd2_select<=Reg;
+                        else --OP_IMM
+                          rd2_direct<=std_logic_vector(get_I_immediate(word_i));
+                          rd2_select<=Imm;
+                        end if;
 
-                       when rv_imm|rv_op =>
-
-                          rd1_select<=Reg;
-                          dst_out<="000"&rd;
-                          if opcode(5)='1' then -- OP_OP...
-                            rd2_select<=Reg;
-                          else --OP_IMM
-                            rd2_direct<=std_logic_vector(get_I_immediate(word_i));
-                            rd2_select<=Imm;
-                          end if;
-
-                          if funct7=MULEXT and optype=rv_op then
-                             -- M extension
-                             if funct3(2)='0' then
-                               cmd_mul_o <= '1';
-                               case funct3(1 downto 0) is
-                                 when "00" => -- mul
-                                   cmd_mul_high_o<='0';
-                                   cmd_signed_o <= '0';
-                                   cmd_signed_b_o <= '0';
-                                 when "11" => -- mulhu
-                                   cmd_mul_high_o<='1';
-                                   cmd_signed_o <= '0';
-                                   cmd_signed_b_o <= '0';
-                                 when "01" => -- mulh (both operands signed)
-                                   cmd_mul_high_o<='1';
-                                   cmd_signed_o <= '1';
-                                   cmd_signed_b_o <= '1';
-                                 when "10" => -- mulhsu (signed, unsigned)
-                                   cmd_mul_high_o<='1';
-                                   cmd_signed_o <= '1';
-                                   cmd_signed_b_o <= '0';
-                                 when others => not_implemented:='1';
-                               end case;
-                             else
-                               cmd_div_o <= '1';
-                               cmd_div_mod_o <= funct3(1);
-                               cmd_signed_o <= not funct3(0);
-                             end if;
-                           else
-                             case funct3 is
-                               when ADD =>
-                                 cmd_addsub_o<='1';
-                                 if opcode(5)='1' then
-                                   cmd_negate_op2_o<=word_i(30);
-                                 end if;
-                               when F_AND =>
-                                 cmd_and_o<='1';
-                               when F_XOR =>
-                                 cmd_xor_o<='1';
-                               when F_OR =>
-                                 cmd_and_o<='1';
-                                 cmd_xor_o<='1';
-                               when SL  =>
-                                 cmd_shift_o<='1';
-                               when SR =>
-                                 cmd_shift_o<='1';
-                                 cmd_shift_right_o<='1';
-                                 cmd_signed_o<=word_i(30);
-                               when SLT =>
-                                 cmd_cmp_o<='1';
-                                 cmd_negate_op2_o<='1'; -- needed by ALU comparator to work correctly
-                                 cmd_slt_o<='1';
-                                 jump_type_o<="0100";
-                               when SLTU =>
-                                 cmd_cmp_o<='1';
-                                 cmd_negate_op2_o<='1'; -- needed by ALU comparator to work correctly
-                                 cmd_slt_o<='1';
-                                 jump_type_o<="0110";
-                               when others =>
+                        if funct7=MULEXT and optype=rv_op then
+                           -- M extension
+                           if funct3(2)='0' then
+                             cmd_mul_o <= '1';
+                             case funct3(1 downto 0) is
+                               when "00" => -- mul
+                                 cmd_mul_high_o<='0';
+                                 cmd_signed_o <= '0';
+                                 cmd_signed_b_o <= '0';
+                               when "11" => -- mulhu
+                                 cmd_mul_high_o<='1';
+                                 cmd_signed_o <= '0';
+                                 cmd_signed_b_o <= '0';
+                               when "01" => -- mulh (both operands signed)
+                                 cmd_mul_high_o<='1';
+                                 cmd_signed_o <= '1';
+                                 cmd_signed_b_o <= '1';
+                               when "10" => -- mulhsu (signed, unsigned)
+                                 cmd_mul_high_o<='1';
+                                 cmd_signed_o <= '1';
+                                 cmd_signed_b_o <= '0';
+                               when others => not_implemented:='1';
                              end case;
-                          end if;
-                          t_valid:='1';
-
-                       when rv_jal =>
-
-                           if not BRANCH_PREDICTOR then
-                             rd1_select<=Imm;
-                             rd1_direct<=std_logic_vector(signed(current_ip&"00"));
-                             displacement:= fill_in(get_UJ_immediate(word_i),displacement'length);
-                             cmd_jump_o<='1';
-                             jump_misalign_o <= jma_check;
-                           else -- with Branch Predictor
-                              -- A jal is always predicted right. So no need to trigger
-                              -- the jump logic in the execution stage exepct when
-                              -- there is a misalinged jump
-                              displacement:= fill_in(get_UJ_immediate(word_i),displacement'length);
-                              if displacement(1)='1' then
-                                -- synthesis translate_off
-                                report "decode: Misaligned JAL instruction detected" severity warning;
-                                 -- synthesis translate_on
-                                rd1_select<=Imm;
-                                rd1_direct<=std_logic_vector(signed(current_ip&"00"));
-
-                                jump_misalign_o <= jma_force;
-                                cmd_jump_o<='1';
-                              end if;
+                           else
+                             cmd_div_o <= '1';
+                             cmd_div_mod_o <= funct3(1);
+                             cmd_signed_o <= not funct3(0);
                            end if;
-                           cmd_loadop3_o<='1';
-                           op3_o<=next_ip_i&"00";
-                           dst_out<="000"&rd;
-                           t_valid:='1';
-                           --jump_prediction_o<=jump_prediction_i;
+                         else
+                           case funct3 is
+                             when ADD =>
+                               cmd_addsub_o<='1';
+                               if opcode(5)='1' then
+                                 cmd_negate_op2_o<=word_i(30);
+                               end if;
+                             when F_AND =>
+                               cmd_and_o<='1';
+                             when F_XOR =>
+                               cmd_xor_o<='1';
+                             when F_OR =>
+                               cmd_and_o<='1';
+                               cmd_xor_o<='1';
+                             when SL  =>
+                               cmd_shift_o<='1';
+                             when SR =>
+                               cmd_shift_o<='1';
+                               cmd_shift_right_o<='1';
+                               cmd_signed_o<=word_i(30);
+                             when SLT =>
+                               cmd_cmp_o<='1';
+                               cmd_negate_op2_o<='1'; -- needed by ALU comparator to work correctly
+                               cmd_slt_o<='1';
+                               jump_type_o<="0100";
+                             when SLTU =>
+                               cmd_cmp_o<='1';
+                               cmd_negate_op2_o<='1'; -- needed by ALU comparator to work correctly
+                               cmd_slt_o<='1';
+                               jump_type_o<="0110";
+                             when others =>
+                           end case;
+                        end if;
+                        t_valid:='1';
 
-                       when rv_jalr =>
+                     when rv_jal =>
 
-                           rd1_select<=Reg;
-                           cmd_jump_o<='1';
-                           jump_misalign_o<=jma_check;
-                           cmd_loadop3_o<='1';
-                           op3_o<=next_ip_i&"00";
-                           dst_out<="000"&rd;
-                           displacement:= fill_in(get_I_displacement(word_i),displacement'length);
-                           t_valid:='1';
-
-                       when rv_branch =>
-
-                           displacement:=fill_in(get_SB_immediate(word_i),displacement'length);
-                           --branch_target:=std_logic_vector(signed(current_ip&"00")+get_SB_immediate(word_i));
-                           rd1_select<=Reg;
-                           rd2_select<=Reg;
-                           jump_type_o<="0"&funct3; -- "reuse" lxp jump_type for the funct3 field, see generated coding in lxp32_execute
-                           cmd_cmp_o<='1';
-                           cmd_negate_op2_o<='1'; -- needed by ALU comparator to work correctly
-                           t_valid:='1';
-                           if valid_i='1' then
-                             self_busy<='1';
-                             state<=ContinueCjmp;
-                           end if;
-                       when rv_load =>
-
-                           rd1_select<=Reg;
-                           displacement:=fill_in(get_I_displacement(word_i),displacement'length);
-                           cmd_dbus_o<='1';
-                           cmd_dbus_store_o<='0';
-                           dst_out<="000"&rd;
-                           cmd_dbus_byte_o<='0';
-                           cmd_dbus_hword_o<='0';
-                           if funct3(1 downto 0)="00" then -- Byte access
-                             cmd_dbus_byte_o<='1';
-                           elsif funct3(1 downto 0)="01" then --  16 BIT (H) access
-                             cmd_dbus_hword_o<='1';
-                           end if;
-                           cmd_signed_o <= not funct3(2);
-                           t_valid:='1';
-
-                      when rv_store =>
-
-                           rd1_select<=Reg;
-                           displacement:=fill_in(get_S_displacement(word_i),displacement'length);
-                           rd2_select<=Reg;
-                           cmd_dbus_o<='1';
-                           cmd_dbus_store_o<='1';
-                           cmd_dbus_byte_o<='0';
-                           cmd_dbus_hword_o<='0';
-                           if funct3(1 downto 0)="00" then -- Byte access
-                             cmd_dbus_byte_o<='1';
-                           elsif funct3(1 downto 0)="01" then --  16 BIT (H) access
-                             cmd_dbus_hword_o<='1';
-                           end if; -- TODO: Implement 16 BIT (H) instructons
-                           t_valid:='1';
-                      when rv_lui|rv_auipc =>
-                           -- we will use the ALU to calculate the result
-                           -- this saves an adder
-                           U_immed:=get_U_immediate(word_i);
-                           rd2_select<=Imm;
-                           rd2_direct<=std_logic_vector(U_immed);
+                         if not BRANCH_PREDICTOR then
                            rd1_select<=Imm;
-                           cmd_addsub_o<='1';
-                           if word_i(5)='1' then -- LUI
-                             rd1_direct<= (others=>'0');
-                           else
-                             rd1_direct<=std_logic_vector(current_ip)&"00";
-                           end if;
-                           dst_out<="000"&rd;
-                           t_valid:='1';
+                           rd1_direct<=std_logic_vector(signed(current_ip&"00"));
+                           displacement:= fill_in(get_UJ_immediate(word_i),displacement'length);
+                           cmd_jump_o<='1';
+                           jump_misalign_o <= jma_check;
+                         else -- with Branch Predictor
+                            -- A jal is always predicted right. So no need to trigger
+                            -- the jump logic in the execution stage exepct when
+                            -- there is a misalinged jump
+                            displacement:= fill_in(get_UJ_immediate(word_i),displacement'length);
+                            if displacement(1)='1' then
+                              -- synthesis translate_off
+                              report "decode: Misaligned JAL instruction detected" severity warning;
+                               -- synthesis translate_on
+                              rd1_select<=Imm;
+                              rd1_direct<=std_logic_vector(signed(current_ip&"00"));
 
-                      when rv_system =>
-
-                           if funct3="000" then
-                             -- ECALL EBREAK
-                             cmd_jump_o<='1';
-                             interrupt_o <= '0';
-
-                             case word_i(21 downto 20) is
-                               when  "01" =>  -- EBREAK
-                                 trap_cause_o <= X"3";
-                                 trap:='1';
-                                 t_valid:='1';
-                               when "00" =>  -- ECALL
-                                 trap_cause_o <= X"B";
-                                 trap:='1';
-                                 t_valid:='1';
-                               when "10" => -- XRET
-                                 cmd_tret_o <= '1';
-                                 t_valid:='1';
-                                 if sstep_i='1' then
-                                   trap_on_next<='1';
-                                 end if;
-                               when others =>
-                                 -- nothing...
-                             end case;
-                             cmd_trap_o <= trap;
-                           else
-                              cmd_csr_o<='1';
-                              csr_op_o<=funct3(1 downto 0);
-                              if rs1="00000" then
-                                csr_x0_o <= '1';
-                              else
-                                csr_x0_o <= '0';
-                              end if;
-                              displacement:=(others=>'0');
-                              displacement(11 downto 0):=word_i(31 downto 20); -- CSR address
-                              if funct3(2)='1' then
-                                rd1_select<=Imm;
-                                rd1_direct<=std_logic_vector(resize(unsigned(word_i(19 downto 15)),rd1_direct'length));
-                              else
-                                rd1_select<=Reg;
-                              end if;
-                              dst_out<="000"&rd;
-                              t_valid:='1';
+                              jump_misalign_o <= jma_force;
+                              cmd_jump_o<='1';
                             end if;
-                      when rv_miscmem =>
-                        case funct3 is
-                          when "000" => -- FENCE: currently like a NOP
+                         end if;
+                         cmd_loadop3_o<='1';
+                         op3_o<=next_ip_i&"00";
+                         dst_out<="000"&rd;
+                         t_valid:='1';
+                         --jump_prediction_o<=jump_prediction_i;
+
+                     when rv_jalr =>
+
+                         rd1_select<=Reg;
+                         cmd_jump_o<='1';
+                         jump_misalign_o<=jma_check;
+                         cmd_loadop3_o<='1';
+                         op3_o<=next_ip_i&"00";
+                         dst_out<="000"&rd;
+                         displacement:= fill_in(get_I_displacement(word_i),displacement'length);
+                         t_valid:='1';
+
+                     when rv_branch =>
+
+                         displacement:=fill_in(get_SB_immediate(word_i),displacement'length);
+                         --branch_target:=std_logic_vector(signed(current_ip&"00")+get_SB_immediate(word_i));
+                         rd1_select<=Reg;
+                         rd2_select<=Reg;
+                         jump_type_o<="0"&funct3; -- "reuse" lxp jump_type for the funct3 field, see generated coding in lxp32_execute
+                         cmd_cmp_o<='1';
+                         cmd_negate_op2_o<='1'; -- needed by ALU comparator to work correctly
+                         t_valid:='1';
+                         if valid_i='1' then
+                           self_busy<='1';
+                           state<=ContinueCjmp;
+                         end if;
+                     when rv_load =>
+
+                         rd1_select<=Reg;
+                         displacement:=fill_in(get_I_displacement(word_i),displacement'length);
+                         cmd_dbus_o<='1';
+                         cmd_dbus_store_o<='0';
+                         dst_out<="000"&rd;
+                         cmd_dbus_byte_o<='0';
+                         cmd_dbus_hword_o<='0';
+                         if funct3(1 downto 0)="00" then -- Byte access
+                           cmd_dbus_byte_o<='1';
+                         elsif funct3(1 downto 0)="01" then --  16 BIT (H) access
+                           cmd_dbus_hword_o<='1';
+                         end if;
+                         cmd_signed_o <= not funct3(2);
+                         t_valid:='1';
+
+                    when rv_store =>
+
+                         rd1_select<=Reg;
+                         displacement:=fill_in(get_S_displacement(word_i),displacement'length);
+                         rd2_select<=Reg;
+                         cmd_dbus_o<='1';
+                         cmd_dbus_store_o<='1';
+                         cmd_dbus_byte_o<='0';
+                         cmd_dbus_hword_o<='0';
+                         if funct3(1 downto 0)="00" then -- Byte access
+                           cmd_dbus_byte_o<='1';
+                         elsif funct3(1 downto 0)="01" then --  16 BIT (H) access
+                           cmd_dbus_hword_o<='1';
+                         end if; -- TODO: Implement 16 BIT (H) instructons
+                         t_valid:='1';
+                    when rv_lui|rv_auipc =>
+                         -- we will use the ALU to calculate the result
+                         -- this saves an adder
+                         U_immed:=get_U_immediate(word_i);
+                         rd2_select<=Imm;
+                         rd2_direct<=std_logic_vector(U_immed);
+                         rd1_select<=Imm;
+                         cmd_addsub_o<='1';
+                         if word_i(5)='1' then -- LUI
+                           rd1_direct<= (others=>'0');
+                         else
+                           rd1_direct<=std_logic_vector(current_ip)&"00";
+                         end if;
+                         dst_out<="000"&rd;
+                         t_valid:='1';
+
+                    when rv_system =>
+
+                         if funct3="000" then
+                           -- ECALL EBREAK
+                           cmd_jump_o<='1';
+                           interrupt_o <= '0';
+
+                           case word_i(21 downto 20) is
+                             when  "01" =>  -- EBREAK
+                               trap_cause_o <= X"3";
+                               trap:='1';
+                               t_valid:='1';
+                             when "00" =>  -- ECALL
+                               trap_cause_o <= X"B";
+                               trap:='1';
+                               t_valid:='1';
+                             when "10" => -- XRET
+                               cmd_tret_o <= '1';
+                               t_valid:='1';
+                               if sstep_i='1' and valid_i='1' then
+                                 trap_on_next<='1';
+                               end if;
+                             when others =>
+                               -- nothing...
+                           end case;
+                           cmd_trap_o <= trap;
+                         else
+                            cmd_csr_o<='1';
+                            csr_op_o<=funct3(1 downto 0);
+                            if rs1="00000" then
+                              csr_x0_o <= '1';
+                            else
+                              csr_x0_o <= '0';
+                            end if;
+                            displacement:=(others=>'0');
+                            displacement(11 downto 0):=word_i(31 downto 20); -- CSR address
+                            if funct3(2)='1' then
+                              rd1_select<=Imm;
+                              rd1_direct<=std_logic_vector(resize(unsigned(word_i(19 downto 15)),rd1_direct'length));
+                            else
+                              rd1_select<=Reg;
+                            end if;
+                            dst_out<="000"&rd;
                             t_valid:='1';
-                          when "001" => -- FENCE.I
-                            -- we just jump to next_ip, this will effectivly flush the pipeline and the prefetch buffer
-                            rd1_select<=Imm;
-                            rd1_direct<=std_logic_vector(signed(next_ip_i&"00"));
-                            cmd_jump_o<='1';
-                            fencei_o<='1';
-                            t_valid:='1';
-                          when others =>
-                            not_implemented:='1';
-                         end case;
+                          end if;
+                    when rv_miscmem =>
+                      case funct3 is
+                        when "000" => -- FENCE: currently like a NOP
+                          t_valid:='1';
+                        when "001" => -- FENCE.I
+                          -- we just jump to next_ip, this will effectivly flush the pipeline and the prefetch buffer
+                          rd1_select<=Imm;
+                          rd1_direct<=std_logic_vector(signed(next_ip_i&"00"));
+                          cmd_jump_o<='1';
+                          fencei_o<=valid_i; -- Only set fence when opcode is really valid 
+                          t_valid:='1';
+                        when others =>
+                          not_implemented:='1';
+                       end case;
 
-                      when rv_invalid =>
-                        not_implemented:='1';
-                    end case;
+                    when rv_invalid =>
+                      not_implemented:='1';
+                  end case;
 
-                   else
-                     not_implemented:='1';
-                   end if;
+              else
+                 not_implemented:='1';
+              end if;
 
-                   if (t_valid='0' or not_implemented='1') and valid_i='1' then
-                     -- illegal opcode
-                     -- synthesis translate_off
-                      if jump_valid_i='0' then
-                        report "Illegal opcode encountered "
-                          severity error;
-                      end if;
-                     -- synthesis translate_on
-                     cmd_jump_o<='1';
-                     interrupt_o <= '0';
-                     trap_cause_o<=X"2";
-                     cmd_trap_o <= '1';
-                   end if;
-                   valid_out := valid_i;
-                   current_ip_r <= current_ip;
-               -- else
-               --   valid_out<='0';
-               -- end if; -- if valid_i='1'
+             if (t_valid='0' or not_implemented='1') and valid_i='1' then
+               -- illegal opcode
+               -- synthesis translate_off
+                if jump_valid_i='0' then
+                  report "Illegal opcode encountered "
+                    severity error;
+                end if;
+               -- synthesis translate_on
+               cmd_jump_o<='1';
+               interrupt_o <= '0';
+               trap_cause_o<=X"2";
+               cmd_trap_o <= '1';
+             end if;
+             valid_out := valid_i;
+             current_ip_r <= current_ip;
             when ContinueCjmp =>
                rd1_select<=Imm;
                rd1_direct<=std_logic_vector(signed(current_ip_r&"00"));
@@ -599,10 +593,7 @@ begin
                self_busy<='0';
                state<=Regular;
             when Halt =>
-               -- if interrupt_valid_i='1' then
-               --    self_busy<='0';
-               --    state<=Regular;
-               -- end if;
+              -- rerved for future use
            end case;
            -- Finally assert valid_o only if all conditions are met
            --valid_out_r <= valid_out and valid_i and not jump_valid_i;

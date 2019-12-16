@@ -8,9 +8,9 @@ use IEEE.NUMERIC_STD.ALL;
 
 package csr_def is
 
--- Version: 1.40
+-- Version: 1.41
 constant major_version : natural := 1;
-constant minor_version : natural := 40;
+constant minor_version : natural := 41;
 
 subtype t_csr_adrprefix is std_logic_vector(3 downto 0);
 constant m_stdprefix : t_csr_adrprefix := x"3";
