@@ -262,13 +262,12 @@ begin
       else
         valid_out:='0';
         fencei_o <= '0'; -- clear fencei_o always after one cycle
-        -- if  jump_valid_i='1' then
-        --     -- On jump execution scrap decode output
-        --     valid_out<='0';
-        --     self_busy<='0';
-        --     state<=Regular;
-        --elsif downstream_busy='0' then
-        if downstream_busy='0'  then
+        if  jump_valid_i='1' then
+            -- On jump execution scrap decode output
+            valid_out_r<='0';
+            self_busy<='0';
+            state<=Regular;
+        elsif downstream_busy='0' then
           case state is
             when Regular =>
                cmd_loadop3_o<='0';
@@ -577,7 +576,7 @@ begin
                       if jump_valid_i='0' then
                         report "Illegal opcode encountered "
                           severity error;
-                      end if;       
+                      end if;
                      -- synthesis translate_on
                      cmd_jump_o<='1';
                      interrupt_o <= '0';
@@ -599,10 +598,10 @@ begin
                self_busy<='0';
                state<=Regular;
             when Halt =>
-               if interrupt_valid_i='1' then
-                  self_busy<='0';
-                  state<=Regular;
-               end if;
+               -- if interrupt_valid_i='1' then
+               --    self_busy<='0';
+               --    state<=Regular;
+               -- end if;
            end case;
            -- Finally assert valid_o only if all conditions are met
            --valid_out_r <= valid_out and valid_i and not jump_valid_i;
@@ -614,7 +613,7 @@ begin
            else
              valid_out_r<='0';
            end if;
-         end if;
+        end if; -- downstream_busy....
       end if; -- reset
       displacement_out<=displacement;
     end if; -- Clock
