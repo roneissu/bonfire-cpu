@@ -27,7 +27,7 @@ sw a0,4(s0) // should write #55aaffee
 j double
 
 success:
-li a0,0
+li a0,1
 sw a0,0(s0) // write success to monitor result register
 f0:
 j f0
