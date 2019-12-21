@@ -15,7 +15,7 @@ New in Version 1.4 there is a new instruction fetch unit (bonfire_fetch.vhd) whi
 ![bonfire core](doc/bonfire_core.png)
 
 
-## New in Version 1.4
+### New in Release 1.4
 
 ##### Static Branch predictor (set generic BRANCH_PREDICTOR to true)
 
