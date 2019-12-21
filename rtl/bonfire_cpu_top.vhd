@@ -3,7 +3,7 @@
 -- Module Name:    bonfire_cpu_top - Behavioral
 
 
--- The Bonfire Processor Project, (c) 2016,2017 Thomas Hornschuh
+-- The Bonfire Processor Project, (c) 2016-2019 Thomas Hornschuh
 
 -- Bonfire CPU Toplevel module with Block RAM und WISHBONE interfaces
 -- Includes Instruction Cache

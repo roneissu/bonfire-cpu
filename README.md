@@ -11,7 +11,7 @@ The datapath/pipeline is basically still from LXP32. The main difference is in t
 In addition a "real" directed mapped instruction cache can be configured.
 Since in Release 1.4 there is a new instruction fetch unit (bonfire_fetch.vhd) which implements a static branch predictor.
 
- 
+
 ![bonfire core](doc/bonfire_core.png)
 
 
@@ -22,7 +22,7 @@ Since in Release 1.4 there is a new instruction fetch unit (bonfire_fetch.vhd) w
 Instantiates a new fetch unit with a static branch predictor. It predicts backwards branches as taken and forward branches as not taken. JAL instructions are also considered as taken.
 Latencies:
   * Branches: 6 cycles on misprediction, 2 when predicted correct
-  * JAL: 2 cycle
+  * JAL: 2 cycles
 The Fetch unit has an 1-cycle latency on a jump/branch. The 2 cycle latency of JAL is caused by this. For branches the fetch-latency is hidden behind the execution of the comparison in the ALU.
 
 ##### RISC-V compliance suite conformity
@@ -36,22 +36,22 @@ For instructions how to run the compliance suite refer to the [README](https://g
 
 ### Instruction cycle times
 
-(All numbers without branch predictor)
 
-Instruction Class | Examples    | Latency
-------------------|-------------|---------
-arithmetic/logical| ADD, ADDI   |   1
-Load immediate    | LUI, AUIPC  |   1
-Compare and Set   | SLT, SLTI   |   2
-Shift             | SLL, SLLI   |   2
-Branches          | BEQ, BNE    |   5
-Jump & Link       | JAL, JALR   |   4
-Load              | LB, LW, LH  |   3
-Store             | SW, SH, SB  |   2
-CSR Access        | CSRRW, CSRRC|   2
-Trap/Return       | ECALL, ERET |   5
-Multiplication    | MUL, MULH   |   4
-Div/Mod           | DIV, DIVU   |  37
+
+Instruction Class | Examples    | Latency(wo. predictor)| (w. predictor)
+------------------|-------------|-----------------------|---------------
+arithmetic/logical| ADD, ADDI   |   1                   |
+Load immediate    | LUI, AUIPC  |   1                   |
+Compare and Set   | SLT, SLTI   |   2                   |
+Shift             | SLL, SLLI   |   2                   |
+Branches          | BEQ, BNE    |   5                   |   2-6
+Jump & Link       | JAL, JALR   |   4                   |   2
+Load              | LB, LW, LH  |   3                   |
+Store             | SW, SH, SB  |   2                   |
+Trap/Return       | ECALL, ERET |   5                   |
+CSR Access        | CSRRW, CSRRC|   2                   |
+Multiplication    | MUL, MULH   |   4                   |
+Div/Mod           | DIV, DIVU   |  37                   |
 
 
 ## Privilege mode implementation

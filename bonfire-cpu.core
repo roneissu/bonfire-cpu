@@ -16,7 +16,7 @@ files = rtl/riscv_counter_64Bit.vhd  rtl/csr_def.vhd rtl/riscv_decodeutil.vhd rt
     rtl/lxp32_alu.vhd rtl/lxp32_dbus.vhd rtl/riscv_local_memmap.vhd rtl/riscv_csr_unit.vhd
     rtl/lxp32_fetch.vhd   rtl/bonfire_fetch.vhd
     rtl/riscv_decode.vhd rtl/lxp32_decode.vhd rtl/lxp32_execute.vhd
-    rtl/lxp32_cpu.vhd rtl/lxp32u_top.vhd
+    rtl/lxp32_cpu.vhd rtl/lxp32u_top.vhd rtl/bonfire_core_top.vhd 
     rtl/bonfire_dm_icache.vhd rtl/bonfire_cpu_top.vhd
 file_type=vhdlSource
 

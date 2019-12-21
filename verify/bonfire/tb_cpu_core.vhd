@@ -57,35 +57,33 @@ constant ram_adr_width : natural := log2.log2(ram_size);
 
     -- Component Declaration for the Unit Under Test (UUT)
 
-    component lxp32_cpu
-    generic (
-      DBUS_RMW: boolean:=false;
-      DIVIDER_EN: boolean:=true;
-      MUL_ARCH: string:="dsp";
-      START_ADDR: std_logic_vector(29 downto 0):=(others=>'0');
-      USE_RISCV : boolean := false;
-      REG_RAM_STYLE : string := "block";
-      BRANCH_PREDICTOR : boolean := false
-    );
-    port (
-      clk_i               : in  std_logic;
-      rst_i               : in  std_logic;
-      lli_re_o            : out std_logic;
-      lli_adr_o           : out std_logic_vector(29 downto 0);
-      lli_dat_i           : in  std_logic_vector(31 downto 0);
-      lli_busy_i          : in  std_logic;
-      lli_cc_invalidate_o : out std_logic;
-      dbus_cyc_o          : out std_logic;
-      dbus_stb_o          : out std_logic;
-      dbus_we_o           : out std_logic;
-      dbus_sel_o          : out std_logic_vector(3 downto 0);
-      dbus_ack_i          : in  std_logic;
-      dbus_adr_o          : out std_logic_vector(31 downto 2);
-      dbus_dat_o          : out std_logic_vector(31 downto 0);
-      dbus_dat_i          : in  std_logic_vector(31 downto 0);
-      irq_i               : in  std_logic_vector(7 downto 0)
-    );
-    end component lxp32_cpu;
+  component bonfire_core_top
+  generic (
+    M_EXTENSION      : boolean :=true;
+    START_ADDR: std_logic_vector(29 downto 0):=(others=>'0');
+    REG_RAM_STYLE    : string := "block";
+    BRANCH_PREDICTOR : boolean
+  );
+  port (
+    clk_i      : in  std_logic;
+    rst_i      : in  std_logic;
+    lli_re_o   : out std_logic;
+    lli_adr_o  : out std_logic_vector(29 downto 0);
+    lli_dat_i  : in  std_logic_vector(31 downto 0);
+    lli_busy_i : in  std_logic;
+    lli_cc_invalidate_o : out std_logic;
+    dbus_cyc_o : out std_logic;
+    dbus_stb_o : out std_logic;
+    dbus_we_o  : out std_logic;
+    dbus_sel_o : out std_logic_vector(3 downto 0);
+    dbus_ack_i : in  std_logic;
+    dbus_adr_o : out std_logic_vector(31 downto 2);
+    dbus_dat_o : out std_logic_vector(31 downto 0);
+    dbus_dat_i : in  std_logic_vector(31 downto 0);
+    irq_i      : in  std_logic_vector(7 downto 0)
+  );
+  end component bonfire_core_top;
+
 
 
 
@@ -165,10 +163,8 @@ constant ram_adr_width : natural := log2.log2(ram_size);
 BEGIN
 
     -- Instantiate the Unit Under Test (UUT)
-   uut: lxp32_cpu
+   uut: bonfire_core_top
    generic map (
-     USE_RISCV=>true,
-     MUL_ARCH=>"spartandsp",
      BRANCH_PREDICTOR=>BRANCH_PREDICTOR
    )
    PORT MAP (
