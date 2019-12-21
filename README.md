@@ -1,20 +1,42 @@
-# Bonfire-CPU
 
-Bonfire is a implementation of RISC-V (RV32IM subset) optimized for FPGAs.
 
 # Bonfire-CPU
 
-Bonfire is a implementation of RISC-V (RV32IM subset) optimized for FPGAs.
+Bonfire is a implementation of RISC-V (RV32IM subset) optimized for FPGAs. Since Version 1.4 it can successfully run the riscv-compliance suite.
+ [https://github.com/bonfireprocessor/riscv-compliance](https://github.com/bonfireprocessor/riscv-compliance)
 
 It is based on the LXP32 CPU [https://lxp32.github.io/](https://lxp32.github.io/)
 
-The datapath/pipeline is basically still from LXP32. The main difference is in the instruction decoder which was completly rewritten to implement the RV32IM instruction set. See [https://riscv.org/specifications/]
+The datapath/pipeline is basically still from LXP32. The main difference is in the instruction decoder which was completly rewritten to implement the RV32IM instruction set.
+In addition a "real" directed mapped instruction cache can be configured.
+New in Version 1.4 there is a new instruction fetch unit (bonfire_fetch.vhd) which implements a static branch predictor.
+
+ See https://riscv.org/specifications/
 ![bonfire core](doc/bonfire_core.png)
 
+
+## New in Version 1.4
+
+##### Static Branch predictor (set generic BRANCH_PREDICTOR to true)
+
+Instantiates a new fetch unit with a static branch predictor. It predicts backwards branches as taken and forward branches as not taken. JAL instructions are also considered as taken.
+Latencies:
+  * Branches: 6 cycles on misprediction, 2 when predicted correct
+  * JAL: 2 cycle
+The Fetch unit has an 1-cycle latency on a jump/branch. The 2 cycle latency of JAL is caused by this. For branches the fetch-latency is hidden behind the execution of the comparison in the ALU.
+
+##### RISC-V compliance suite conformity
+The core passes RISC-V compliance tests:
+* rv32i
+* rv32im
+* rv32Zicsr
+* rv32Zifencei
+For instructions how to run the compliance suite refer to the [README](https://github.com/bonfireprocessor/riscv-compliance/blob/master/riscv-target/bonfire/README.md)
 
 
 ### Instruction cycle times
 
+(All numbers without branch predictor)
 
 Instruction Class | Examples    | Latency
 ------------------|-------------|---------
@@ -95,4 +117,3 @@ The design is intented to work still also as lxp-32 CPU when the generic paramet
 
 
 The CPU supports the mtime and mtimecmp timer similar to the RISC-V privilege spec, but both registers are currently limited to 32Bit length.
-
