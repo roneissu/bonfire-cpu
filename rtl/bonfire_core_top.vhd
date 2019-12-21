@@ -26,7 +26,9 @@ entity bonfire_core_top is
 		M_EXTENSION: boolean:=true;
 		START_ADDR: std_logic_vector(29 downto 0):=(others=>'0');
     REG_RAM_STYLE : string := "block";
-		BRANCH_PREDICTOR : boolean := false
+		BRANCH_PREDICTOR : boolean := false;
+    ENABLE_TIMER : boolean := true;
+    TIMER_XLEN : natural := 32
 	);
 	port(
 		clk_i: in std_logic;
@@ -73,7 +75,9 @@ cpu_inst: entity work.lxp32_cpu(rtl)
 		START_ADDR=>START_ADDR,
 		USE_RISCV=>true,
     REG_RAM_STYLE=>REG_RAM_STYLE,
-		BRANCH_PREDICTOR=>BRANCH_PREDICTOR
+		BRANCH_PREDICTOR=>BRANCH_PREDICTOR,
+    ENABLE_TIMER=>ENABLE_TIMER,
+    TIMER_XLEN=>TIMER_XLEN
 	)
 	port map(
 		clk_i=>clk_i,

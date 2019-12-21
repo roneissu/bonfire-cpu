@@ -25,10 +25,8 @@ use IEEE.STD_LOGIC_1164.ALL;
 
 entity bonfire_cpu_top is
 generic(
-      DBUS_RMW: boolean:=false;
-      DIVIDER_EN: boolean:=true;
 
-      MUL_ARCH: string:="dsp";
+      M_EXTENSION: boolean:=true;
       START_ADDR: std_logic_vector(29 downto 0):=(others=>'0');
 
       REG_RAM_STYLE : string := "block";
@@ -218,13 +216,10 @@ wb_dbus_adr_o <= dbus_adr_o;
 wb_dbus_dat_o <= dbus_dat_o;
 
 
-cpu_inst: entity work.lxp32_cpu(rtl)
+cpu_inst: entity work.bonfire_core_top(rtl)
    generic map(
-      DBUS_RMW=>DBUS_RMW,
-      DIVIDER_EN=>DIVIDER_EN,
-      MUL_ARCH=>MUL_ARCH,
+      M_EXTENSION=>M_EXTENSION,
       START_ADDR=>START_ADDR,
-      USE_RISCV=>TRUE,
       REG_RAM_STYLE=>REG_RAM_STYLE,
       ENABLE_TIMER=>ENABLE_TIMER,
       TIMER_XLEN=>TIMER_XLEN,
