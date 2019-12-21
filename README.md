@@ -9,9 +9,9 @@ It is based on the LXP32 CPU [https://lxp32.github.io/](https://lxp32.github.io/
 
 The datapath/pipeline is basically still from LXP32. The main difference is in the instruction decoder which was completly rewritten to implement the RV32IM instruction set.
 In addition a "real" directed mapped instruction cache can be configured.
-New in Version 1.4 there is a new instruction fetch unit (bonfire_fetch.vhd) which implements a static branch predictor.
+Since in Release 1.4 there is a new instruction fetch unit (bonfire_fetch.vhd) which implements a static branch predictor.
 
- See https://riscv.org/specifications/
+ 
 ![bonfire core](doc/bonfire_core.png)
 
 
