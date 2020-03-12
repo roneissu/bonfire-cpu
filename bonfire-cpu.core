@@ -1,87 +1,104 @@
-CAPI=1
-[main]
-name = ::bonfire-cpu:0
-depend = ::bonfire-util:0
-backend = ise
-simulators=ghdl isim xsim
-
-
-[fileset rtl]
-files = rtl/riscv_counter_64Bit.vhd  rtl/csr_def.vhd rtl/riscv_decodeutil.vhd rtl/lxp32_ram256x32.vhd
-    rtl/lxp32_mul16x16.vhd
-    rtl/lxp32_ubuf.vhd  rtl/lxp32_compl.vhd
-    rtl/riscv_interrupts.vhd rtl/lxp32_scratchpad.vhd rtl/riscv_regfile.vhd rtl/lxp32_interrupt_mux.vhd
-    rtl/lxp32_shifter.vhd rtl/lxp32_mul_dsp.vhd rtl/lxp32_mul_opt.vhd rtl/lxp32_mul_seq.vhd rtl/lxp32_divider.vhd
-     rtl/riscv_mulsp6.vhd
-    rtl/lxp32_alu.vhd rtl/lxp32_dbus.vhd rtl/riscv_local_memmap.vhd rtl/riscv_csr_unit.vhd
-    rtl/lxp32_fetch.vhd   rtl/bonfire_fetch.vhd
-    rtl/riscv_decode.vhd rtl/lxp32_decode.vhd rtl/lxp32_execute.vhd
-    rtl/lxp32_cpu.vhd rtl/lxp32u_top.vhd rtl/bonfire_core_top.vhd
-    rtl/bonfire_dm_icache.vhd rtl/bonfire_cpu_top.vhd
-file_type=vhdlSource
-
-[fileset sim]
-files=verify/std_logic_textio/std_logic_textio.vhd
-    verify/common_pkg/common_pkg.vhd verify/common_pkg/common_pkg_body.vhd
-    verify/bonfire/sim_bus.vhd verify/bonfire/sim_MainMemory.vhd verify/bonfire/sim_memory_interface.vhd
-    verify/bonfire/sim_burst_memory_interface.vhd
-    verify/bonfire/monitor.vhd
-    verify/bonfire/sim_uart.vhd
-    verify/bonfire/tb_cpu_core.vhd
-file_type=vhdlSource
-usage=sim
-scope = private
-
-[fileset code]
-files=verify/bonfire/compiled_code/dhrystone_bram.hex[copyto=../compiled_code/dhrystone_bram.hex]
-usage=sim
-scope=private
-
-
-[parameter TestFile]
-datatype=file
-#default=../src/bonfire-cpu_0/verify/bonfire/compiled_code/dhrystone_bram.hex
-default=../compiled_code/dhrystone_bram.hex
-description=Initial boot RAM contents (in hex)
-paramtype=vlogparam
-scope=private
-usage=sim
-
-[parameter signature_file]
-datatype=file
-default="signature.log"
-description=Filename for RISC-V compliance test signature
-#paramtype=generic
-paramtype=vlogparam
-scope=private
-usage=sim
-
-#Parameter datatype. Legal values are bool, file, int, str. file is same as str, but prefixed with the current directory that FuseSoC runs from
-[parameter BRANCH_PREDICTOR]
-datatype=str
-default=false
-description=Branch Predictor enable/disable
-#paramtype=generic
-paramtype=vlogparam
-scope=private
-usage=sim
-
-[parameter USE_ICACHE]
-datatype=str
-default=false
-description=Simulate an instruction cache
-#paramtype=generic
-paramtype=vlogparam
-scope=private
-usage=sim
-
-[xsim]
-;xsim_options = --debug all
-toplevel = tb_cpu_core
-
-[simulator]
-toplevel = tb_cpu_core
-
-[ghdl]
-;run_options = --wave=cpu.ghw --stop-time=15000ns
-;run_options =  --stop-time=100000ns
+CAPI=2:
+filesets:
+  code:
+    files:
+    - verify/bonfire/compiled_code/dhrystone_bram.hex
+  rtl:
+    depend:
+    - ::bonfire-util:0
+    file_type: vhdlSource
+    files:
+    - rtl/riscv_counter_64Bit.vhd
+    - rtl/csr_def.vhd
+    - rtl/riscv_decodeutil.vhd
+    - rtl/lxp32_ram256x32.vhd
+    - rtl/lxp32_mul16x16.vhd
+    - rtl/lxp32_ubuf.vhd
+    - rtl/lxp32_compl.vhd
+    - rtl/riscv_interrupts.vhd
+    - rtl/lxp32_scratchpad.vhd
+    - rtl/riscv_regfile.vhd
+    - rtl/lxp32_interrupt_mux.vhd
+    - rtl/lxp32_shifter.vhd
+    - rtl/lxp32_mul_dsp.vhd
+    - rtl/lxp32_mul_opt.vhd
+    - rtl/lxp32_mul_seq.vhd
+    - rtl/lxp32_divider.vhd
+    - rtl/riscv_mulsp6.vhd
+    - rtl/lxp32_alu.vhd
+    - rtl/lxp32_dbus.vhd
+    - rtl/riscv_local_memmap.vhd
+    - rtl/riscv_csr_unit.vhd
+    - rtl/lxp32_fetch.vhd
+    - rtl/bonfire_fetch.vhd
+    - rtl/riscv_decode.vhd
+    - rtl/lxp32_decode.vhd
+    - rtl/lxp32_execute.vhd
+    - rtl/lxp32_cpu.vhd
+    - rtl/lxp32u_top.vhd
+    - rtl/bonfire_core_top.vhd
+    - rtl/bonfire_dm_icache.vhd
+    - rtl/bonfire_cpu_top.vhd
+  sim:
+    file_type: vhdlSource
+    files:
+    - verify/std_logic_textio/std_logic_textio.vhd
+    - verify/common_pkg/common_pkg.vhd
+    - verify/common_pkg/common_pkg_body.vhd
+    - verify/bonfire/sim_bus.vhd
+    - verify/bonfire/sim_MainMemory.vhd
+    - verify/bonfire/sim_memory_interface.vhd
+    - verify/bonfire/sim_burst_memory_interface.vhd
+    - verify/bonfire/monitor.vhd
+    - verify/bonfire/sim_uart.vhd
+    - verify/bonfire/tb_cpu_core.vhd
+name: ::bonfire-cpu:0
+parameters:
+  BRANCH_PREDICTOR:
+    datatype: str
+    default: 'false'
+    description: Branch Predictor enable/disable
+    paramtype: generic
+    scope: private
+  TestFile:
+    datatype: file
+    default: ../compiled_code/dhrystone_bram.hex
+    description: Initial boot RAM contents (in hex)
+    paramtype: generic
+    scope: private
+  USE_ICACHE:
+    datatype: str
+    default: 'false'
+    description: Simulate an instruction cache
+    paramtype: generic
+    scope: private
+  signature_file:
+    datatype: file
+    default: '"signature.log"'
+    description: Filename for RISC-V compliance test signature
+    paramtype: generic
+    scope: private
+targets:
+  default:
+    filesets:
+    - rtl
+  sim:
+    default_tool: ghdl
+    filesets:
+    - rtl
+    - sim
+    - code
+    parameters:
+    - TestFile
+    - signature_file
+    - BRANCH_PREDICTOR
+    - USE_ICACHE
+    toplevel: tb_cpu_core
+  synth:
+    filesets:
+    - rtl
+    parameters:
+    - TestFile
+    - signature_file
+    - BRANCH_PREDICTOR
+    - USE_ICACHE
