@@ -1,0 +1,140 @@
+open_wave_config {/home/thomas/development/bonfire/bonfire-cpu/bonfire-cpu_0.wcfg}
+
+loop Ohne Branch Predictor:
+../src/bonfire-cpu_0/verify/lxp32/src/tb/monitor.vhd:69:32:@85ns:(report note): Monitor: value 0x00000009 written to address 0x00000004
+../src/bonfire-cpu_0/verify/lxp32/src/tb/monitor.vhd:69:32:@165ns:(report note): Monitor: value 0x00000008 written to address 0x00000004
+../src/bonfire-cpu_0/verify/lxp32/src/tb/monitor.vhd:69:32:@245ns:(report note): Monitor: value 0x00000007 written to address 0x00000004
+../src/bonfire-cpu_0/verify/lxp32/src/tb/monitor.vhd:69:32:@325ns:(report note): Monitor: value 0x00000006 written to address 0x00000004
+../src/bonfire-cpu_0/verify/lxp32/src/tb/monitor.vhd:69:32:@405ns:(report note): Monitor: value 0x00000005 written to address 0x00000004
+../src/bonfire-cpu_0/verify/lxp32/src/tb/monitor.vhd:69:32:@485ns:(report note): Monitor: value 0x00000004 written to address 0x00000004
+../src/bonfire-cpu_0/verify/lxp32/src/tb/monitor.vhd:69:32:@565ns:(report note): Monitor: value 0x00000003 written to address 0x00000004
+../src/bonfire-cpu_0/verify/lxp32/src/tb/monitor.vhd:69:32:@645ns:(report note): Monitor: value 0x00000002 written to address 0x00000004
+../src/bonfire-cpu_0/verify/lxp32/src/tb/monitor.vhd:69:32:@725ns:(report note): Monitor: value 0x00000001 written to address 0x00000004
+../src/bonfire-cpu_0/verify/lxp32/src/tb/monitor.vhd:69:32:@805ns:(report note): Monitor: value 0x00000000 written to address 0x00000004
+
+../src/bonfire-cpu_0/verify/lxp32/src/tb/monitor.vhd:69:32:@1025ns:(report note): Monitor: value 0x55AAFFEE written to address 0x00000004
+../src/bonfire-cpu_0/verify/lxp32/src/tb/monitor.vhd:69:32:@1055ns:(report note): Monitor: value 0x00000000 written to address 0x00000000
+../src/bonfire-cpu_0/verify/bonfire/tb_cpu_core.vhd:250:7:@1055ns:(report note): Test finished with result 00000000
+
+
+loop Mit Branch Predictor:
+../src/bonfire-cpu_0/verify/lxp32/src/tb/monitor.vhd:69:32:@85ns:(report note): Monitor: value 0x00000009 written to address 0x00000004
+../src/bonfire-cpu_0/verify/lxp32/src/tb/monitor.vhd:69:32:@135ns:(report note): Monitor: value 0x00000008 written to address 0x00000004
+../src/bonfire-cpu_0/verify/lxp32/src/tb/monitor.vhd:69:32:@185ns:(report note): Monitor: value 0x00000007 written to address 0x00000004
+../src/bonfire-cpu_0/verify/lxp32/src/tb/monitor.vhd:69:32:@235ns:(report note): Monitor: value 0x00000006 written to address 0x00000004
+../src/bonfire-cpu_0/verify/lxp32/src/tb/monitor.vhd:69:32:@285ns:(report note): Monitor: value 0x00000005 written to address 0x00000004
+../src/bonfire-cpu_0/verify/lxp32/src/tb/monitor.vhd:69:32:@335ns:(report note): Monitor: value 0x00000004 written to address 0x00000004
+../src/bonfire-cpu_0/verify/lxp32/src/tb/monitor.vhd:69:32:@385ns:(report note): Monitor: value 0x00000003 written to address 0x00000004
+../src/bonfire-cpu_0/verify/lxp32/src/tb/monitor.vhd:69:32:@435ns:(report note): Monitor: value 0x00000002 written to address 0x00000004
+../src/bonfire-cpu_0/verify/lxp32/src/tb/monitor.vhd:69:32:@485ns:(report note): Monitor: value 0x00000001 written to address 0x00000004
+../src/bonfire-cpu_0/verify/lxp32/src/tb/monitor.vhd:69:32:@535ns:(report note): Monitor: value 0x00000000 written to address 0x00000004
+
+../src/bonfire-cpu_0/verify/lxp32/src/tb/monitor.vhd:69:32:@785ns:(report note): Monitor: value 0x55AAFFEE written to address 0x00000004
+../src/bonfire-cpu_0/verify/lxp32/src/tb/monitor.vhd:69:32:@815ns:(report note): Monitor: value 0x00000000 written to address 0x00000000
+../src/bonfire-cpu_0/verify/bonfire/tb_cpu_core.vhd:250:7:@815ns:(report note): Test finished with result 00000000
+
+
+Timer irq no predictor
+../src/bonfire-cpu_0/verify/lxp32/src/tb/monitor.vhd:69:32:@385ns:(report note): Monitor: value 0x0000000B written to address 0x00000004
+../src/bonfire-cpu_0/verify/lxp32/src/tb/monitor.vhd:69:32:@645ns:(report note): Monitor: value 0x0000000B written to address 0x00000004
+../src/bonfire-cpu_0/verify/lxp32/src/tb/monitor.vhd:69:32:@865ns:(report note): Monitor: value 0x80000007 written to address 0x00000004
+../src/bonfire-cpu_0/verify/lxp32/src/tb/monitor.vhd:69:32:@1215ns:(report note): Monitor: value 0x0000000B written to address 0x00000004
+../src/bonfire-cpu_0/verify/lxp32/src/tb/monitor.vhd:69:32:@1475ns:(report note): Monitor: value 0x0000000B written to address 0x00000004
+../src/bonfire-cpu_0/verify/lxp32/src/tb/monitor.vhd:69:32:@1695ns:(report note): Monitor: value 0x80000007 written to address 0x00000004
+../src/bonfire-cpu_0/verify/lxp32/src/tb/monitor.vhd:69:32:@2045ns:(report note): Monitor: value 0x0000000B written to address 0x00000004
+../src/bonfire-cpu_0/verify/lxp32/src/tb/monitor.vhd:69:32:@2305ns:(report note): Monitor: value 0x0000000B written to address 0x00000004
+../src/bonfire-cpu_0/verify/lxp32/src/tb/monitor.vhd:69:32:@2525ns:(report note): Monitor: value 0x80000007 written to address 0x00000004
+../src/bonfire-cpu_0/verify/lxp32/src/tb/monitor.vhd:69:32:@2875ns:(report note): Monitor: value 0x0000000B written to address 0x00000004
+../src/bonfire-cpu_0/verify/lxp32/src/tb/monitor.vhd:69:32:@3135ns:(report note): Monitor: value 0x0000000B written to address 0x00000004
+../src/bonfire-cpu_0/verify/lxp32/src/tb/monitor.vhd:69:32:@3355ns:(report note): Monitor: value 0x80000007 written to address 0x00000004
+../src/bonfire-cpu_0/verify/lxp32/src/tb/monitor.vhd:69:32:@3705ns:(report note): Monitor: value 0x0000000B written to address 0x00000004
+../src/bonfire-cpu_0/verify/lxp32/src/tb/monitor.vhd:69:32:@3965ns:(report note): Monitor: value 0x0000000B written to address 0x00000004
+../src/bonfire-cpu_0/verify/lxp32/src/tb/monitor.vhd:69:32:@4185ns:(report note): Monitor: value 0x80000007 written to address 0x00000004
+../src/bonfire-cpu_0/verify/lxp32/src/tb/monitor.vhd:69:32:@4435ns:(report note): Monitor: value 0x00000001 written to address 0x00000000
+../src/bonfire-cpu_0/verify/bonfire/tb_cpu_core.vhd:250:7:@4435ns:(report note): Test finished with result 00000001
+
+Timer irq with predictor:
+../src/bonfire-cpu_0/verify/lxp32/src/tb/monitor.vhd:69:32:@355ns:(report note): Monitor: value 0x0000000B written to address 0x00000004
+../src/bonfire-cpu_0/verify/lxp32/src/tb/monitor.vhd:69:32:@615ns:(report note): Monitor: value 0x0000000B written to address 0x00000004
+../src/bonfire-cpu_0/verify/lxp32/src/tb/monitor.vhd:69:32:@835ns:(report note): Monitor: value 0x80000007 written to address 0x00000004
+../src/bonfire-cpu_0/verify/lxp32/src/tb/monitor.vhd:69:32:@1245ns:(report note): Monitor: value 0x0000000B written to address 0x00000004
+../src/bonfire-cpu_0/verify/lxp32/src/tb/monitor.vhd:69:32:@1505ns:(report note): Monitor: value 0x0000000B written to address 0x00000004
+../src/bonfire-cpu_0/verify/lxp32/src/tb/monitor.vhd:69:32:@1725ns:(report note): Monitor: value 0x80000007 written to address 0x00000004
+../src/bonfire-cpu_0/verify/lxp32/src/tb/monitor.vhd:69:32:@2135ns:(report note): Monitor: value 0x0000000B written to address 0x00000004
+../src/bonfire-cpu_0/verify/lxp32/src/tb/monitor.vhd:69:32:@2395ns:(report note): Monitor: value 0x0000000B written to address 0x00000004
+../src/bonfire-cpu_0/verify/lxp32/src/tb/monitor.vhd:69:32:@2615ns:(report note): Monitor: value 0x80000007 written to address 0x00000004
+../src/bonfire-cpu_0/verify/lxp32/src/tb/monitor.vhd:69:32:@3025ns:(report note): Monitor: value 0x0000000B written to address 0x00000004
+../src/bonfire-cpu_0/verify/lxp32/src/tb/monitor.vhd:69:32:@3285ns:(report note): Monitor: value 0x0000000B written to address 0x00000004
+../src/bonfire-cpu_0/verify/lxp32/src/tb/monitor.vhd:69:32:@3505ns:(report note): Monitor: value 0x80000007 written to address 0x00000004
+../src/bonfire-cpu_0/verify/lxp32/src/tb/monitor.vhd:69:32:@3915ns:(report note): Monitor: value 0x0000000B written to address 0x00000004
+../src/bonfire-cpu_0/verify/lxp32/src/tb/monitor.vhd:69:32:@4175ns:(report note): Monitor: value 0x0000000B written to address 0x00000004
+../src/bonfire-cpu_0/verify/lxp32/src/tb/monitor.vhd:69:32:@4395ns:(report note): Monitor: value 0x80000007 written to address 0x00000004
+../src/bonfire-cpu_0/verify/lxp32/src/tb/monitor.vhd:69:32:@4675ns:(report note): Monitor: value 0x00000001 written to address 0x00000000
+../src/bonfire-cpu_0/verify/bonfire/tb_cpu_core.vhd:251:7:@4675ns:(report note): Test finished with result 00000001
+
+
+branch without predictor:
+../src/bonfire-cpu_0/verify/lxp32/src/tb/monitor.vhd:69:32:@155ns:(report note): Monitor: value 0x00000001 written to address 0x00000004
+../src/bonfire-cpu_0/verify/lxp32/src/tb/monitor.vhd:69:32:@195ns:(report note): Monitor: value 0x00000001 written to address 0x00000008
+../src/bonfire-cpu_0/verify/lxp32/src/tb/monitor.vhd:69:32:@315ns:(report note): Monitor: value 0x00000001 written to address 0x0000000C
+../src/bonfire-cpu_0/verify/lxp32/src/tb/monitor.vhd:69:32:@355ns:(report note): Monitor: value 0x00000001 written to address 0x00000010
+../src/bonfire-cpu_0/verify/lxp32/src/tb/monitor.vhd:69:32:@465ns:(report note): Monitor: value 0x00000001 written to address 0x00000014
+../src/bonfire-cpu_0/verify/lxp32/src/tb/monitor.vhd:69:32:@545ns:(report note): Monitor: value 0x00000001 written to address 0x00000018
+../src/bonfire-cpu_0/verify/lxp32/src/tb/monitor.vhd:69:32:@585ns:(report note): Monitor: value 0x00000001 written to address 0x00000000
+../src/bonfire-cpu_0/verify/bonfire/tb_cpu_core.vhd:253:7:@585ns:(report note): Test finished with result 00000001
+
+
+
+
+branch with predictor:
+../src/bonfire-cpu_0/verify/lxp32/src/tb/monitor.vhd:69:32:@155ns:(report note): Monitor: value 0x00000001 written to address 0x00000004
+../src/bonfire-cpu_0/verify/lxp32/src/tb/monitor.vhd:69:32:@195ns:(report note): Monitor: value 0x00000001 written to address 0x00000008
+../src/bonfire-cpu_0/verify/lxp32/src/tb/monitor.vhd:69:32:@285ns:(report note): Monitor: value 0x00000001 written to address 0x0000000C
+../src/bonfire-cpu_0/verify/lxp32/src/tb/monitor.vhd:69:32:@325ns:(report note): Monitor: value 0x00000001 written to address 0x00000010
+../src/bonfire-cpu_0/verify/lxp32/src/tb/monitor.vhd:69:32:@405ns:(report note): Monitor: value 0x00000001 written to address 0x00000014
+../src/bonfire-cpu_0/verify/lxp32/src/tb/monitor.vhd:69:32:@485ns:(report note): Monitor: value 0x00000001 written to address 0x00000018
+../src/bonfire-cpu_0/verify/lxp32/src/tb/monitor.vhd:69:32:@525ns:(report note): Monitor: value 0x00000001 written to address 0x00000000
+../src/bonfire-cpu_0/verify/bonfire/tb_cpu_core.vhd:253:7:@525ns:(report note): Test finished with result 00000001
+
+
+loadsave with predictor:
+../src/bonfire-cpu_0/rtl/riscv_regfile.vhd:124:14:@5ns:(assertion error): Metavalue for we_i
+../src/bonfire-cpu_0/verify/lxp32/src/tb/monitor.vhd:69:32:@345ns:(report note): Monitor: value 0x00000016 written to address 0x00000004
+../src/bonfire-cpu_0/verify/lxp32/src/tb/monitor.vhd:69:32:@575ns:(report note): Monitor: value 0xFA55AA55 written to address 0x00000200
+../src/bonfire-cpu_0/verify/lxp32/src/tb/monitor.vhd:69:32:@845ns:(report note): Monitor: value 0x00005555 written to address 0x00000204
+../src/bonfire-cpu_0/verify/lxp32/src/tb/monitor.vhd:69:32:@975ns:(report note): Monitor: value 0x000000AA written to address 0x00000208
+../src/bonfire-cpu_0/verify/lxp32/src/tb/monitor.vhd:69:32:@1105ns:(report note): Monitor: value 0xFFFFFFAA written to address 0x0000020C
+../src/bonfire-cpu_0/verify/lxp32/src/tb/monitor.vhd:69:32:@1335ns:(report note): Monitor: value 0x00000055 written to address 0x00000210
+../src/bonfire-cpu_0/verify/lxp32/src/tb/monitor.vhd:69:32:@1465ns:(report note): Monitor: value 0x00000055 written to address 0x00000214
+../src/bonfire-cpu_0/verify/lxp32/src/tb/monitor.vhd:69:32:@1655ns:(report note): Monitor: value 0xFA55AA55 written to address 0x00000218
+../src/bonfire-cpu_0/verify/lxp32/src/tb/monitor.vhd:69:32:@1885ns:(report note): Monitor: value 0x0000FA55 written to address 0x0000021C
+../src/bonfire-cpu_0/verify/lxp32/src/tb/monitor.vhd:69:32:@2015ns:(report note): Monitor: value 0xFFFFFA55 written to address 0x00000220
+../src/bonfire-cpu_0/verify/lxp32/src/tb/monitor.vhd:69:32:@2145ns:(report note): Monitor: value 0x0000AA55 written to address 0x00000224
+../src/bonfire-cpu_0/verify/lxp32/src/tb/monitor.vhd:69:32:@2395ns:(report note): Monitor: value 0xFFFFAA55 written to address 0x00000228
+../src/bonfire-cpu_0/verify/lxp32/src/tb/monitor.vhd:69:32:@2545ns:(report note): Monitor: value 0x00FA5500 written to address 0x0000022C
+../src/bonfire-cpu_0/verify/lxp32/src/tb/monitor.vhd:69:32:@2675ns:(report note): Monitor: value 0x000055AA written to address 0x00000230
+../src/bonfire-cpu_0/verify/lxp32/src/tb/monitor.vhd:69:32:@2785ns:(report note): Monitor: value 0x00000113 written to address 0x00000004
+../src/bonfire-cpu_0/verify/lxp32/src/tb/monitor.vhd:69:32:@2815ns:(report note): Monitor: value 0x00000001 written to address 0x00000000
+../src/bonfire-cpu_0/verify/bonfire/tb_cpu_core.vhd:405:7:@2815ns:(report note): Test finished with result 00000001
+
+loadsave without predictor:
+../src/bonfire-cpu_0/verify/lxp32/src/tb/monitor.vhd:69:32:@345ns:(report note): Monitor: value 0x00000016 written to address 0x00000004
+../src/bonfire-cpu_0/verify/lxp32/src/tb/monitor.vhd:69:32:@705ns:(report note): Monitor: value 0xFA55AA55 written to address 0x00000200
+../src/bonfire-cpu_0/verify/lxp32/src/tb/monitor.vhd:69:32:@925ns:(report note): Monitor: value 0x00005555 written to address 0x00000204
+../src/bonfire-cpu_0/verify/lxp32/src/tb/monitor.vhd:69:32:@1095ns:(report note): Monitor: value 0x000000AA written to address 0x00000208
+../src/bonfire-cpu_0/verify/lxp32/src/tb/monitor.vhd:69:32:@1355ns:(report note): Monitor: value 0xFFFFFFAA written to address 0x0000020C
+../src/bonfire-cpu_0/verify/lxp32/src/tb/monitor.vhd:69:32:@1535ns:(report note): Monitor: value 0x00000055 written to address 0x00000210
+../src/bonfire-cpu_0/verify/lxp32/src/tb/monitor.vhd:69:32:@1705ns:(report note): Monitor: value 0x00000055 written to address 0x00000214
+../src/bonfire-cpu_0/verify/lxp32/src/tb/monitor.vhd:69:32:@2015ns:(report note): Monitor: value 0xFA55AA55 written to address 0x00000218
+../src/bonfire-cpu_0/verify/lxp32/src/tb/monitor.vhd:69:32:@2185ns:(report note): Monitor: value 0x0000FA55 written to address 0x0000021C
+../src/bonfire-cpu_0/verify/lxp32/src/tb/monitor.vhd:69:32:@2355ns:(report note): Monitor: value 0xFFFFFA55 written to address 0x00000220
+../src/bonfire-cpu_0/verify/lxp32/src/tb/monitor.vhd:69:32:@2625ns:(report note): Monitor: value 0x0000AA55 written to address 0x00000224
+../src/bonfire-cpu_0/verify/lxp32/src/tb/monitor.vhd:69:32:@2795ns:(report note): Monitor: value 0xFFFFAA55 written to address 0x00000228
+../src/bonfire-cpu_0/verify/lxp32/src/tb/monitor.vhd:69:32:@2985ns:(report note): Monitor: value 0x00FA5500 written to address 0x0000022C
+../src/bonfire-cpu_0/verify/lxp32/src/tb/monitor.vhd:69:32:@3155ns:(report note): Monitor: value 0x000055AA written to address 0x00000230
+../src/bonfire-cpu_0/verify/lxp32/src/tb/monitor.vhd:69:32:@3265ns:(report note): Monitor: value 0x00000143 written to address 0x00000004
+../src/bonfire-cpu_0/verify/lxp32/src/tb/monitor.vhd:69:32:@3295ns:(report note): Monitor: value 0x00000001 written to address 0x00000000
+../src/bonfire-cpu_0/verify/bonfire/tb_cpu_core.vhd:405:7:@3295ns:(report note): Test finished with result 00000001
+
+
+

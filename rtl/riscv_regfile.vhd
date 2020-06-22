@@ -1,18 +1,18 @@
 ----------------------------------------------------------------------------------
--- Company: 
+-- Company:
 -- Engineer: Thomas Hornschuh
--- 
--- Create Date:    14:19:06 12/04/2016 
--- Design Name: 
--- Module Name:    riscv_regfile - Behavioral 
--- Project Name: 
--- Target Devices: 
--- Tool versions: 
--- Description: 
+--
+-- Create Date:    14:19:06 12/04/2016
+-- Design Name:
+-- Module Name:    riscv_regfile - Behavioral
+-- Project Name:
+-- Target Devices:
+-- Tool versions:
+-- Description:
 
---   Bonfire CPU 
+--   Bonfire CPU
 --   (c) 2016,2017 Thomas Hornschuh
---   See license.md for License 
+--   See license.md for License
 
 -- Regfile for RISC V.
 -- For compatiblity reasons the interface still uses 8 Bit addresses like the lxp implementation
@@ -20,13 +20,13 @@
 -- The Implementation details (e.g. how to implement a 3-Port RAM) is left to the Xilinx  tools
 -- This makes code cleaner and also simulation easier, because it shows only one register file
 -- The implementation supports block and distributed RAM
--- For this a  generic parameter REG_RAM_STYLE is added 
+-- For this a  generic parameter REG_RAM_STYLE is added
 
--- Dependencies: 
+-- Dependencies:
 --
--- Revision: 
+-- Revision:
 -- Revision 0.01 - File Created
--- Additional Comments: 
+-- Additional Comments:
 --
 ----------------------------------------------------------------------------------
 library IEEE;
@@ -47,12 +47,12 @@ generic (
 );
 port(
       clk_i: in std_logic;
-      
+
       raddr1_i: in std_logic_vector(7 downto 0);
       rdata1_o: out std_logic_vector(31 downto 0);
       raddr2_i: in std_logic_vector(7 downto 0);
       rdata2_o: out std_logic_vector(31 downto 0);
-      
+
       waddr_i: in std_logic_vector(7 downto 0);
       we_i: in std_logic;
       wdata_i: in std_logic_vector(31 downto 0)
@@ -83,54 +83,72 @@ begin
       return true;
     end if;
   end loop;
-  return false;  
+  return false;
 end;
 
 begin
 
-assert REG_RAM_STYLE="block" or REG_RAM_STYLE="distributed" 
+assert REG_RAM_STYLE="block" or REG_RAM_STYLE="distributed"
    report "Invalid REG_RAM_STYLE generic value: block or distributed are expected"
    severity failure;
 
 
   -- RAM access
   -- The code defines a tripple-port RAM
-  -- let Xilinx inference solve this...  
-  process(clk_i) 
- 
+  -- let Xilinx inference solve this...
+  process(clk_i)
+  variable r1, r2 : std_logic_vector(4 downto 0);
+  -- All the simulation only code below does propagte invalid reg addresses
+  -- to undefined register output without creating warnings.
+
+  -- synthesis translate_off
+  variable r1_m : boolean;
+  variable r2_m : boolean;
+  -- synthesis translate_on
   begin
     if rising_edge(clk_i) then
+
+           r1:=raddr1_i(4 downto 0);
+           r2:=raddr2_i(4 downto 0);
+
         -- synthesis translate_off
-                 
-            if check_meta(raddr1_i(4 downto 0)) then
-               report "Metavalue in raddr1_i"
-               severity warning;
+            r1_m:=check_meta(r1);
+            r2_m:=check_meta(r2);
+            if r1_m then
+               r1:= (others=>'0');
              end if;
-             
-             if check_meta(raddr2_i(4 downto 0)) then
-               report "Metavalue in raddr2_i"
-               severity warning;   
-             end if; 
+             if r2_m then
+                r2:= (others=>'0');
+             end if;
+
              assert we_i='1' or we_i='0'
                report "Metavalue for we_i"
                severity error;
-                     
+
         -- synthesis translate_on
-    
-    
-      ram1_rdata <= regfile(to_integer(unsigned(raddr1_i(4 downto 0))));
-      ram2_rdata <= regfile(to_integer(unsigned(raddr2_i(4 downto 0))));
+
+
+      ram1_rdata <= regfile(to_integer(unsigned(r1)));
+      ram2_rdata <= regfile(to_integer(unsigned(r2)));
+      --synthesis translate_off
+      if r1_m then
+        ram1_rdata <= (others=>'U');
+      end if;
+      if r2_m then
+        ram2_rdata <= (others=>'U');
+      end if;
+      -- synthesis translate_on
       if we_i='1' then
          -- synthesis translate_off
          if check_meta(waddr_i(4 downto 0)) then
             report "Metavalue in waddr_i with we_i='1'"
-            severity error;  
-          end if;           
-         -- synthesis translate_on                     
+            severity error;
+          end if;
+         -- synthesis translate_on
         regfile(to_integer(unsigned(waddr_i(4 downto 0)))) <= wdata_i;
-      end if;  
+      end if;
     end if;
-    
+
   end process;
 
 
@@ -157,4 +175,3 @@ rdata1_o<=ram1_rdata when ram1_collision='0' else wdata_reg;
 rdata2_o<=ram2_rdata when ram2_collision='0' else wdata_reg;
 
 end rtl;
-

@@ -16,41 +16,42 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
 entity lxp32_alu is
-	generic(
-		DIVIDER_EN: boolean;
-		MUL_ARCH: string
-	);
-	port(
-		clk_i: in std_logic;
-		rst_i: in std_logic;
-		
-		valid_i: in std_logic;
-		
-		cmd_signed_i: in std_logic;
-		cmd_addsub_i: in std_logic;
-		cmd_mul_i: in std_logic;
-		cmd_div_i: in std_logic;
-		cmd_div_mod_i: in std_logic;
-		cmd_cmp_i: in std_logic;
-		cmd_negate_op2_i: in std_logic;
-		cmd_and_i: in std_logic;
-		cmd_xor_i: in std_logic;
-		cmd_shift_i: in std_logic;
-		cmd_shift_right_i: in std_logic;
+   generic(
+      DIVIDER_EN: boolean;
+      MUL_ARCH: string
+   );
+   port(
+      clk_i: in std_logic;
+      rst_i: in std_logic;
+      
+      valid_i: in std_logic;
+      
+      cmd_signed_i: in std_logic;
+      cmd_addsub_i: in std_logic;
+      cmd_mul_i: in std_logic;
+      cmd_div_i: in std_logic;
+      cmd_div_mod_i: in std_logic;
+      cmd_cmp_i: in std_logic;
+      cmd_negate_op2_i: in std_logic;
+      cmd_and_i: in std_logic;
+      cmd_xor_i: in std_logic;
+      cmd_shift_i: in std_logic;
+      cmd_shift_right_i: in std_logic;
       cmd_mul_high_i : in std_logic; -- TH: Get high word of mult result
-		
-		op1_i: in std_logic_vector(31 downto 0);
-		op2_i: in std_logic_vector(31 downto 0);
-		
-		result_o: out std_logic_vector(31 downto 0);
-		
-		cmp_eq_o: out std_logic;
-		cmp_ug_o: out std_logic;
-		cmp_sg_o: out std_logic;
-		
-		we_o: out std_logic;
-		busy_o: out std_logic
-	);
+      cmd_signed_b_i : in std_logic; -- TH: interpret mult operand b is signed 
+      
+      op1_i: in std_logic_vector(31 downto 0);
+      op2_i: in std_logic_vector(31 downto 0);
+      
+      result_o: out std_logic_vector(31 downto 0);
+      
+      cmp_eq_o: out std_logic;
+      cmp_ug_o: out std_logic;
+      cmp_sg_o: out std_logic;
+      
+      we_o: out std_logic;
+      busy_o: out std_logic
+   );
 end entity;
 
 architecture rtl of lxp32_alu is
@@ -152,17 +153,19 @@ end process;
 
 
 gen_mul_spartandsp: if MUL_ARCH="spartandsp" generate
-	mul_inst: entity work.lxp32_mulsp6(rtl)
-		port map(
-			clk_i=>clk_i,
-			rst_i=>rst_i,
-			ce_i=>mul_ce,
-			op1_i=>op1_i,
-			op2_i=>op2_i,
-			ce_o=>mul_we,
-			result_o=>mul_result_low,
+   mul_inst: entity work.riscv_mulsp6(rtl)
+      port map(
+         clk_i=>clk_i,
+         rst_i=>rst_i,
+         ce_i=>mul_ce,
+         op1_i=>op1_i,
+         op2_i=>op2_i,
+         op1_signed_i=>cmd_signed_i, 
+         op2_signed_i=>cmd_signed_b_i,
+         ce_o=>mul_we,
+         result_o=>mul_result_low,
          result_high_o=>mul_result_high
-		);
+      );
 end generate;
 
 

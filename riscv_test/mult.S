@@ -12,11 +12,22 @@ la s0, monitor
 
 // Multiply 5.000.000 * 5.000.000
 // result is 16bc c41e9000
-li a1, 5000000  // unsgined maxint 
+li a1, 5000000  
 mul t4,a1,a1 // c41e9000
 jal store 
 mulhu t4,a1,a1 // 16bc
 jal store 
+mv a2,a1 
+neg a2,a1
+// now we have a1=5000000, a2=-5000000
+mul t4,a1,a2 
+jal store // should be 3BE17000
+mulh t4,a1,a2 
+jal store // should be FFFFE943
+mulhsu t4, a2,a1 
+jal store // should also be FFFFE943
+mulhu t4,a1,a2 
+jal store // should be 004C3483
 
 // First test div operation
 

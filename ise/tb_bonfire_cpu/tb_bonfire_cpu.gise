@@ -35,14 +35,11 @@
   <transforms xmlns="http://www.xilinx.com/XMLSchema">
     <transform xil_pn:end_ts="1490020655" xil_pn:name="TRAN_copyInitialToAbstractSimulation" xil_pn:start_ts="1490020655">
       <status xil_pn:value="SuccessfullyRun"/>
+      <status xil_pn:value="ReadyToRun"/>
     </transform>
-    <transform xil_pn:end_ts="1490020655" xil_pn:in_ck="-3082054496016104969" xil_pn:name="TRAN_copyAbstractToPostAbstractSimulation" xil_pn:start_ts="1490020655">
+    <transform xil_pn:end_ts="1506446191" xil_pn:in_ck="-2735094724417235974" xil_pn:name="TRAN_copyAbstractToPostAbstractSimulation" xil_pn:start_ts="1506446191">
       <status xil_pn:value="SuccessfullyRun"/>
       <status xil_pn:value="ReadyToRun"/>
-      <status xil_pn:value="OutOfDateForInputs"/>
-      <status xil_pn:value="OutOfDateForOutputs"/>
-      <status xil_pn:value="InputChanged"/>
-      <status xil_pn:value="OutputChanged"/>
       <outfile xil_pn:name="../../rtl/csr_def.vhd"/>
       <outfile xil_pn:name="../../rtl/lxp32_alu.vhd"/>
       <outfile xil_pn:name="../../rtl/lxp32_compl.vhd"/>
@@ -57,17 +54,18 @@
       <outfile xil_pn:name="../../rtl/lxp32_mul_dsp.vhd"/>
       <outfile xil_pn:name="../../rtl/lxp32_mul_opt.vhd"/>
       <outfile xil_pn:name="../../rtl/lxp32_mul_seq.vhd"/>
-      <outfile xil_pn:name="../../rtl/lxp32_mulsp6.vhd"/>
       <outfile xil_pn:name="../../rtl/lxp32_ram256x32.vhd"/>
       <outfile xil_pn:name="../../rtl/lxp32_scratchpad.vhd"/>
       <outfile xil_pn:name="../../rtl/lxp32_shifter.vhd"/>
       <outfile xil_pn:name="../../rtl/lxp32_ubuf.vhd"/>
       <outfile xil_pn:name="../../rtl/lxp32u_top.vhd"/>
+      <outfile xil_pn:name="../../rtl/riscv_counter_64Bit.vhd"/>
       <outfile xil_pn:name="../../rtl/riscv_csr_unit.vhd"/>
       <outfile xil_pn:name="../../rtl/riscv_decode.vhd"/>
       <outfile xil_pn:name="../../rtl/riscv_decodeutil.vhd"/>
       <outfile xil_pn:name="../../rtl/riscv_interrupts.vhd"/>
       <outfile xil_pn:name="../../rtl/riscv_local_memmap.vhd"/>
+      <outfile xil_pn:name="../../rtl/riscv_mulsp6.vhd"/>
       <outfile xil_pn:name="../../rtl/riscv_regfile.vhd"/>
       <outfile xil_pn:name="../../util/log2.vhd"/>
       <outfile xil_pn:name="../../verify/bonfire/sim_MainMemory.vhd"/>
@@ -80,11 +78,11 @@
       <outfile xil_pn:name="../../verify/lxp32/src/tb/tb_pkg.vhd"/>
       <outfile xil_pn:name="../../verify/lxp32/src/tb/tb_pkg_body.vhd"/>
     </transform>
-    <transform xil_pn:end_ts="1490020655" xil_pn:name="TRAN_xawsToSimhdl" xil_pn:prop_ck="5037136173755328283" xil_pn:start_ts="1490020655">
+    <transform xil_pn:end_ts="1506445943" xil_pn:name="TRAN_xawsToSimhdl" xil_pn:prop_ck="5037136173755328283" xil_pn:start_ts="1506445943">
       <status xil_pn:value="SuccessfullyRun"/>
       <status xil_pn:value="ReadyToRun"/>
     </transform>
-    <transform xil_pn:end_ts="1490020655" xil_pn:name="TRAN_schematicsToHdlSim" xil_pn:prop_ck="-5060026648735575655" xil_pn:start_ts="1490020655">
+    <transform xil_pn:end_ts="1506445943" xil_pn:name="TRAN_schematicsToHdlSim" xil_pn:prop_ck="-5060026648735575655" xil_pn:start_ts="1506445943">
       <status xil_pn:value="SuccessfullyRun"/>
       <status xil_pn:value="ReadyToRun"/>
     </transform>
@@ -92,14 +90,9 @@
       <status xil_pn:value="SuccessfullyRun"/>
       <status xil_pn:value="ReadyToRun"/>
     </transform>
-    <transform xil_pn:end_ts="1490020655" xil_pn:in_ck="-3082054496016104969" xil_pn:name="TRAN_copyPostAbstractToPreSimulation" xil_pn:start_ts="1490020655">
+    <transform xil_pn:end_ts="1506446191" xil_pn:in_ck="-2735094724417235974" xil_pn:name="TRAN_copyPostAbstractToPreSimulation" xil_pn:start_ts="1506446191">
       <status xil_pn:value="SuccessfullyRun"/>
       <status xil_pn:value="ReadyToRun"/>
-      <status xil_pn:value="OutOfDateForInputs"/>
-      <status xil_pn:value="OutOfDateForPredecessor"/>
-      <status xil_pn:value="OutOfDateForOutputs"/>
-      <status xil_pn:value="InputChanged"/>
-      <status xil_pn:value="OutputChanged"/>
       <outfile xil_pn:name="../../rtl/csr_def.vhd"/>
       <outfile xil_pn:name="../../rtl/lxp32_alu.vhd"/>
       <outfile xil_pn:name="../../rtl/lxp32_compl.vhd"/>
@@ -114,17 +107,18 @@
       <outfile xil_pn:name="../../rtl/lxp32_mul_dsp.vhd"/>
       <outfile xil_pn:name="../../rtl/lxp32_mul_opt.vhd"/>
       <outfile xil_pn:name="../../rtl/lxp32_mul_seq.vhd"/>
-      <outfile xil_pn:name="../../rtl/lxp32_mulsp6.vhd"/>
       <outfile xil_pn:name="../../rtl/lxp32_ram256x32.vhd"/>
       <outfile xil_pn:name="../../rtl/lxp32_scratchpad.vhd"/>
       <outfile xil_pn:name="../../rtl/lxp32_shifter.vhd"/>
       <outfile xil_pn:name="../../rtl/lxp32_ubuf.vhd"/>
       <outfile xil_pn:name="../../rtl/lxp32u_top.vhd"/>
+      <outfile xil_pn:name="../../rtl/riscv_counter_64Bit.vhd"/>
       <outfile xil_pn:name="../../rtl/riscv_csr_unit.vhd"/>
       <outfile xil_pn:name="../../rtl/riscv_decode.vhd"/>
       <outfile xil_pn:name="../../rtl/riscv_decodeutil.vhd"/>
       <outfile xil_pn:name="../../rtl/riscv_interrupts.vhd"/>
       <outfile xil_pn:name="../../rtl/riscv_local_memmap.vhd"/>
+      <outfile xil_pn:name="../../rtl/riscv_mulsp6.vhd"/>
       <outfile xil_pn:name="../../rtl/riscv_regfile.vhd"/>
       <outfile xil_pn:name="../../util/log2.vhd"/>
       <outfile xil_pn:name="../../verify/bonfire/sim_MainMemory.vhd"/>
@@ -137,27 +131,20 @@
       <outfile xil_pn:name="../../verify/lxp32/src/tb/tb_pkg.vhd"/>
       <outfile xil_pn:name="../../verify/lxp32/src/tb/tb_pkg_body.vhd"/>
     </transform>
-    <transform xil_pn:end_ts="1490020658" xil_pn:in_ck="-3082054496016104969" xil_pn:name="TRAN_ISimulateBehavioralModelRunFuse" xil_pn:prop_ck="2462161511900577014" xil_pn:start_ts="1490020655">
+    <transform xil_pn:end_ts="1506446195" xil_pn:in_ck="-2735094724417235974" xil_pn:name="TRAN_ISimulateBehavioralModelRunFuse" xil_pn:prop_ck="2462161511900577014" xil_pn:start_ts="1506446191">
       <status xil_pn:value="SuccessfullyRun"/>
       <status xil_pn:value="ReadyToRun"/>
-      <status xil_pn:value="OutOfDateForInputs"/>
-      <status xil_pn:value="OutOfDateForPredecessor"/>
       <status xil_pn:value="OutOfDateForOutputs"/>
-      <status xil_pn:value="InputChanged"/>
       <status xil_pn:value="OutputChanged"/>
       <outfile xil_pn:name="fuse.log"/>
       <outfile xil_pn:name="isim"/>
-      <outfile xil_pn:name="isim.log"/>
       <outfile xil_pn:name="tb_cpu_core_beh.prj"/>
       <outfile xil_pn:name="tb_cpu_core_isim_beh.exe"/>
       <outfile xil_pn:name="xilinxsim.ini"/>
     </transform>
-    <transform xil_pn:end_ts="1490020658" xil_pn:in_ck="-6262925400906109612" xil_pn:name="TRAN_ISimulateBehavioralModel" xil_pn:prop_ck="5996915062272025659" xil_pn:start_ts="1490020658">
+    <transform xil_pn:end_ts="1506450101" xil_pn:in_ck="-6262925400906109612" xil_pn:name="TRAN_ISimulateBehavioralModel" xil_pn:prop_ck="5996915062272025659" xil_pn:start_ts="1506450100">
       <status xil_pn:value="SuccessfullyRun"/>
       <status xil_pn:value="ReadyToRun"/>
-      <status xil_pn:value="OutOfDateForPredecessor"/>
-      <status xil_pn:value="OutOfDateForOutputs"/>
-      <status xil_pn:value="OutputChanged"/>
       <outfile xil_pn:name="isim.cmd"/>
       <outfile xil_pn:name="isim.log"/>
       <outfile xil_pn:name="tb_cpu_core_isim_beh.wdb"/>

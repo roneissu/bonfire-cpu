@@ -5,9 +5,9 @@
 -- Module Name:    riscv_decode - Behavioral
 
 
---   Bonfire CPU 
+--   Bonfire CPU
 --   (c) 2016,2017 Thomas Hornschuh
---   See license.md for License 
+--   See license.md for License
 --   Second stage of lxp32 pipeline. Designed as "plug-in" replacement for the lxp32 orginal deocoder
 --   riscv instruction set decoder
 
@@ -30,15 +30,20 @@ use IEEE.NUMERIC_STD.ALL;
 use work.riscv_decodeutil.all;
 
 entity riscv_decode is
+generic (
+   BRANCH_PREDICTOR : boolean
+);
 port(
       clk_i: in std_logic;
       rst_i: in std_logic;
 
       word_i: in std_logic_vector(31 downto 0); -- actual instruction to decode
       next_ip_i: in std_logic_vector(29 downto 0); -- ip (PC) of next instruction
+      jump_prediction_i : in std_logic; -- '1': conditional branch is predicted taken, '0' not taken
       valid_i: in std_logic;  -- input valid
       jump_valid_i: in std_logic;
       ready_o: out std_logic;  -- decode stage ready to decode next instruction
+      fencei_o : out std_logic; -- FENCE.I Instruction
 
       interrupt_valid_i: in std_logic;
       interrupt_vector_i: in std_logic_vector(2 downto 0);
@@ -49,7 +54,7 @@ port(
       sp_raddr2_o: out std_logic_vector(7 downto 0);
       sp_rdata2_i: in std_logic_vector(31 downto 0);
 
-      displacement_o : out std_logic_vector(11 downto 0); --TH Pass Load/Store displacement to execute stage
+      displacement_o : out std_logic_vector(20 downto 0); --TH Pass Load/Store/jump/branch displacement to execute stage
 
       ready_i: in std_logic; -- ready signal from execute stage
       valid_o: out std_logic; -- output status valid
@@ -71,8 +76,11 @@ port(
       cmd_xor_o: out std_logic;
       cmd_shift_o: out std_logic;
       cmd_shift_right_o: out std_logic;
-      cmd_mul_high_o : out std_logic;
+      cmd_mul_high_o : out std_logic; -- TH: Multiplier bits
+      cmd_signed_b_o : out std_logic; -- Multiplier operand b signed
       cmd_slt_o : out std_logic; -- TH: RISC-V SLT/SLTU command
+      jump_prediction_o  : out std_logic;
+      jump_misalign_o : out t_jump_misalign;
 
 
       -- TH: RISC-V CSR commands
@@ -85,11 +93,12 @@ port(
       cmd_tret_o :  out STD_LOGIC; -- TH: Execute trap returen
       trap_cause_o : out STD_LOGIC_VECTOR(3 downto 0); -- TH: Trap/Interrupt cause
       interrupt_o : out STD_LOGIC; -- Trap is interrupt
-      
+
       epc_o :  out std_logic_vector(31 downto 2);
 
       epc_i : in std_logic_vector(31 downto 2);
       tvec_i : in std_logic_vector(31 downto 2);
+      sstep_i :  in std_logic;
 
       jump_type_o: out std_logic_vector(3 downto 0);
 
@@ -102,20 +111,24 @@ end riscv_decode;
 
 architecture rtl of riscv_decode is
 
+attribute keep_hierarchy : string;
+attribute keep_hierarchy of rtl: architecture is "yes";
+
 -- RISCV instruction fields
 signal opcode : t_opcode;
 signal rd, rs1, rs2 : std_logic_vector(4 downto 0);
 signal funct3 : t_funct3;
 signal funct7 : std_logic_vector(6 downto 0);
 
-signal current_ip: unsigned(next_ip_i'range);
+signal current_ip, current_ip_r: unsigned(next_ip_i'range);
+
 
 -- Signals related to pipeline control
 
 signal downstream_busy: std_logic;
 signal self_busy: std_logic:='0';
 signal busy: std_logic;
-signal valid_out: std_logic:='0';
+signal valid_out_r: std_logic:='0';
 
 -- Signals related to interrupt handling
 
@@ -138,16 +151,26 @@ signal rd1_zero,rd2_zero : std_logic; -- TH: Buffered zero address flags
 
 signal dst_out,radr1_out,radr2_out : std_logic_vector(7 downto 0);
 
+signal trap_on_next : std_logic :='0';  -- '1' -> Raise a break trap after the next instruction
+signal trap_on_current : std_logic :='0'; -- '1' break trap now ...
 -- Decoder FSM state
 
 type DecoderState is (Regular,ContinueCjmp,Halt);
 signal state: DecoderState:=Regular;
 
+-- debug PC only to make debugging more comfortable
+-- will be optimized away in synthesis
+signal debug_pc : unsigned(31 downto 0);
+
+signal displacement_out : std_logic_vector(displacement_o'range);
+
+signal optype : t_riscv_op;
 
 begin
 
  -- extract instruction fields
    opcode<=word_i(6 downto 2);
+   optype<=decode_op(opcode);
    rd<=word_i(11 downto 7);
    funct3<=word_i(14 downto 12);
    rs1<=word_i(19 downto 15);
@@ -161,29 +184,41 @@ begin
 
 -- Pipeline control
 
-   downstream_busy<=valid_out and not ready_i;
+   downstream_busy<=valid_out_r and not ready_i;
    busy<=downstream_busy or self_busy;
+
+ -- Instruction pointer
    current_ip<=unsigned(next_ip_i)-1;
+   debug_pc <= current_ip & "00";
+
+   epc_o <= std_logic_vector(current_ip_r);
+
 
 -- Control outputs
-   valid_o<=valid_out;
+   valid_o<=valid_out_r;
    dst_o<=dst_out;
    ready_o<=not busy;
    interrupt_ready_o<=interrupt_ready;
+
+-- other mappings
+
+   displacement_o <= displacement_out;
 
 
 process (clk_i) is
 variable branch_target : std_logic_vector(31 downto 0);
 variable U_immed : xsigned;
-variable displacement : t_displacement;
-variable t_valid : std_logic;
+variable displacement : std_logic_vector(20 downto 0);
+variable t_valid, valid_out : std_logic;
 variable trap : std_logic;
 variable not_implemented : std_logic;
-variable optype : t_riscv_op;
+
+
 begin
    if rising_edge(clk_i) then
+
       if rst_i='1' then
-         valid_out<='0';
+         valid_out_r<='0';
          self_busy<='0';
          state<=Regular;
          interrupt_ready<='0';
@@ -214,16 +249,22 @@ begin
          dst_out<=(others=>'-');
          displacement:= (others=>'-');
          cmd_mul_high_o<='-';
+         cmd_signed_b_o<='-';
          cmd_slt_o<='-';
          cmd_csr_o <= '-';
          cmd_trap_o <= '-';
          cmd_tret_o <= '-';
          interrupt_o <= '-';
 
+         trap_on_next <= '0';
+         trap_on_current <= '0';
+
       else
-        if jump_valid_i='1' then
-            -- When exeuction stage exeuctes jump do nothing
-            valid_out<='0';
+        valid_out:='0';
+        fencei_o <= '0'; -- clear fencei_o always after one cycle
+        if  jump_valid_i='1' then
+            -- On jump execution scrap decode output
+            valid_out_r<='0';
             self_busy<='0';
             state<=Regular;
         elsif downstream_busy='0' then
@@ -232,9 +273,9 @@ begin
                cmd_loadop3_o<='0';
                cmd_signed_o<='0';
                cmd_dbus_o<='0';
-               cmd_dbus_store_o<='0';
-               cmd_dbus_byte_o<='0';
-               cmd_dbus_hword_o<='0'; -- TH
+               cmd_dbus_store_o<='-';
+               cmd_dbus_byte_o<='-';
+               cmd_dbus_hword_o<='-'; -- TH
                cmd_addsub_o<='0';
                cmd_negate_op2_o<='0';
                cmd_mul_o<='0';
@@ -251,261 +292,325 @@ begin
                cmd_csr_o <= '0';
                cmd_trap_o <= '0';
                cmd_tret_o <= '0';
+               trap_cause_o <= (others=>'-');
                interrupt_o <= '0';
-               jump_type_o<="0000";
+               --jump_type_o<="0000";
+               jump_type_o <= (others=>'-');
+               jump_prediction_o <= '-';
 
                dst_out<=(others=>'0'); -- defaults to register 0, which is never read
+               jump_misalign_o <= jma_ignore;
                displacement:= (others=>'0');
                t_valid := '0';
                not_implemented:='0';
                trap:='0';
- 
-               if valid_i='1' then
-                  if interrupt_valid_i='1' then
-                    t_valid:='1';
-                    interrupt_o<='1';
-                    --trap_cause_o<=X"4"; -- TODO: adapt cause based on interrupt source
-                    cmd_trap_o <= '1';
-                    cmd_jump_o <= '1';
-                    --self_busy<='1';
-						  --state<=ContinueInterrupt;
-                    
-                  elsif word_i(1 downto 0) = "11" then -- all RV32IM instructions have the lower bits set to 11                                   
-                    optype:=decode_op(opcode);
-                    case optype is
-                      
-                       when rv_imm|rv_op =>               
-                        
-                          rd1_select<=Reg;
-                          dst_out<="000"&rd;
-                          if opcode(5)='1' then -- OP_OP...
-                            rd2_select<=Reg;
-                          else --OP_IMM
-                            rd2_direct<=std_logic_vector(get_I_immediate(word_i));
-                            rd2_select<=Imm;
-                          end if;
+               jump_prediction_o<=jump_prediction_i;
 
-                          if funct7=MULEXT and optype=rv_op then
-                             -- M extension
-                             if funct3(2)='0' then
-                               case funct3(1 downto 0) is
-                                 when "00" => -- mul
-                                   cmd_mul_o <= '1';
-                                   cmd_mul_high_o<='0';
-                                 when "11" => -- mulhu
-                                   cmd_mul_o <= '1';
-                                   cmd_mul_high_o<='1';
-                                 when others => not_implemented:='1';
-                               end case;
-                             else
-                               cmd_div_o <= '1';
-                               cmd_div_mod_o <= funct3(1);
-                               cmd_signed_o <= not funct3(0);
-                             end if;
-                           else
-                             case funct3 is
-                               when ADD =>
-                                 cmd_addsub_o<='1';
-                                 if opcode(5)='1' then
-                                   cmd_negate_op2_o<=word_i(30);
-                                 end if;
-                               when F_AND =>
-                                 cmd_and_o<='1';
-                               when F_XOR =>
-                                 cmd_xor_o<='1';
-                               when F_OR =>
-                                 cmd_and_o<='1';
-                                 cmd_xor_o<='1';
-                               when SL  =>
-                                 cmd_shift_o<='1';
-                               when SR =>
-                                 cmd_shift_o<='1';
-                                 cmd_shift_right_o<='1';
-                                 cmd_signed_o<=word_i(30);
-                               when SLT =>
-                                 cmd_cmp_o<='1';
-                                 cmd_negate_op2_o<='1'; -- needed by ALU comparator to work correctly
-                                 cmd_slt_o<='1';
-                                 jump_type_o<="0100";
-                               when SLTU =>
-                                 cmd_cmp_o<='1';
-                                 cmd_negate_op2_o<='1'; -- needed by ALU comparator to work correctly
-                                 cmd_slt_o<='1';
-                                 jump_type_o<="0110";
-                               when others =>
+              if interrupt_valid_i='1' then
+                  t_valid:='1';
+                  interrupt_o<='1';
+                  cmd_trap_o <= '1';
+                  cmd_jump_o <= '1';
+                  -- Clear pending single steps in case of an interrupt
+                  trap_on_next <= '0';
+                  trap_on_current <= '0';
+              elsif trap_on_current='1' and valid_i='1' then -- execute Single step trap
+                  cmd_trap_o <= '1';
+                  cmd_jump_o <= '1';
+                  trap_cause_o <= X"3";
+                  trap_on_current<='0';
+                  t_valid:='1';
+              elsif word_i(1 downto 0) = "11" then -- all RV32IM instructions have the lower bits set to 11
+                  case optype is
+
+                     when rv_imm|rv_op =>
+
+                        rd1_select<=Reg;
+                        dst_out<="000"&rd;
+                        if opcode(5)='1' then -- OP_OP...
+                          rd2_select<=Reg;
+                        else --OP_IMM
+                          rd2_direct<=std_logic_vector(get_I_immediate(word_i));
+                          rd2_select<=Imm;
+                        end if;
+
+                        if funct7=MULEXT and optype=rv_op then
+                           -- M extension
+                           if funct3(2)='0' then
+                             cmd_mul_o <= '1';
+                             case funct3(1 downto 0) is
+                               when "00" => -- mul
+                                 cmd_mul_high_o<='0';
+                                 cmd_signed_o <= '0';
+                                 cmd_signed_b_o <= '0';
+                               when "11" => -- mulhu
+                                 cmd_mul_high_o<='1';
+                                 cmd_signed_o <= '0';
+                                 cmd_signed_b_o <= '0';
+                               when "01" => -- mulh (both operands signed)
+                                 cmd_mul_high_o<='1';
+                                 cmd_signed_o <= '1';
+                                 cmd_signed_b_o <= '1';
+                               when "10" => -- mulhsu (signed, unsigned)
+                                 cmd_mul_high_o<='1';
+                                 cmd_signed_o <= '1';
+                                 cmd_signed_b_o <= '0';
+                               when others => not_implemented:='1';
                              end case;
-                          end if;
-                          t_valid:='1';
-                 
-                       when rv_jal =>
+                           else
+                             cmd_div_o <= '1';
+                             cmd_div_mod_o <= funct3(1);
+                             cmd_signed_o <= not funct3(0);
+                           end if;
+                         else
+                           case funct3 is
+                             when ADD =>
+                               cmd_addsub_o<='1';
+                               if opcode(5)='1' then
+                                 cmd_negate_op2_o<=word_i(30);
+                               end if;
+                             when F_AND =>
+                               cmd_and_o<='1';
+                             when F_XOR =>
+                               cmd_xor_o<='1';
+                             when F_OR =>
+                               cmd_and_o<='1';
+                               cmd_xor_o<='1';
+                             when SL  =>
+                               cmd_shift_o<='1';
+                             when SR =>
+                               cmd_shift_o<='1';
+                               cmd_shift_right_o<='1';
+                               cmd_signed_o<=word_i(30);
+                             when SLT =>
+                               cmd_cmp_o<='1';
+                               cmd_negate_op2_o<='1'; -- needed by ALU comparator to work correctly
+                               cmd_slt_o<='1';
+                               jump_type_o<="0100";
+                             when SLTU =>
+                               cmd_cmp_o<='1';
+                               cmd_negate_op2_o<='1'; -- needed by ALU comparator to work correctly
+                               cmd_slt_o<='1';
+                               jump_type_o<="0110";
+                             when others =>
+                           end case;
+                        end if;
+                        t_valid:='1';
+
+                     when rv_jal =>
+
+                         if not BRANCH_PREDICTOR then
                            rd1_select<=Imm;
-                           rd1_direct<=std_logic_vector(signed(current_ip&"00")+get_UJ_immediate(word_i));
+                           rd1_direct<=std_logic_vector(signed(current_ip&"00"));
+                           displacement:= fill_in(get_UJ_immediate(word_i),displacement'length);
                            cmd_jump_o<='1';
-                           cmd_loadop3_o<='1';
-                           op3_o<=next_ip_i&"00";
-                           dst_out<="000"&rd;                          
-                           t_valid:='1';
-                  
-                       when rv_jalr =>
-                       
-                           rd1_select<=Reg;
-                           cmd_jump_o<='1';
-                           cmd_loadop3_o<='1';
-                           op3_o<=next_ip_i&"00";
-                           dst_out<="000"&rd;
-                           displacement:=get_I_displacement(word_i);
-                           t_valid:='1';
-                 
-                       when rv_branch =>
-                
-                           branch_target:=std_logic_vector(signed(current_ip&"00")+get_SB_immediate(word_i));
-                           rd1_select<=Reg;
-                           rd2_select<=Reg;
-                           jump_type_o<="0"&funct3; -- "reuse" lxp jump_type for the funct3 field, see generated coding in lxp32_execute
-                           cmd_cmp_o<='1';
-                           cmd_negate_op2_o<='1'; -- needed by ALU comparator to work correctly
-                           t_valid:='1';
+                           jump_misalign_o <= jma_check;
+                         else -- with Branch Predictor
+                            -- A jal is always predicted right. So no need to trigger
+                            -- the jump logic in the execution stage exepct when
+                            -- there is a misalinged jump
+                            displacement:= fill_in(get_UJ_immediate(word_i),displacement'length);
+                            if displacement(1)='1' then
+                              -- synthesis translate_off
+                              report "decode: Misaligned JAL instruction detected" severity warning;
+                               -- synthesis translate_on
+                              rd1_select<=Imm;
+                              rd1_direct<=std_logic_vector(signed(current_ip&"00"));
+
+                              jump_misalign_o <= jma_force;
+                              cmd_jump_o<='1';
+                            end if;
+                         end if;
+                         cmd_loadop3_o<='1';
+                         op3_o<=next_ip_i&"00";
+                         dst_out<="000"&rd;
+                         t_valid:='1';
+                         --jump_prediction_o<=jump_prediction_i;
+
+                     when rv_jalr =>
+
+                         rd1_select<=Reg;
+                         cmd_jump_o<='1';
+                         jump_misalign_o<=jma_check;
+                         cmd_loadop3_o<='1';
+                         op3_o<=next_ip_i&"00";
+                         dst_out<="000"&rd;
+                         displacement:= fill_in(get_I_displacement(word_i),displacement'length);
+                         t_valid:='1';
+
+                     when rv_branch =>
+
+                         displacement:=fill_in(get_SB_immediate(word_i),displacement'length);
+                         --branch_target:=std_logic_vector(signed(current_ip&"00")+get_SB_immediate(word_i));
+                         rd1_select<=Reg;
+                         rd2_select<=Reg;
+                         jump_type_o<="0"&funct3; -- "reuse" lxp jump_type for the funct3 field, see generated coding in lxp32_execute
+                         cmd_cmp_o<='1';
+                         cmd_negate_op2_o<='1'; -- needed by ALU comparator to work correctly
+                         t_valid:='1';
+                         if valid_i='1' then
                            self_busy<='1';
                            state<=ContinueCjmp;
-                  
-                       when rv_load => 
-                  
-                           rd1_select<=Reg;
-                           displacement:=get_I_displacement(word_i);
-                           cmd_dbus_o<='1';
-                           dst_out<="000"&rd;
-                           if funct3(1 downto 0)="00" then -- Byte access
-                             cmd_dbus_byte_o<='1';
-                           elsif funct3(1 downto 0)="01" then --  16 BIT (H) access
-                             cmd_dbus_hword_o<='1';
-                           end if;
-                           cmd_signed_o <= not funct3(2);
-                           t_valid:='1';
-                
-                      when rv_store => 
-              
-                           rd1_select<=Reg;
-                           displacement:=get_S_displacement(word_i);
-                           rd2_select<=Reg;
-                           cmd_dbus_o<='1';
-                           cmd_dbus_store_o<='1';
-                           if funct3(1 downto 0)="00" then -- Byte access
-                             cmd_dbus_byte_o<='1';
-                           elsif funct3(1 downto 0)="01" then --  16 BIT (H) access
-                             cmd_dbus_hword_o<='1';
-                           end if; -- TODO: Implement 16 BIT (H) instructons
-                           t_valid:='1';
-                      when rv_lui|rv_auipc =>   
-                           -- we will use the ALU to calculate the result
-                           -- this saves an adder and time
-                           U_immed:=get_U_immediate(word_i);
-                           rd2_select<=Imm;
-                           rd2_direct<=std_logic_vector(U_immed);
-                           rd1_select<=Imm;
-                           cmd_addsub_o<='1';
-                           if word_i(5)='1' then -- LUI
-                             rd1_direct<= (others=>'0');
-                           else
-                             rd1_direct<=std_logic_vector(current_ip)&"00";
-                           end if;
-                           dst_out<="000"&rd;
-                           t_valid:='1';
-                  
-                      when rv_system =>    
-                      
-                           if funct3="000" then
-                             -- ECALL EBREAK
-                             cmd_jump_o<='1';                            
-                             interrupt_o <= '0';
- 
-                             case word_i(21 downto 20) is
-                               when  "01" =>  -- EBREAK
-                                 trap_cause_o <= X"3";
-                                 trap:='1';
-                                 t_valid:='1';
-                               when "00" =>  -- ECALL
-                                 trap_cause_o <= X"B";
-                                 trap:='1';
-                                 t_valid:='1';
-                               when "10" => -- XRET
-                                 cmd_tret_o <= '1';
-                                 t_valid:='1';
-                               when others =>
-                                 -- nothing...
-                             end case;
-                             cmd_trap_o <= trap;
-                           else
-                              cmd_csr_o<='1';
-                              csr_op_o<=funct3(1 downto 0);
-                              if rs1="00000" then
-                                csr_x0_o <= '1';
-                              else
-                                csr_x0_o <= '0';
-                              end if;
-                              displacement:=word_i(31 downto 20); -- CSR address
-                              if funct3(2)='1' then
-                                rd1_select<=Imm;
-                                rd1_direct<=std_logic_vector(resize(unsigned(word_i(19 downto 15)),rd1_direct'length));
-                              else
-                                rd1_select<=Reg;
-                              end if;
-                              dst_out<="000"&rd;
-                              t_valid:='1';
+                         end if;
+                     when rv_load =>
+
+                         rd1_select<=Reg;
+                         displacement:=fill_in(get_I_displacement(word_i),displacement'length);
+                         cmd_dbus_o<='1';
+                         cmd_dbus_store_o<='0';
+                         dst_out<="000"&rd;
+                         cmd_dbus_byte_o<='0';
+                         cmd_dbus_hword_o<='0';
+                         if funct3(1 downto 0)="00" then -- Byte access
+                           cmd_dbus_byte_o<='1';
+                         elsif funct3(1 downto 0)="01" then --  16 BIT (H) access
+                           cmd_dbus_hword_o<='1';
+                         end if;
+                         cmd_signed_o <= not funct3(2);
+                         t_valid:='1';
+
+                    when rv_store =>
+
+                         rd1_select<=Reg;
+                         displacement:=fill_in(get_S_displacement(word_i),displacement'length);
+                         rd2_select<=Reg;
+                         cmd_dbus_o<='1';
+                         cmd_dbus_store_o<='1';
+                         cmd_dbus_byte_o<='0';
+                         cmd_dbus_hword_o<='0';
+                         if funct3(1 downto 0)="00" then -- Byte access
+                           cmd_dbus_byte_o<='1';
+                         elsif funct3(1 downto 0)="01" then --  16 BIT (H) access
+                           cmd_dbus_hword_o<='1';
+                         end if; -- TODO: Implement 16 BIT (H) instructons
+                         t_valid:='1';
+                    when rv_lui|rv_auipc =>
+                         -- we will use the ALU to calculate the result
+                         -- this saves an adder
+                         U_immed:=get_U_immediate(word_i);
+                         rd2_select<=Imm;
+                         rd2_direct<=std_logic_vector(U_immed);
+                         rd1_select<=Imm;
+                         cmd_addsub_o<='1';
+                         if word_i(5)='1' then -- LUI
+                           rd1_direct<= (others=>'0');
+                         else
+                           rd1_direct<=std_logic_vector(current_ip)&"00";
+                         end if;
+                         dst_out<="000"&rd;
+                         t_valid:='1';
+
+                    when rv_system =>
+
+                         if funct3="000" then
+                           -- ECALL EBREAK
+                           cmd_jump_o<='1';
+                           interrupt_o <= '0';
+
+                           case word_i(21 downto 20) is
+                             when  "01" =>  -- EBREAK
+                               trap_cause_o <= X"3";
+                               trap:='1';
+                               t_valid:='1';
+                             when "00" =>  -- ECALL
+                               trap_cause_o <= X"B";
+                               trap:='1';
+                               t_valid:='1';
+                             when "10" => -- XRET
+                               cmd_tret_o <= '1';
+                               t_valid:='1';
+                               if sstep_i='1' and valid_i='1' then
+                                 trap_on_next<='1';
+                               end if;
+                             when others =>
+                               -- nothing...
+                           end case;
+                           cmd_trap_o <= trap;
+                         else
+                            cmd_csr_o<='1';
+                            csr_op_o<=funct3(1 downto 0);
+                            if rs1="00000" then
+                              csr_x0_o <= '1';
+                            else
+                              csr_x0_o <= '0';
                             end if;
-                      when rv_miscmem => 
-                        case funct3 is 
-                          when "000" => -- FENCE: currently like a NOP
+                            displacement:=(others=>'0');
+                            displacement(11 downto 0):=word_i(31 downto 20); -- CSR address
+                            if funct3(2)='1' then
+                              rd1_select<=Imm;
+                              rd1_direct<=std_logic_vector(resize(unsigned(word_i(19 downto 15)),rd1_direct'length));
+                            else
+                              rd1_select<=Reg;
+                            end if;
+                            dst_out<="000"&rd;
                             t_valid:='1';
-                          when "001" => -- FENCE.I
-                            -- we just jump to next_ip, this will effectivly flush the pipeline and the prefetch buffer
-                            rd1_select<=Imm;
-                            rd1_direct<=std_logic_vector(signed(next_ip_i&"00"));
-                            cmd_jump_o<='1';
-                            t_valid:='1';                            
-                          when others =>
-                            not_implemented:='1';
-                         end case;   
-                          
-                      when rv_invalid =>
-                        not_implemented:='1';
-                    end case;  
-                      
-                  else
-                     not_implemented:='1';
-                  end if; 
-                   
-                   if t_valid='0' or not_implemented='1' then
-                     -- illegal opcode
-                     cmd_jump_o<='1';
-                     interrupt_o <= '0';                    
-                     trap_cause_o<=X"2";
-                     cmd_trap_o <= '1';
-                     valid_out<='1';
-                   else
-                     valid_out<=t_valid;
-                   end if;
-                   -- the epc_o register is always set
-                   -- In case of an exception downstream the pipeline this register can be copied
-                   -- to the CSR register.
-                   epc_o <= std_logic_vector(current_ip);                   
-               end if; -- if valid_i='1'
+                          end if;
+                    when rv_miscmem =>
+                      case funct3 is
+                        when "000" => -- FENCE: currently like a NOP
+                          t_valid:='1';
+                        when "001" => -- FENCE.I
+                          -- we just jump to next_ip, this will effectivly flush the pipeline and the prefetch buffer
+                          rd1_select<=Imm;
+                          rd1_direct<=std_logic_vector(signed(next_ip_i&"00"));
+                          cmd_jump_o<='1';
+                          fencei_o<=valid_i; -- Only set fence when opcode is really valid 
+                          t_valid:='1';
+                        when others =>
+                          not_implemented:='1';
+                       end case;
+
+                    when rv_invalid =>
+                      not_implemented:='1';
+                  end case;
+
+              else
+                 not_implemented:='1';
+              end if;
+
+             if (t_valid='0' or not_implemented='1') and valid_i='1' then
+               -- illegal opcode
+               -- synthesis translate_off
+                if jump_valid_i='0' then
+                  report "Illegal opcode encountered "
+                    severity error;
+                end if;
+               -- synthesis translate_on
+               cmd_jump_o<='1';
+               interrupt_o <= '0';
+               trap_cause_o<=X"2";
+               cmd_trap_o <= '1';
+             end if;
+             valid_out := valid_i;
+             current_ip_r <= current_ip;
             when ContinueCjmp =>
                rd1_select<=Imm;
-               rd1_direct<=branch_target;
-               valid_out<='1';
+               rd1_direct<=std_logic_vector(signed(current_ip_r&"00"));
+               displacement:=displacement_out;
+               valid_out:='1';
                cmd_jump_o<='1';
+               jump_misalign_o<=jma_check;
                self_busy<='0';
                state<=Regular;
             when Halt =>
-               if interrupt_valid_i='1' then
-                  self_busy<='0';
-                  state<=Regular;
-               end if;
+              -- rerved for future use
            end case;
-        end if;
-      end if;
-      displacement_o<=displacement;
-    end if;
+           -- Finally assert valid_o only if all conditions are met
+           --valid_out_r <= valid_out and valid_i and not jump_valid_i;
+           if jump_valid_i='0' and valid_out='1' then
+               valid_out_r<='1';
+               -- single step trap propagation pipeline
+              if  trap_on_next='1' then
+                trap_on_current<='1';
+                trap_on_next <= '0';
+              end if;
+           else
+             valid_out_r<='0';
+           end if;
+        end if; -- downstream_busy....
+      end if; -- reset
+      displacement_out<=displacement;
+    end if; -- Clock
 end process;
 
 
@@ -570,4 +675,3 @@ end process;
 
 
 end rtl;
-

@@ -1,7 +1,7 @@
 --
---   Bonfire CPU 
+--   Bonfire CPU
 --   (c) 2016,2017 Thomas Hornschuh
---   See license.md for License 
+--   See license.md for License
 
 -- Utilities for decoding instructions
 
@@ -29,7 +29,7 @@ constant OP_SYSTEM : t_opcode := "11100";
 constant OP_MISCMEM :t_opcode := "00011";
 
 type t_riscv_op is (rv_imm,rv_op,rv_jal,rv_jalr,rv_load,rv_store,rv_branch,rv_lui,rv_auipc,rv_system,rv_miscmem,rv_invalid);
- 
+
 constant ADD :  t_funct3  :="000";
 constant SLT :  t_funct3  :="010";
 constant SLTU : t_funct3  :="011";
@@ -55,6 +55,13 @@ constant XLEN : natural := 32;
 subtype xword is  std_logic_vector(XLEN-1 downto 0);
 subtype xsigned is signed(XLEN-1 downto 0);
 subtype t_displacement is std_logic_vector(11 downto 0);
+subtype t_uj_immediate is std_logic_vector(20 downto 1);
+subtype t_displacement21 is std_logic_vector(20 downto 0);
+subtype t_SB_immediate is std_logic_vector(12 downto 1);
+
+
+-- How to deal with jump misalignment in exec stage
+type t_jump_misalign is ( jma_ignore,jma_force,jma_check );
 
 
 function get_I_immediate(signal instr: in xword) return xsigned;
@@ -63,11 +70,15 @@ function get_U_immediate(signal instr: in xword) return xsigned;
 function get_J_immediate(signal instr: in xword) return xsigned;
 function get_S_immediate(signal instr: in xword) return xsigned;
 function get_S_displacement(signal instr: in xword) return t_displacement;
-function get_SB_immediate(signal instr: in xword) return xsigned;
+function get_SB_immediate(signal instr: in xword) return t_SB_immediate;
 
-function get_UJ_immediate(signal instr: in xword) return xsigned;
+function get_UJ_immediate(signal instr: in xword) return t_uj_immediate;
 
 function decode_op(signal opcode : in t_opcode) return t_riscv_op;
+
+
+-- "Fills" an input vector into an output vector of range (len-1 downto 0)
+function fill_in(x: std_logic_vector; len:natural) return std_logic_vector;
 
 end riscv_decodeutil;
 
@@ -79,7 +90,7 @@ variable t2 : signed(11 downto 0);
 begin
   t2 := signed(instr(31 downto 20));
   temp := resize(t2,XLEN);
-  return temp;             
+  return temp;
 end;
 
 function get_I_displacement(signal instr: in xword) return t_displacement is
@@ -90,12 +101,12 @@ begin
 end;
 
 function get_U_immediate(signal instr: in xword) return xsigned is
-variable temp : xsigned; 
+variable temp : xsigned;
 variable t2 : std_logic_vector(31 downto 0) := (others=>'0');
 begin
   t2(31 downto 12) := instr(31 downto 12);
   temp := signed(t2);
-  return temp;             
+  return temp;
 
 end;
 
@@ -105,7 +116,7 @@ variable t2 : std_logic_vector(31 downto 0);
 begin
   t2 := instr(31 downto 1) & '0';
   temp := signed(t2);
-  return temp;             
+  return temp;
 
 end;
 
@@ -121,32 +132,36 @@ variable t2 : signed(11 downto 0);
 begin
   t2 := signed(get_S_displacement(instr));
   temp := resize(t2,XLEN);
-  return temp;             
+  return temp;
 end;
 
 
-function get_SB_immediate(signal instr: in xword) return xsigned is
-variable temp : xsigned;
-variable t2 : signed(12 downto 0);
+function get_SB_immediate(signal instr: in xword) return t_SB_immediate is
+
 begin
-  t2 := signed(instr(31) & instr(7) & instr(30 downto 25)&instr(11 downto 8) & '0');
-  temp := resize(t2,XLEN);
-  return temp;             
+  return instr(31) & instr(7) & instr(30 downto 25)&instr(11 downto 8);
 end;
 
-function get_UJ_immediate(signal instr: in xword) return xsigned is
-variable temp : xsigned;
-variable t2 : signed(20 downto 0);
+function get_UJ_immediate(signal instr: in xword) return t_uj_immediate is
 begin
-  t2 := signed(instr(31) & instr(19 downto 12) & instr(20) & instr(30 downto 21) & '0'); 
-  temp := resize(t2,XLEN);
-  return temp;             
+  return instr(31) & instr(19 downto 12) & instr(20) & instr(30 downto 21);
+end;
 
+
+function fill_in(x: std_logic_vector; len:natural) return std_logic_vector is
+variable temp : std_logic_vector(len-1 downto 0) := (others=>'0');
+begin
+  temp(x'range) := x;
+  -- sign extend x into temp
+  for i in temp'high downto x'high+1 loop
+    temp(i) := x(x'high);
+  end loop;
+  return temp;
 end;
 
 function decode_op(signal opcode : in t_opcode) return t_riscv_op is
 begin
-  case opcode is 
+  case opcode is
     when OP_IMM => return rv_imm;
     when OP_OP => return rv_op;
     when OP_JAL => return rv_jal;
@@ -159,10 +174,10 @@ begin
     when OP_SYSTEM => return rv_system;
     when OP_MISCMEM => return rv_miscmem;
     when others => return rv_invalid;
-       
+
   end case;
 
 end;
 
- 
+
 end riscv_decodeutil;

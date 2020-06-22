@@ -58,7 +58,7 @@ Thumbs.db
 *.tcl
 *.projectmgr
 *.lst
-*.txt
+
 *.csv
 *.pcf
 *.par
@@ -77,3 +77,7 @@ Thumbs.db
 *.bld
 *.xpi
 
+/build/*
+/rtl/work-obj93.cf
+/.vscode/tasks.json
+/work-obj93.cf

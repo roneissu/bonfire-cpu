@@ -17,7 +17,7 @@
 -- This bus is intended for memory mapped control registers like mtime and mtimecmp, but can also be used
 -- for a "Microcontroller like" setup with local I/O devices and local RAM
 -- The bus is impemented by an alternative cyc signal (local_cyc_o) and a second data in port (local_dat_i)
--- All other signals are shared 
+-- All other signals are shared
 
 
 ---------------------------------------------------------------------
@@ -30,8 +30,9 @@ entity lxp32_dbus is
    generic(
       RMW: boolean;
       ENABLE_LOCALMAP : boolean := false;
-      LOCAL_PREFIX : unsigned(31 downto 16) :=X"FFFF"
-      
+      LOCAL_PREFIX : unsigned(31 downto 16) :=X"FFFF";
+      STRICT_MISALIN_TRAP : boolean := true -- True: Trap also half word access to address offset 1
+
    );
    port(
       clk_i: in std_logic;
@@ -60,36 +61,41 @@ entity lxp32_dbus is
       dbus_adr_o: out std_logic_vector(31 downto 2);
       dbus_dat_o: out std_logic_vector(31 downto 0);
       dbus_dat_i: in std_logic_vector(31 downto 0);
-      
+
       -- Processor Local Wishbone bus
       local_cyc_o : out std_logic;
       local_dat_i : in std_logic_vector(31 downto 0)
-      
+
    );
 end entity;
 
 architecture rtl of lxp32_dbus is
 
+--attribute keep_hierarchy : string;
+--attribute keep_hierarchy of rtl : architecture is "yes";
+
 subtype txword is  std_logic_vector(31 downto 0);
 
 signal strobe: std_logic:='0';
 signal we_out: std_logic:='0';
-signal we: std_logic;
+signal we: std_logic :='0';
 signal byte_mode,hword_mode: std_logic;
 signal sel: std_logic_vector(3 downto 0);
 signal sig: std_logic;
 signal rmw_mode: std_logic;
-signal adr_reg : std_logic_vector(1 downto 0); -- TH: Lower two bits of address bus
+signal adr_reg : std_logic_vector(31 downto 0); -- TH: Lower two bits of address bus
 
-signal local_cyc : std_logic :='0';
-signal dbus_cyc  : std_logic :='0';
+
+signal cyc : std_logic := '0';
+--signal local_cyc : std_logic;
+--signal dbus_cyc : std_logic;
 
 signal dbus_rdata: txword;
 signal selected_byte: std_logic_vector(7 downto 0);
 
 signal misalign : std_logic;
 
-signal local_adr_en : std_logic :='0'; -- 1: processor local address 
+signal local_adr_en : std_logic; -- 1: processor local address
 
 
 -- Shifts the value to write on the data bus based on the lower bits
@@ -117,7 +123,7 @@ end;
 
 
 begin
-  
+
 process (clk_i) is
 variable misalign_t : std_logic;
 variable l_local_adr_en : std_logic;
@@ -129,13 +135,12 @@ begin
          sig<='-';
          byte_mode<='-';
          sel<=(others=>'-');
-         we<='-';
+         we<='0';
          rmw_mode<='-';
-         dbus_adr_o<=(others=>'-');
+         adr_reg<=(others=>'-');
          dbus_dat_o<=(others=>'-');
          misalign<='0';
-         local_cyc<='0';
-         dbus_cyc<='0';
+         cyc<='0';
       else
          we_out<='0';
          misalign_t:='0';
@@ -145,18 +150,10 @@ begin
                --strobe<='1';
                sig<=cmd_signed_i;
 
-               dbus_adr_o<=addr_i(31 downto 2);
-               adr_reg<=addr_i(1 downto 0);
+
+               adr_reg<=addr_i;
                dbus_dat_o <= dbus_align(addr_i(1 downto 0),wdata_i);
-               
-               -- New TH: Support for processor local wishbone bus
-               if ENABLE_LOCALMAP and unsigned(addr_i(LOCAL_PREFIX'high downto LOCAL_PREFIX'low))=LOCAL_PREFIX then
-                  l_local_adr_en:='1';
-               else
-                  l_local_adr_en:='0';
-               end if;   
-               local_adr_en <= l_local_adr_en;
-               
+
                if cmd_dbus_byte_i='1' then
                  byte_mode<='1';
                  hword_mode<='0';
@@ -171,19 +168,25 @@ begin
                elsif cmd_dbus_hword_i='1' then
                  byte_mode<='0';
                  hword_mode<='1';
-                 -- synthesis translate_off
-                  assert addr_i(1 downto 0) /= "11"
-                     report "Misaligned half word granular access on data bus"
-                     severity warning;
-                  -- synthesis translate_on
                   case addr_i(1 downto 0) is
                     when "00" => sel<="0011";
-                    when "01" => sel<="0110";
+                    when "01" =>
+                       if STRICT_MISALIN_TRAP then
+                         misalign_t := '1';
+                         sel <= "0000";
+                       else
+                          sel<="0110";
+                       end if;
                     when "10" => sel<="1100";
                     when "11" => sel<="0000";
                                  misalign_t := '1';
                     when others =>
                   end case;
+                  -- synthesis translate_off
+                   assert misalign_t = '0'
+                      report "Misaligned half word granular access on data bus"
+                      severity warning;
+                   -- synthesis translate_on
                else -- word mode
                   byte_mode<='0';
                   hword_mode<='0';
@@ -212,11 +215,8 @@ begin
                end if;
                if misalign_t = '0' then
                  strobe<='1'; -- only start bus cylce when no misalignment
-                 if l_local_adr_en='1' then
-                   local_cyc <= '1';
-                 else
-                    dbus_cyc <= '1';
-                 end if;  
+                 cyc <= '1';
+
                end if;
             end if;
          else
@@ -231,11 +231,11 @@ begin
                   end loop;
                else
                   strobe<='0';
-                  local_cyc<='0';
-                  dbus_cyc <='0';
+                  cyc <='0';
                   if we='0' then
                      we_out<='1';
                   end if;
+                  we<='0';
                end if;
             end if;
          end if;
@@ -245,37 +245,43 @@ begin
 end process;
 
 
-dbus_cyc_o<=dbus_cyc;
-local_cyc_o<=local_cyc;
+dbus_adr_o<=adr_reg(31 downto 2);
+
+local_adr_en <= '1' when ENABLE_LOCALMAP and
+                     unsigned(adr_reg(LOCAL_PREFIX'high downto LOCAL_PREFIX'low))=LOCAL_PREFIX
+                    else '0';
+
 
 no_local_dbus: if not ENABLE_LOCALMAP generate
- 
-  
+
+  dbus_cyc_o<=cyc;
+
   process (clk_i) is
   begin
      if rising_edge(clk_i) then
        dbus_rdata<=dbus_dat_i;
      end if;
   end process;
-  
+
 end generate;
 
 
 local_dbus: if  ENABLE_LOCALMAP generate
 
- 
-  
+  dbus_cyc_o  <= cyc when local_adr_en='0' else '0';
+  local_cyc_o <= cyc when local_adr_en='1' else '0';
+
   process (clk_i) is
   begin
      if rising_edge(clk_i) then
-       if local_adr_en='1' then 
+       if local_adr_en='1' then
          dbus_rdata<=local_dat_i;
        else
          dbus_rdata<=dbus_dat_i;
-       end if;         
+       end if;
      end if;
   end process;
-  
+
 end generate;
 
 
@@ -299,7 +305,7 @@ variable byte : std_logic_vector(7 downto 0);
 variable hword : std_logic_vector(15 downto 0);
 begin
   if byte_mode='1' then
-    case adr_reg is
+    case adr_reg(1 downto 0) is
       when "00" =>  byte:=dbus_rdata(7 downto 0);
       when "01" =>  byte:=dbus_rdata(15 downto 8);
       when "10" =>  byte:=dbus_rdata(23 downto 16);
@@ -312,9 +318,14 @@ begin
       rdata_o<=X"FFFFFF"&byte;
     end if;
   elsif hword_mode='1' then
-    case adr_reg is
+    case adr_reg(1 downto 0) is
       when "00" => hword:=dbus_rdata(15 downto 0);
-      when "01" => hword:=dbus_rdata(23 downto 8);
+      when "01" =>
+        if STRICT_MISALIN_TRAP then
+            hword:=dbus_rdata(23 downto 8);
+         else
+            hword:= (others => 'X');
+         end if;
       when "10" => hword:=dbus_rdata(31 downto 16);
       when others => hword:=(others => 'X');
     end case;

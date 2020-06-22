@@ -6,11 +6,16 @@
 -- Copyright (c) 2016 by Alex I. Kuznetsov
 --
 -- The third stage of the LXP32 pipeline.
+-- TH: Various changes to support RISC-V architecture
 ---------------------------------------------------------------------
 
 library ieee;
 use ieee.std_logic_1164.all;
 use IEEE.NUMERIC_STD.ALL;
+
+use work.txt_util.all;
+
+use work.riscv_decodeutil.all;
 
 entity lxp32_execute is
    generic(
@@ -19,7 +24,8 @@ entity lxp32_execute is
       MUL_ARCH: string;
       USE_RISCV : boolean := false;
       ENABLE_TIMER : boolean := true;
-      TIMER_XLEN : natural := 32
+      TIMER_XLEN : natural := 32;
+      BRANCH_PREDICTOR : boolean
    );
    port(
       clk_i: in std_logic;
@@ -43,7 +49,10 @@ entity lxp32_execute is
       cmd_shift_i: in std_logic;
       cmd_shift_right_i: in std_logic;
       cmd_mul_high_i : in std_logic; -- TH: Get high word of mult result
+      cmd_signed_b_i : in std_logic; -- TH: interpret mult operand b is signed
       cmd_slt_i : in std_logic; -- TH: RISC-V SLT/SLTU command
+
+      next_ip_i : in std_logic_vector(29 downto 0); -- TH: Next PC
 
       -- Control Unit
       cmd_csr_i : in std_logic;
@@ -65,10 +74,13 @@ entity lxp32_execute is
 
       epc_o : out std_logic_vector(31 downto 2);
       tvec_o : out std_logic_vector(31 downto 2);
-      interrupt_o : out std_logic; -- Execute Interrupt (For RISC-V the Control Unit will handle all interrupt processing
-      
+      interrupt_o : out std_logic; -- Execute Interrupt (For RISC-V the Control Unit will handle all interrupt processing)
+      sstep_o : out std_logic; -- when '1' trap after first instruction after next eret
+
 
       jump_type_i: in std_logic_vector(3 downto 0);
+      jump_prediction_i : in std_logic; -- '1': conditional branch is predicted taken, '0' not taken
+      jump_misalign_i : in t_jump_misalign;
 
       op1_i: in std_logic_vector(31 downto 0);
       op2_i: in std_logic_vector(31 downto 0);
@@ -79,7 +91,7 @@ entity lxp32_execute is
       sp_we_o: out std_logic;
       sp_wdata_o: out std_logic_vector(31 downto 0);
 
-      displacement_i : in std_logic_vector(11 downto 0);
+      displacement_i : in std_logic_vector(20 downto 0);
 
       valid_i: in std_logic;
       ready_o: out std_logic;
@@ -98,11 +110,15 @@ entity lxp32_execute is
       jump_ready_i: in std_logic;
 
       interrupt_return_o: out std_logic
-      
+
    );
 end entity;
 
 architecture rtl of lxp32_execute is
+
+--  attribute keep_hierarchy : string;
+--  attribute keep_hierarchy of rtl : architecture is "yes";
+
 
 -- Pipeline control signals
 
@@ -127,8 +143,12 @@ signal loadop3_we: std_logic;
 
 signal jump_condition: std_logic;
 signal jump_valid: std_logic:='0';
-signal jump_dst, jump_dst_r: std_logic_vector(jump_dst_o'range);
+signal jump_dst, jump_dst_r: std_logic_vector(31 downto 1);
 signal cond_reg : std_logic_vector (2 downto 0);
+signal jump_prediction_fail : std_logic;
+signal jump_misalign : std_logic;
+signal jump_misalign_r : std_logic := '0';
+
 
 -- SLT
 signal slt_we : std_logic:='0';
@@ -152,7 +172,7 @@ signal csr_tret_exec : std_logic;
 signal mepc,mtvec :  std_logic_vector(31 downto 2);
 signal mie : std_logic;
 
--- Registers for storing data address and direction, needed for recording misalignment traps 
+-- Registers for storing data address and direction, needed for recording misalignment traps
 signal adr_reg : std_logic_vector(31 downto 0);
 signal store_reg : std_logic;
 
@@ -183,7 +203,7 @@ signal s_dbus_ack_i  :  std_logic;
 signal s_local_ack   :  std_logic;
 signal s_dbus_adr_o  :  std_logic_vector(31 downto 2);
 signal s_dbus_dat_o,
-       s_local_dat_i :  std_logic_vector(31 downto 0);       
+       s_local_dat_i :  std_logic_vector(31 downto 0);
 --signal s_dbus_dat_i: std_logic_vector(31 downto 0);
 
 signal timer_irq : std_logic;
@@ -197,12 +217,28 @@ signal result_regaddr: std_logic_vector(7 downto 0);
 signal dst_reg: std_logic_vector(7 downto 0);
 
 -- Signals related to interrupt handling
+signal interrupt_ack : std_logic; -- Bonfire interrupt acknowledge
 
 signal interrupt_return: std_logic:='0';
 
+signal instret_cnt : unsigned(63 downto 0) := (others=>'0');
+signal instret_o : std_logic_vector(instret_cnt'range);
+
+-- synthesis translate_off
+signal sim_branch_counter : natural := 0;
+signal sim_mispredict_counter   : natural := 0;
+-- synthesis translate_on
+
 begin
 
-ex_exception <= dbus_misalign or csr_exception;
+assert (USE_RISCV and (MUL_ARCH="spartandsp" or MUL_ARCH="none"))
+       or not USE_RISCV
+
+  report "With RISC-V currently only MUL_ARCH spartandsp or none is supported"
+  severity failure;
+
+
+ex_exception <= dbus_misalign or csr_exception or jump_misalign_r;
 
 
 --CSR export to decode stage
@@ -241,6 +277,7 @@ alu_inst: entity work.lxp32_alu(rtl)
       cmd_shift_i=>cmd_shift_i,
       cmd_shift_right_i=>cmd_shift_right_i,
       cmd_mul_high_i=>cmd_mul_high_i,
+      cmd_signed_b_i=>cmd_signed_b_i,
       op1_i=>op1_i,
       op2_i=>op2_i,
 
@@ -329,19 +366,44 @@ begin
 end process;
 
 -- Jump Destination determination
-process(target_address,mtvec,mepc,cmd_tret_i,cmd_trap_i,ex_exception)
+process(target_address,mtvec,mepc,cmd_tret_i,cmd_trap_i,ex_exception,
+        jump_condition,epc_i)
 begin
    if cmd_tret_i = '1' then
-     jump_dst<=mepc;
+     jump_dst<=mepc & "0";
    elsif cmd_trap_i = '1' or ex_exception='1' then
-     jump_dst<=mtvec;
+     jump_dst<=mtvec & "0";
    else
-     jump_dst<=target_address(31 downto 2);
+     if BRANCH_PREDICTOR then
+       if jump_condition='1' then
+          jump_dst<=target_address(jump_dst'range);
+       else
+          jump_dst<=std_logic_vector(signed(epc_i) + 1) & "0";
+       end if;
+     else
+       jump_dst<=target_address(jump_dst'range);
+     end if;
    end if;
 end process;
 
 
+jump_pred: if BRANCH_PREDICTOR generate
+
+jump_prediction_fail <=  (jump_prediction_i xor jump_condition) or cmd_trap_i;
+
+end generate;
+
+no_jump_pred: if not BRANCH_PREDICTOR generate
+   jump_prediction_fail <= jump_condition;
+end generate;
+
+
+jump_misalign <= '1' when  jump_misalign_i = jma_force or
+                           (jump_misalign_i = jma_check and jump_condition='1' and jump_dst(1)='1' )
+                     else '0';
+
 process (clk_i) is
+variable temp : std_logic_vector(31 downto 0);
 begin
    if rising_edge(clk_i) then
       if rst_i='1' then
@@ -349,25 +411,48 @@ begin
          interrupt_return<='0';
          jump_dst_r<=(others=>'-');
          ex_exception_r<='0';
+         jump_misalign_r <= '0';
       else
-         if jump_valid='0' then
+
+        if jump_ready_i='1' then
+          jump_valid<='0';
+          ex_exception_r<='0';
+          interrupt_return<='0';
+       elsif jump_valid='0' then
             jump_dst_r <= jump_dst; -- latch jump destination
             ex_exception_r <= ex_exception;
-            if (can_execute='1' and cmd_jump_i='1' and jump_condition='1') or ex_exception='1' then
+            if ex_exception='1' then
                jump_valid<='1';
-               if not USE_RISCV then interrupt_return<=op1_i(0); end if;
+               jump_misalign_r <= jump_misalign;
+            elsif can_execute='1' and cmd_jump_i='1' then
+                if not USE_RISCV then interrupt_return<=op1_i(0); end if;
+                if jump_misalign='1'  then
+                  -- synthesis translate_off
+                  temp := jump_dst & '0';
+                  report "Jump destination misalignment in execute stage:" & hstr(temp)
+                  severity warning;
+                  -- synthesis translate_on
+                else
+                  jump_valid<=jump_prediction_fail;
+                end if;
+                jump_misalign_r <= jump_misalign;
             end if;
-         elsif jump_ready_i='1' then
-            jump_valid<='0';
-            ex_exception_r<='0';
-            interrupt_return<='0';
-         end if;
+        end if;
       end if;
+      -- synthesis translate_off
+      -- Simulation Branch statstics
+      if cmd_jump_i='1' and cmd_cmp_i='1'  and can_execute='1' and jump_valid='0' then
+        sim_branch_counter<=sim_branch_counter+1;
+        if jump_prediction_fail='1' then
+          sim_mispredict_counter<=sim_mispredict_counter+1;
+        end if;
+      end if;
+      -- synthesis translate_on
    end if;
 end process;
 
-jump_valid_o<=jump_valid or (can_execute and cmd_jump_i and jump_condition);
-jump_dst_o<=jump_dst_r when jump_valid='1' else jump_dst;
+jump_valid_o<=jump_valid or (can_execute and cmd_jump_i and jump_prediction_fail and not jump_misalign);
+jump_dst_o<=jump_dst_r(31 downto 2) when jump_valid='1' else jump_dst(31 downto 2);
 
 
 interrupt_return_o<=interrupt_return;
@@ -377,12 +462,12 @@ interrupt_return_o<=interrupt_return;
 s_dbus_ack_i <= dbus_ack_i when s_dbus_cyc_o='1' else
                 s_local_ack when s_local_cyc_o='1' else
                 'X';
-                
+
 
 dbus_adr_o <= s_dbus_adr_o;
 dbus_cyc_o <= s_dbus_cyc_o;
 dbus_stb_o <= s_dbus_stb_o and s_dbus_cyc_o; -- Mask stb output with cyc output
-dbus_we_o  <= s_dbus_we_o;	
+dbus_we_o  <= s_dbus_we_o;
 dbus_dat_o <= s_dbus_dat_o;
 dbus_sel_o <= s_dbus_sel_o;
 
@@ -421,13 +506,13 @@ dbus_inst: entity work.lxp32_dbus(rtl)
       local_dat_i=>s_local_dat_i,
       local_cyc_o=>s_local_cyc_o
    );
-   
-   
+
+
 -- RISC-V Local Memory mapped registers, currently mtime and mtimecmp
 
 riscv_memmap : if USE_RISCV and ENABLE_TIMER generate
 
-memmap_inst: entity work.riscv_local_memmap 
+memmap_inst: entity work.riscv_local_memmap
 
 PORT MAP(
 		clk_i => clk_i,
@@ -443,7 +528,7 @@ PORT MAP(
 		timer_irq_o => timer_irq
 	);
 
-end generate;   
+end generate;
 
 
 -- RISCV control unit
@@ -455,8 +540,11 @@ riscv_cu: if USE_RISCV  generate
 
    trap_cause <= X"4" when dbus_misalign='1' and store_reg='0' else
                  X"6" when dbus_misalign='1' and store_reg='1' else
-                 X"2" when csr_exception='1'
+                 X"2" when csr_exception='1' else
+                 X"0" when jump_misalign_r='1'
                  else  trap_cause_i;
+
+    instret_o <= std_logic_vector(instret_cnt);
 
    process(clk_i) begin
 
@@ -464,55 +552,71 @@ riscv_cu: if USE_RISCV  generate
         if can_execute='1' then
            epc_reg <= epc_i;
            adr_reg <= target_address;
+           if jump_misalign='1' then
+             adr_reg(0)<='0';
+           end if;
            store_reg <= cmd_dbus_store_i;
          end if;
      end if;
    end process;
 
    epc_mux <= epc_reg when ex_exception='1' else epc_i;
-   
+
    csr_tret_exec <= cmd_tret_i and can_execute;
 
-   csr_inst: entity work.riscv_control_unit 
+   interrupt_ack <= interrupt_i and can_execute;
+
+   csr_inst: entity work.riscv_control_unit
    GENERIC MAP (
-   
+
       DIVIDER_EN=>DIVIDER_EN,
-      MUL_ARCH => MUL_ARCH   
+      MUL_ARCH => MUL_ARCH
    )
    PORT MAP(
-        op1_i => op1_i,
-        wdata_o => csr_result,
-        we_o => csr_we ,
-        csr_exception =>csr_exception ,
-        csr_adr => displacement_i,
-        ce_i => csr_ce,
-        busy_o => csr_busy,
-        csr_x0_i => csr_x0_i,
-        csr_op_i => csr_op_i,
-        clk_i => clk_i ,
-        rst_i => rst_i,
+      op1_i => op1_i,
+      wdata_o => csr_result,
+      we_o => csr_we ,
+      csr_exception =>csr_exception ,
+      csr_adr => displacement_i(11 downto 0),
+      ce_i => csr_ce,
+      busy_o => csr_busy,
+      csr_x0_i => csr_x0_i,
+      csr_op_i => csr_op_i,
+      clk_i => clk_i ,
+      rst_i => rst_i,
+
+      minstret_i => instret_o,
 
       mtvec_o => mtvec,
       mepc_o  => mepc,
-     
+      sstep_o => sstep_o,
+
       mcause_i => trap_cause,
       mepc_i => epc_mux,
       mtrap_strobe_i => mtrap_strobe,
       adr_i => adr_reg,
       cmd_tret_i => csr_tret_exec,
-      
-     
-		timer_irq_in => timer_irq,
-		
-		interrupt_ack_i =>interrupt_i,
-      
+
+		  timer_irq_in => timer_irq,
+		  interrupt_ack_i =>interrupt_ack,
+
       ext_irq_in => ext_irq_in,
       interrupt_exec_o => riscv_interrupt_exec_o
     );
 
 end generate;
 
-
+-- Instruction counter
+process (clk_i) is
+begin
+   if rising_edge(clk_i) then
+      if rst_i='1' then
+        instret_cnt <= (others=>'0');
+      elsif can_execute='1' then
+        instret_cnt <= instret_cnt + 1;
+      end if;
+   end if;
+end process;
 
 
 -- Result multiplexer
@@ -528,8 +632,6 @@ end generate;
 result_valid<=(alu_we or loadop3_we or dbus_we or slt_we or csr_we);-- and not (ex_exception or ex_exception_r);
 
 -- Write destination register
-
-
 process (clk_i) is
 begin
    if rising_edge(clk_i) then

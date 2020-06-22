@@ -16,7 +16,7 @@
 -- The multiplication operation placed outside the
 -- process block and the pipeline stages represented
 -- as single registers
--- Code for infering 
+
 
 --
 -- Dependencies: 
